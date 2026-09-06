@@ -1,6 +1,8 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 9 (Phase C — frontend now confirmed reading LIVE Supabase data. See "Session 9 — frontend connected to Supabase" below.)*
+*Read this at the start of every new chat. Last updated: Session 9 (Phase C — frontend now confirmed reading LIVE Supabase data, AND `trueresearch-frontend` is now backed up to its own GitHub repo. See "Session 9 — frontend connected to Supabase" and the GitHub note directly below it.)*
+
+**`trueresearch-frontend` is now on GitHub too:** `https://github.com/sp2591996/trueresearch-frontend` (private) — separate repo from `truresearch-pipeline` (the Python pipeline's repo). First push done this session (`git remote add origin` + `git push -u origin main`); future sessions just need plain `git push` from inside that folder, same as the pipeline repo.
 
 ## Session 9 — frontend connected to Supabase
 Continues straight on from "Session 9 — frontend build begins" above (same session).
