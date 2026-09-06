@@ -182,6 +182,41 @@ def rating_band(score: float) -> str:
     return "Weak"
 
 
+# --- Distress guardrail (PRD.md B2: "a company in default or clearly
+# distressed must not score in the 80s+" -- this was a written product
+# rule that was never actually enforced in code until now. Session 10
+# part 9 caught IDEA scoring 98/"Strong" with -96.6% ROE and negative
+# book value; this is the fix. ---
+#
+# Why this is needed: neither scoring component (relative valuation via
+# P/E, or the ML return-prediction rank) directly checks solvency. Worse,
+# when a company has negative shareholders' equity, ratios like ROE and
+# P/E are dividing by a negative number, which can distort or even flip
+# their apparent meaning -- a deeply distressed company can look
+# deceptively OK on these ratios alone.
+#
+# Rule (deliberately simple and conservative, not a new ML model):
+# flag a stock as financially distressed if its shareholders' equity is
+# negative (liabilities exceed assets -- the clearest, least ambiguous
+# distress signal available in the current data), OR its ROE is worse
+# than -50%. Flagged stocks have their combined score capped low enough
+# to always land in the existing "Weak" band (no new rating label
+# introduced, so the frontend's existing 5-band rendering needs no
+# changes) -- regardless of how well the two components scored it.
+DISTRESS_ROE_THRESHOLD = -0.50
+DISTRESS_SCORE_CAP = 15
+
+
+def is_financially_distressed(latest_fund) -> bool:
+    equity = latest_fund.get("stockholders_equity")
+    roe = latest_fund.get("roe")
+    if pd.notna(equity) and equity is not None and equity < 0:
+        return True
+    if pd.notna(roe) and roe is not None and roe < DISTRESS_ROE_THRESHOLD:
+        return True
+    return False
+
+
 def register_formula_and_weights(supabase):
     supabase.table("score_formula_versions").upsert({
         "formula_version": FORMULA_VERSION,
@@ -302,7 +337,11 @@ def main():
             "Capex_Intensity_YoY_Change": capex_intensity_yoy_change(latest_fund, prior_fund),
             "Sector": sector_name,
         }
-        rows.append({"asset_id": asset_id, "ticker": ticker, "sector_id": a.get("sector_id"), **feature_row})
+        distressed = is_financially_distressed(latest_fund)
+        rows.append({
+            "asset_id": asset_id, "ticker": ticker, "sector_id": a.get("sector_id"),
+            "is_distressed": distressed, **feature_row,
+        })
 
     features_df = pd.DataFrame(rows)
     sector_dummies = pd.get_dummies(features_df["Sector"], prefix="Sector")
@@ -318,6 +357,13 @@ def main():
     features_df["relative_valuation_score"] = features_df.groupby("sector_id")["inv_pe"].transform(percentile_rank)
 
     features_df["overall_score"] = (features_df["relative_valuation_score"] * 0.5) + (features_df["ml_rank_score"] * 0.5)
+
+    # Apply the distress guardrail (see is_financially_distressed above)
+    # before assigning the rating band -- this is what actually enforces
+    # PRD.md B2's "must not score 80+" rule, rather than just flagging it
+    # on the frontend after the fact.
+    distressed_mask = features_df["is_distressed"]
+    features_df.loc[distressed_mask, "overall_score"] = features_df.loc[distressed_mask, "overall_score"].clip(upper=DISTRESS_SCORE_CAP)
     features_df["truescore_rating"] = features_df["overall_score"].apply(rating_band)
 
     print("Saving scores to the database...")
@@ -353,6 +399,10 @@ def main():
         supabase.table("score_components").insert(component_rows[i:i + CHUNK]).execute()
 
     print(f"\nDone. Scored {len(features_df)} stocks and saved to the database (run_date={run_date}, formula_version={FORMULA_VERSION}).")
+    n_distressed = int(features_df["is_distressed"].sum())
+    print(f"Distress guardrail: {n_distressed} stock(s) flagged (negative equity or ROE < {DISTRESS_ROE_THRESHOLD:.0%}), score capped at {DISTRESS_SCORE_CAP}.")
+    if n_distressed:
+        print("  Flagged tickers: " + ", ".join(features_df.loc[features_df["is_distressed"], "ticker"].tolist()))
     print("\nTop 10 by overall score:")
     top10 = features_df.sort_values("overall_score", ascending=False).head(10)
     for _, r in top10.iterrows():
