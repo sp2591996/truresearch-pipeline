@@ -1,0 +1,201 @@
+ticker,name,sector_id,sector_name,yfinance_symbol,is_active
+360ONE,360 ONE WAM Ltd.,9,Financial Services,360ONE.NS,True
+ABB,ABB India Ltd.,2,Capital Goods,ABB.NS,True
+APLAPOLLO,APL Apollo Tubes Ltd.,2,Capital Goods,APLAPOLLO.NS,True
+AUBANK,AU Small Finance Bank Ltd.,9,Financial Services,AUBANK.NS,True
+ADANIENSOL,Adani Energy Solutions Ltd.,14,Power,ADANIENSOL.NS,True
+ADANIENT,Adani Enterprises Ltd.,12,Metals & Mining,ADANIENT.NS,True
+ADANIGREEN,Adani Green Energy Ltd.,14,Power,ADANIGREEN.NS,True
+ADANIPORTS,Adani Ports and Special Economic Zone Ltd.,16,Services,ADANIPORTS.NS,True
+ADANIPOWER,Adani Power Ltd.,14,Power,ADANIPOWER.NS,True
+ATGL,Adani Total Gas Ltd.,13,Oil Gas & Consumable Fuels,ATGL.NS,True
+ABCAPITAL,Aditya Birla Capital Ltd.,9,Financial Services,ABCAPITAL.NS,True
+ALKEM,Alkem Laboratories Ltd.,10,Healthcare,ALKEM.NS,True
+AMBUJACEM,Ambuja Cements Ltd.,5,Construction Materials,AMBUJACEM.NS,True
+APOLLOHOSP,Apollo Hospitals Enterprise Ltd.,10,Healthcare,APOLLOHOSP.NS,True
+ASHOKLEY,Ashok Leyland Ltd.,2,Capital Goods,ASHOKLEY.NS,True
+ASIANPAINT,Asian Paints Ltd.,6,Consumer Durables,ASIANPAINT.NS,True
+ASTRAL,Astral Ltd.,2,Capital Goods,ASTRAL.NS,True
+AUROPHARMA,Aurobindo Pharma Ltd.,10,Healthcare,AUROPHARMA.NS,True
+DMART,Avenue Supermarts Ltd.,7,Consumer Services,DMART.NS,True
+AXISBANK,Axis Bank Ltd.,9,Financial Services,AXISBANK.NS,True
+BSE,BSE Ltd.,9,Financial Services,BSE.NS,True
+BAJAJ-AUTO,Bajaj Auto Ltd.,1,Automobile and Auto Components,BAJAJ-AUTO.NS,True
+BAJFINANCE,Bajaj Finance Ltd.,9,Financial Services,BAJFINANCE.NS,True
+BAJAJFINSV,Bajaj Finserv Ltd.,9,Financial Services,BAJAJFINSV.NS,True
+BAJAJHLDNG,Bajaj Holdings & Investment Ltd.,9,Financial Services,BAJAJHLDNG.NS,True
+BANKBARODA,Bank of Baroda,9,Financial Services,BANKBARODA.NS,True
+BANKINDIA,Bank of India,9,Financial Services,BANKINDIA.NS,True
+BDL,Bharat Dynamics Ltd.,2,Capital Goods,BDL.NS,True
+BEL,Bharat Electronics Ltd.,2,Capital Goods,BEL.NS,True
+BHARATFORG,Bharat Forge Ltd.,1,Automobile and Auto Components,BHARATFORG.NS,True
+BHEL,Bharat Heavy Electricals Ltd.,2,Capital Goods,BHEL.NS,True
+BPCL,Bharat Petroleum Corporation Ltd.,13,Oil Gas & Consumable Fuels,BPCL.NS,True
+BHARTIARTL,Bharti Airtel Ltd.,17,Telecommunication,BHARTIARTL.NS,True
+GROWW,Billionbrains Garage Ventures Ltd.,9,Financial Services,GROWW.NS,True
+BIOCON,Biocon Ltd.,10,Healthcare,BIOCON.NS,True
+BLUESTARCO,Blue Star Ltd.,6,Consumer Durables,BLUESTARCO.NS,True
+BOSCHLTD,Bosch Ltd.,1,Automobile and Auto Components,BOSCHLTD.NS,True
+BRITANNIA,Britannia Industries Ltd.,8,Fast Moving Consumer Goods,BRITANNIA.NS,True
+CGPOWER,CG Power and Industrial Solutions Ltd.,2,Capital Goods,CGPOWER.NS,True
+CANBK,Canara Bank,9,Financial Services,CANBK.NS,True
+CHOLAFIN,Cholamandalam Investment and Finance Company Ltd.,9,Financial Services,CHOLAFIN.NS,True
+CIPLA,Cipla Ltd.,10,Healthcare,CIPLA.NS,True
+COALINDIA,Coal India Ltd.,13,Oil Gas & Consumable Fuels,COALINDIA.NS,True
+COCHINSHIP,Cochin Shipyard Ltd.,2,Capital Goods,COCHINSHIP.NS,True
+COFORGE,Coforge Ltd.,11,Information Technology,COFORGE.NS,True
+COLPAL,Colgate Palmolive (India) Ltd.,8,Fast Moving Consumer Goods,COLPAL.NS,True
+CONCOR,Container Corporation of India Ltd.,16,Services,CONCOR.NS,True
+COROMANDEL,Coromandel International Ltd.,3,Chemicals,COROMANDEL.NS,True
+CUMMINSIND,Cummins India Ltd.,2,Capital Goods,CUMMINSIND.NS,True
+DLF,DLF Ltd.,15,Realty,DLF.NS,True
+DABUR,Dabur India Ltd.,8,Fast Moving Consumer Goods,DABUR.NS,True
+DIVISLAB,Divi's Laboratories Ltd.,10,Healthcare,DIVISLAB.NS,True
+DIXON,Dixon Technologies (India) Ltd.,6,Consumer Durables,DIXON.NS,True
+DRREDDY,Dr. Reddy's Laboratories Ltd.,10,Healthcare,DRREDDY.NS,True
+EICHERMOT,Eicher Motors Ltd.,1,Automobile and Auto Components,EICHERMOT.NS,True
+ETERNAL,Eternal Ltd.,7,Consumer Services,ETERNAL.NS,True
+EXIDEIND,Exide Industries Ltd.,1,Automobile and Auto Components,EXIDEIND.NS,True
+NYKAA,FSN E-Commerce Ventures Ltd.,7,Consumer Services,NYKAA.NS,True
+FEDERALBNK,Federal Bank Ltd.,9,Financial Services,FEDERALBNK.NS,True
+FORTIS,Fortis Healthcare Ltd.,10,Healthcare,FORTIS.NS,True
+GAIL,GAIL (India) Ltd.,13,Oil Gas & Consumable Fuels,GAIL.NS,True
+GVT&D,GE Vernova T&D India Ltd.,2,Capital Goods,GVT&D.NS,True
+GMRAIRPORT,GMR Airports Ltd.,16,Services,GMRAIRPORT.NS,True
+GLENMARK,Glenmark Pharmaceuticals Ltd.,10,Healthcare,GLENMARK.NS,True
+GODFRYPHLP,Godfrey Phillips India Ltd.,8,Fast Moving Consumer Goods,GODFRYPHLP.NS,True
+GODREJCP,Godrej Consumer Products Ltd.,8,Fast Moving Consumer Goods,GODREJCP.NS,True
+GODREJPROP,Godrej Properties Ltd.,15,Realty,GODREJPROP.NS,True
+GRASIM,Grasim Industries Ltd.,5,Construction Materials,GRASIM.NS,True
+HCLTECH,HCL Technologies Ltd.,11,Information Technology,HCLTECH.NS,True
+HDFCAMC,HDFC Asset Management Company Ltd.,9,Financial Services,HDFCAMC.NS,True
+HDFCBANK,HDFC Bank Ltd.,9,Financial Services,HDFCBANK.NS,True
+HDFCLIFE,HDFC Life Insurance Company Ltd.,9,Financial Services,HDFCLIFE.NS,True
+HAVELLS,Havells India Ltd.,6,Consumer Durables,HAVELLS.NS,True
+HEROMOTOCO,Hero MotoCorp Ltd.,1,Automobile and Auto Components,HEROMOTOCO.NS,True
+HINDALCO,Hindalco Industries Ltd.,12,Metals & Mining,HINDALCO.NS,True
+HAL,Hindustan Aeronautics Ltd.,2,Capital Goods,HAL.NS,True
+HINDPETRO,Hindustan Petroleum Corporation Ltd.,13,Oil Gas & Consumable Fuels,HINDPETRO.NS,True
+HINDUNILVR,Hindustan Unilever Ltd.,8,Fast Moving Consumer Goods,HINDUNILVR.NS,True
+HINDZINC,Hindustan Zinc Ltd.,12,Metals & Mining,HINDZINC.NS,True
+POWERINDIA,Hitachi Energy India Ltd.,2,Capital Goods,POWERINDIA.NS,True
+HUDCO,Housing & Urban Development Corporation Ltd.,9,Financial Services,HUDCO.NS,True
+HYUNDAI,Hyundai Motor India Ltd.,1,Automobile and Auto Components,HYUNDAI.NS,True
+ICICIBANK,ICICI Bank Ltd.,9,Financial Services,ICICIBANK.NS,True
+ICICIGI,ICICI Lombard General Insurance Company Ltd.,9,Financial Services,ICICIGI.NS,True
+ICICIAMC,ICICI Prudential Asset Management Company Ltd.,9,Financial Services,ICICIAMC.NS,True
+IDFCFIRSTB,IDFC First Bank Ltd.,9,Financial Services,IDFCFIRSTB.NS,True
+ITC,ITC Ltd.,8,Fast Moving Consumer Goods,ITC.NS,True
+INDIANB,Indian Bank,9,Financial Services,INDIANB.NS,True
+INDHOTEL,Indian Hotels Co. Ltd.,7,Consumer Services,INDHOTEL.NS,True
+IOC,Indian Oil Corporation Ltd.,13,Oil Gas & Consumable Fuels,IOC.NS,True
+IRCTC,Indian Railway Catering And Tourism Corporation Ltd.,7,Consumer Services,IRCTC.NS,True
+IRFC,Indian Railway Finance Corporation Ltd.,9,Financial Services,IRFC.NS,True
+IREDA,Indian Renewable Energy Development Agency Ltd.,9,Financial Services,IREDA.NS,True
+INDUSTOWER,Indus Towers Ltd.,17,Telecommunication,INDUSTOWER.NS,True
+INDUSINDBK,IndusInd Bank Ltd.,9,Financial Services,INDUSINDBK.NS,True
+NAUKRI,Info Edge (India) Ltd.,7,Consumer Services,NAUKRI.NS,True
+INFY,Infosys Ltd.,11,Information Technology,INFY.NS,True
+INDIGO,InterGlobe Aviation Ltd.,16,Services,INDIGO.NS,True
+JSWENERGY,JSW Energy Ltd.,14,Power,JSWENERGY.NS,True
+JSWSTEEL,JSW Steel Ltd.,12,Metals & Mining,JSWSTEEL.NS,True
+JINDALSTEL,Jindal Steel Ltd.,12,Metals & Mining,JINDALSTEL.NS,True
+JIOFIN,Jio Financial Services Ltd.,9,Financial Services,JIOFIN.NS,True
+JUBLFOOD,Jubilant Foodworks Ltd.,7,Consumer Services,JUBLFOOD.NS,True
+KEI,KEI Industries Ltd.,2,Capital Goods,KEI.NS,True
+KPITTECH,KPIT Technologies Ltd.,11,Information Technology,KPITTECH.NS,True
+KALYANKJIL,Kalyan Jewellers India Ltd.,6,Consumer Durables,KALYANKJIL.NS,True
+KOTAKBANK,Kotak Mahindra Bank Ltd.,9,Financial Services,KOTAKBANK.NS,True
+LTF,L&T Finance Ltd.,9,Financial Services,LTF.NS,True
+LGEINDIA,LG Electronics India Ltd.,6,Consumer Durables,LGEINDIA.NS,True
+LICHSGFIN,LIC Housing Finance Ltd.,9,Financial Services,LICHSGFIN.NS,True
+LTM,LTM Ltd.,11,Information Technology,LTM.NS,True
+LT,Larsen & Toubro Ltd.,4,Construction,LT.NS,True
+LAURUSLABS,Laurus Labs Ltd.,10,Healthcare,LAURUSLABS.NS,True
+LENSKART,Lenskart Solutions Ltd.,7,Consumer Services,LENSKART.NS,True
+LODHA,Lodha Developers Ltd.,15,Realty,LODHA.NS,True
+LUPIN,Lupin Ltd.,10,Healthcare,LUPIN.NS,True
+MRF,MRF Ltd.,1,Automobile and Auto Components,MRF.NS,True
+M&MFIN,Mahindra & Mahindra Financial Services Ltd.,9,Financial Services,M&MFIN.NS,True
+M&M,Mahindra & Mahindra Ltd.,1,Automobile and Auto Components,M&M.NS,True
+MANKIND,Mankind Pharma Ltd.,10,Healthcare,MANKIND.NS,True
+MARICO,Marico Ltd.,8,Fast Moving Consumer Goods,MARICO.NS,True
+MARUTI,Maruti Suzuki India Ltd.,1,Automobile and Auto Components,MARUTI.NS,True
+MFSL,Max Financial Services Ltd.,9,Financial Services,MFSL.NS,True
+MAXHEALTH,Max Healthcare Institute Ltd.,10,Healthcare,MAXHEALTH.NS,True
+MAZDOCK,Mazagoan Dock Shipbuilders Ltd.,2,Capital Goods,MAZDOCK.NS,True
+MOTILALOFS,Motilal Oswal Financial Services Ltd.,9,Financial Services,MOTILALOFS.NS,True
+MPHASIS,MphasiS Ltd.,11,Information Technology,MPHASIS.NS,True
+MCX,Multi Commodity Exchange of India Ltd.,9,Financial Services,MCX.NS,True
+MUTHOOTFIN,Muthoot Finance Ltd.,9,Financial Services,MUTHOOTFIN.NS,True
+NHPC,NHPC Ltd.,14,Power,NHPC.NS,True
+NMDC,NMDC Ltd.,12,Metals & Mining,NMDC.NS,True
+NTPC,NTPC Ltd.,14,Power,NTPC.NS,True
+NATIONALUM,National Aluminium Co. Ltd.,12,Metals & Mining,NATIONALUM.NS,True
+NESTLEIND,Nestle India Ltd.,8,Fast Moving Consumer Goods,NESTLEIND.NS,True
+OBEROIRLTY,Oberoi Realty Ltd.,15,Realty,OBEROIRLTY.NS,True
+ONGC,Oil & Natural Gas Corporation Ltd.,13,Oil Gas & Consumable Fuels,ONGC.NS,True
+OIL,Oil India Ltd.,13,Oil Gas & Consumable Fuels,OIL.NS,True
+PAYTM,One 97 Communications Ltd.,9,Financial Services,PAYTM.NS,True
+OFSS,Oracle Financial Services Software Ltd.,11,Information Technology,OFSS.NS,True
+POLICYBZR,PB Fintech Ltd.,9,Financial Services,POLICYBZR.NS,True
+PIIND,PI Industries Ltd.,3,Chemicals,PIIND.NS,True
+PAGEIND,Page Industries Ltd.,18,Textiles,PAGEIND.NS,True
+PATANJALI,Patanjali Foods Ltd.,8,Fast Moving Consumer Goods,PATANJALI.NS,True
+PERSISTENT,Persistent Systems Ltd.,11,Information Technology,PERSISTENT.NS,True
+PHOENIXLTD,Phoenix Mills Ltd.,15,Realty,PHOENIXLTD.NS,True
+PIDILITIND,Pidilite Industries Ltd.,3,Chemicals,PIDILITIND.NS,True
+POLYCAB,Polycab India Ltd.,2,Capital Goods,POLYCAB.NS,True
+PFC,Power Finance Corporation Ltd.,9,Financial Services,PFC.NS,True
+POWERGRID,Power Grid Corporation of India Ltd.,14,Power,POWERGRID.NS,True
+PREMIERENE,Premier Energies Ltd.,2,Capital Goods,PREMIERENE.NS,True
+PRESTIGE,Prestige Estates Projects Ltd.,15,Realty,PRESTIGE.NS,True
+PNB,Punjab National Bank,9,Financial Services,PNB.NS,True
+RECLTD,REC Ltd.,9,Financial Services,RECLTD.NS,True
+RADICO,Radico Khaitan Ltd,8,Fast Moving Consumer Goods,RADICO.NS,True
+RVNL,Rail Vikas Nigam Ltd.,4,Construction,RVNL.NS,True
+RELIANCE,Reliance Industries Ltd.,13,Oil Gas & Consumable Fuels,RELIANCE.NS,True
+SBICARD,SBI Cards and Payment Services Ltd.,9,Financial Services,SBICARD.NS,True
+SBILIFE,SBI Life Insurance Company Ltd.,9,Financial Services,SBILIFE.NS,True
+SRF,SRF Ltd.,3,Chemicals,SRF.NS,True
+MOTHERSON,Samvardhana Motherson International Ltd.,1,Automobile and Auto Components,MOTHERSON.NS,True
+SHREECEM,Shree Cement Ltd.,5,Construction Materials,SHREECEM.NS,True
+SHRIRAMFIN,Shriram Finance Ltd.,9,Financial Services,SHRIRAMFIN.NS,True
+ENRIN,Siemens Energy India Ltd.,2,Capital Goods,ENRIN.NS,True
+SIEMENS,Siemens Ltd.,2,Capital Goods,SIEMENS.NS,True
+SOLARINDS,Solar Industries India Ltd.,3,Chemicals,SOLARINDS.NS,True
+SBIN,State Bank of India,9,Financial Services,SBIN.NS,True
+SAIL,Steel Authority of India Ltd.,12,Metals & Mining,SAIL.NS,True
+SUNPHARMA,Sun Pharmaceutical Industries Ltd.,10,Healthcare,SUNPHARMA.NS,True
+SUPREMEIND,Supreme Industries Ltd.,2,Capital Goods,SUPREMEIND.NS,True
+SUZLON,Suzlon Energy Ltd.,2,Capital Goods,SUZLON.NS,True
+SWIGGY,Swiggy Ltd.,7,Consumer Services,SWIGGY.NS,True
+TVSMOTOR,TVS Motor Company Ltd.,1,Automobile and Auto Components,TVSMOTOR.NS,True
+TATACAP,Tata Capital Ltd.,9,Financial Services,TATACAP.NS,True
+TATACOMM,Tata Communications Ltd.,17,Telecommunication,TATACOMM.NS,True
+TCS,Tata Consultancy Services Ltd.,11,Information Technology,TCS.NS,True
+TATACONSUM,Tata Consumer Products Ltd.,8,Fast Moving Consumer Goods,TATACONSUM.NS,True
+TATAELXSI,Tata Elxsi Ltd.,11,Information Technology,TATAELXSI.NS,True
+TATAINVEST,Tata Investment Corporation Ltd.,9,Financial Services,TATAINVEST.NS,True
+TMCV,Tata Motors Ltd.,2,Capital Goods,TMCV.NS,True
+TMPV,Tata Motors Passenger Vehicles Ltd.,1,Automobile and Auto Components,TMPV.NS,True
+TATAPOWER,Tata Power Co. Ltd.,14,Power,TATAPOWER.NS,True
+TATASTEEL,Tata Steel Ltd.,12,Metals & Mining,TATASTEEL.NS,True
+TECHM,Tech Mahindra Ltd.,11,Information Technology,TECHM.NS,True
+TITAN,Titan Company Ltd.,6,Consumer Durables,TITAN.NS,True
+TORNTPHARM,Torrent Pharmaceuticals Ltd.,10,Healthcare,TORNTPHARM.NS,True
+TRENT,Trent Ltd.,7,Consumer Services,TRENT.NS,True
+TIINDIA,Tube Investments of India Ltd.,1,Automobile and Auto Components,TIINDIA.NS,True
+UPL,UPL Ltd.,3,Chemicals,UPL.NS,True
+ULTRACEMCO,UltraTech Cement Ltd.,5,Construction Materials,ULTRACEMCO.NS,True
+UNIONBANK,Union Bank of India,9,Financial Services,UNIONBANK.NS,True
+UNITDSPR,United Spirits Ltd.,8,Fast Moving Consumer Goods,UNITDSPR.NS,True
+VBL,Varun Beverages Ltd.,8,Fast Moving Consumer Goods,VBL.NS,True
+VEDL,Vedanta Ltd.,12,Metals & Mining,VEDL.NS,True
+VMM,Vishal Mega Mart Ltd.,7,Consumer Services,VMM.NS,True
+IDEA,Vodafone Idea Ltd.,17,Telecommunication,IDEA.NS,True
+VOLTAS,Voltas Ltd.,6,Consumer Durables,VOLTAS.NS,True
+WAAREEENER,Waaree Energies Ltd.,2,Capital Goods,WAAREEENER.NS,True
+WIPRO,Wipro Ltd.,11,Information Technology,WIPRO.NS,True
+YESBANK,Yes Bank Ltd.,9,Financial Services,YESBANK.NS,True
+ZYDUSLIFE,Zydus Lifesciences Ltd.,10,Healthcare,ZYDUSLIFE.NS,True
