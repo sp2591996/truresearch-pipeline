@@ -1,6 +1,29 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 7 (Phase C, Step 1 — ongoing TrueScore performance tracking BUILT, automated, and pushed. See "Session 7 — Phase C begins" below.)*
+*Read this at the start of every new chat. Last updated: Session 8 (Phase C, Step 2 — scaled from 200 to the full Nifty 500. 498 of 500 stocks now have live TrueScore. See "Session 8 — scaling to Nifty 500" below.)*
+
+## Session 8 — scaling to Nifty 500
+Avdhoot's explicit call: the ML model itself is NOT retrained or re-validated as part of this — `trueresearch_model.json` / `formula_version truescore_v2` stays exactly as signed off in Session 6. This push only expands how many stocks that same, already-validated model gets applied to (200 → 500), since `14_score_current_stocks.py` was already built to loop over "every active equity," not a fixed list — no code change was needed there at all.
+
+**What was done, in order:**
+1. Sourced the current, official Nifty 500 constituent list directly from NSE's own index archive (not a stale third-party mirror — cross-checked against very recent listings like Ather Energy, Groww, FirstCry to confirm currency). Saved as `nifty500_master.csv`.
+2. Compared it against the database's existing 200 tickers (via new one-off helper `18_export_current_tickers.py`) — clean diff: exactly 300 missing, and (sanity check) 0 of the existing 200 were found to be stale/non-current. Saved the 300 as `missing_300_nifty500.csv`.
+3. `19_add_nifty500_expansion.py` added all 300 to `assets` (asset_type=equity, is_active=true), plus 2 new sector rows the existing 18 didn't cover (`Diversified`, `Media Entertainment & Publication`). Ran clean: 300/300.
+4. `20_backfill_new_stocks_price_history.py` — same 10-year backfill logic as the original Phase B `08_backfill_price_history.py`, but skips any stock that already has price history, so it only did real work for the new 300 (and stays safe/reusable for any future additions too). Ran clean: 300/300.
+5. Re-ran the existing `06_weekly_fundamentals_refresh.py` (loops over all active equities, so it picked up the new 300 automatically, no code change) — ran clean: 500/500.
+6. Re-ran the existing `14_score_current_stocks.py` — same model, same `formula_version truescore_v2`, no retraining. Result: **498 of 500 scored** (2 skipped — ICICIAMC and MEESHO, both too newly listed to have the ~200 trading days of price history the model's indicators need — expected, not a bug), run_date 2026-09-06.
+
+**New files (in `TrueResearch Code`):** `nifty500_master.csv`, `18_export_current_tickers.py`, `missing_300_nifty500.csv`, `19_add_nifty500_expansion.py`, `20_backfill_new_stocks_price_history.py`.
+
+**What did NOT scale to 500 (flagged deliberately, not silently skipped):** written research reports, sector overview text, "why it's here" one-liners, peer lists, management profiles, insider transaction history, shareholding-pattern history — these were manually curated for the original 200 (PRD Section B3 territory) and are separate, ongoing research work, not part of this automated data-scaling push. The 300 new stocks have full automated data (prices, fundamentals, ratios, TrueScore) but not this qualitative content yet.
+
+**Also now automatically covered for all 500, no extra work needed:** the daily price refresh, weekly fundamentals refresh, and the Session 7 performance-tracking job all loop over "every active equity" with no filtering by which batch a stock came from — so the new 300 are already inside all three scheduled GitHub Actions jobs going forward.
+
+**Open item carried forward (unchanged from Session 4/6):** the "sector-neutral" robustness check for the ML model has still never been run — Avdhoot's explicit call this session was to leave the model untouched and revisit it later, so this remains deliberately deferred, not silently dropped.
+
+**Pushed to GitHub and confirmed** (all 5 new files, commit `d0643d4`). This file (`PROJECT_STATE.md`) itself had a hiccup: an earlier attempt to save this Session 8 update didn't actually reach disk (silently), so it was missing from that same commit — caught and re-saved properly at the start of the next session; if you're reading this, the fix worked.
+
+**Next immediate step:** decide Phase C's next focus — likely the frontend build (Next.js/React), now that all 500 stocks have real, live TrueScore data to build against.
 
 ## Session 7 — Phase C begins: ongoing TrueScore performance tracking
 Avdhoot chose this as Phase C's first focus (over frontend build or scaling to Nifty 500): the `score_performance_tracking` table PROJECT_STATE.md had flagged as "not yet set up, good candidate for early Phase C" now has a real, automated job behind it.
@@ -89,7 +112,7 @@ Once Phase 5 (deeper research/content work) is underway, retrain TrueScore's ML 
 - **Security default confirmed:** Row Level Security (RLS) enabled on all tables at creation time — tables are inaccessible via the public API until access policies are deliberately written later (matches the earlier "don't auto-expose new tables" choice made during Supabase project setup).
 
 ## Locked decisions (carried over, unchanged)
-- **Equity scope:** Nifty 500 (upgraded from 200).
+- **Equity scope:** Nifty 500 — LIVE as of Session 8, not just planned. 498 of 500 stocks have real TrueScore data (see "Session 8 — scaling to Nifty 500" above).
 - **Other asset classes (MVP):** Gold (full L1, proof-of-concept), Mutual Funds (**pulled up to L1** — timeline trade-off already decided: extend timeline, don't cut scope, see Session 3), Debt (L1 = static reference rates only), REIT (L1 = placeholder only), International Equity (L1 = placeholder only).
 - **Mobile:** Progressive Web App — confirmed final for L1, not native.
 - **TrueScore/ML model:** must be back-tested/validated on current 200-stock data BEFORE expanding coverage to 500 or adding auto-retraining. Sequence: validate → expand coverage → automate. TrueScore Rating built alongside core TrueScore but kept visually/structurally distinct.
@@ -113,7 +136,8 @@ Next.js + React + TypeScript, Tailwind CSS, Supabase/Postgres (**now live**, pro
 - Legal/regulatory review — deferred to pre-commercial-launch.
 - **Phase B is DONE.** All 6 foundation steps complete: schema, data provider layer, migration, automated daily/weekly ingestion, and now a validated, signed-off, live TrueScore for all 200 stocks.
 - **Set up in Session 7 (Phase C, Step 1):** `score_performance_tracking` — the ONGOING, continuously-updated version of validation is now built and automated (weekly, Sundays 3am UTC via GitHub Actions), per the plan flagged here at the end of Phase B. See "Session 7 — Phase C begins" above for full detail. Real numbers will start appearing automatically over the coming weeks/months as scores age past 1 month/3 months/1 year.
-- **Next immediate step:** push Session 7's 3 new files to GitHub (instructions given in-chat), confirm the new workflow runs, then decide with Avdhoot what Phase C should focus on next (likely: the actual frontend — Next.js/React — now that real, validated data and scores exist to build against; or scaling ingestion toward Nifty 500 once more history accumulates and TrueScore is re-validated). New chat should open with: "Read PROJECT_STATE.md, continuing TrueResearch — Phase C, Step 1 (performance tracking) is set up, let's plan the next Phase C step."
+- **Set up in Session 8 (Phase C, Step 2):** scaled from 200 to the full Nifty 500 — 498 of 500 stocks now have live TrueScore, model untouched (no retraining), all 3 scheduled jobs already cover all 500 automatically. See "Session 8 — scaling to Nifty 500" above for full detail.
+- **Next immediate step:** decide with Avdhoot what Phase C should focus on next — likely the actual frontend (Next.js/React), now that real, validated data and scores exist across the full Nifty 500 to build against. New chat should open with: "Read PROJECT_STATE.md, continuing TrueResearch — Phase C, Steps 1-2 (performance tracking + Nifty 500 scaling) are done, let's plan the next Phase C step."
 
 ## Working protocol
 - One `PROJECT_STATE.md` update at the end of each work session.
