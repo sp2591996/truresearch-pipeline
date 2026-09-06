@@ -1,6 +1,16 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 11, part 1 — confirmed and closed out Session 10's open item (see entry below). **The Session 10 part 9 model sanity-check concern (IDEA scoring 98 "Strong" despite -96.6% ROE) is STILL OPEN** — not touched this session, next priority.*
+*Read this at the start of every new chat. Last updated: Session 11, part 2 — the Session 10 part 9 model sanity-check concern (IDEA scoring 98 "Strong" despite -96.6% ROE) is now FIXED via a distress guardrail in `14_score_current_stocks.py` (see entry below). Next priority: the `shareholding_pattern` data-source decision (Session 10 part 10), then the ASTRAL price-fetch failure.*
+
+## Session 11, part 2 — TrueScore distress guardrail added (fixes the Session 10 part 9 sanity-check failure)
+
+**Root cause found:** TrueScore is 50% relative valuation (sector-relative P/E percentile) + 50% an ML model's predicted 3-month excess return. Neither component directly checks solvency — ROE is only one of 14 raw inputs to the ML model, which was trained/validated purely to predict price momentum, never tested for distress avoidance (confirmed by re-reading `TrueScore_Validation_Report.md`'s own caveats — a distress check isn't among them). Worse, when a company has **negative shareholders' equity**, ratios like ROE and P/E divide by a negative number, which can distort or flip their apparent meaning, letting a genuinely distressed company look deceptively OK on paper. `PRD.md` B2 had already written the required rule ("a company in default or clearly distressed must not score in the 80s+") but it had never actually been implemented in code — only caught manually, after the fact, by Avdhoot spotting IDEA on the Stock Detail Page.
+
+**Fix shipped:** added a guardrail directly in `14_score_current_stocks.py`. A stock is flagged "financially distressed" if it has negative shareholders' equity OR an ROE worse than -50%. Flagged stocks have their combined `overall_score` capped at 15 (forcing them into the existing "Weak" band) regardless of what the valuation/ML components computed — no new rating label introduced, so the frontend needed zero changes. Deliberately simple/conservative (not a new ML model), and the raw component scores (`relative_valuation_score`, `ml_rank_score`) are left untouched in the database for transparency/audit — only the combined score and rating are overridden.
+
+**Re-ran `14_score_current_stocks.py` after the fix.** Result: **498/500 scored** (ICICIAMC and MEESHO still skipped — insufficient price history, same known/expected gap as Session 8, not new). **4 stocks flagged by the new guardrail: GMRAIRPORT, IDEA, OLAELEC, TTML** — all now correctly capped at 15/"Weak". Notably, OLAELEC and TTML were not previously caught by manual review — this guardrail found 2 additional real cases beyond the one Avdhoot originally spotted. New Top 10 by overall score confirmed clean of any distressed names (INDIAMART, FINCABLES, FORCEMOT, ERIS, NTPC, NLCINDIA, NMDC, VEDL, LUPIN, SUZLON).
+
+**Next immediate step:** the `shareholding_pattern` data-source decision (Session 10 part 10) is now the top open item, followed by the ASTRAL price-fetch failure (Session 11 part 1) and the Screener follow-ups (multi-select compare, preset filters).
 
 ## Session 11, part 1 — closed out Session 10's open item: price refresh confirmed + everything pushed to GitHub
 
