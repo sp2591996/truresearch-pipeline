@@ -1,0 +1,67 @@
+# PROJECT_STATE.md — TrueResearch Investment Platform
+
+*Read this at the start of every new chat. Last updated: Session 4 (Phase B — database schema built, data provider abstraction layer built and tested).*
+
+## Where we are
+**Phase A is fully done.** Phase B (Foundation) is underway. Existing 199-stock static site ("Old Files" folder, old name "ClearStocks") is untouched and still live — nothing has been migrated into it yet. All new Phase B code/scripts/docs are being written into a **separate folder, `TrueResearch Code`**, on Avdhoot's computer (sibling to `Old Files`).
+
+**Phase B progress:**
+1. ✅ Supabase account + project created (project name: `TrueResearch-Prod`, region: South Asia/Mumbai, free tier)
+2. ✅ Database schema fully built — ~39 tables created and confirmed in Table Editor, Row Level Security enabled on all tables (locked down by default, no public access until policies are written later). Full schema documented in `Database_Schema.md`; the exact SQL that created it is in `01_create_tables.sql`. Both live in the `TrueResearch Code` folder.
+3. ✅ Data provider abstraction layer built and tested. `market_data_provider.py` is the ONLY file allowed to call `yfinance` directly (per locked tech-stack rule); `db_client.py` is the ONLY file that connects to Supabase directly. Local Python setup: `venv` virtual environment created in `TrueResearch Code`, packages installed (`yfinance`, `pandas`, `supabase`, `python-dotenv`), `.env` holds the Supabase Project URL + secret API key (never committed to GitHub — `.gitignore` covers `.env` and `venv/`). `test_setup.py` confirms both Yahoo Finance and Supabase connections work — last run: both SUCCESS. One extra step was needed beyond the original plan: ran `02_grant_permissions.sql` to explicitly grant `service_role` access to all tables (a direct consequence of deliberately unchecking "Automatically expose new tables" at project setup — expected, not a mistake).
+4. ✅ Existing 199-stock data migrated into Supabase. `04_migrate_existing_data.py` (run after `03_add_ratio_columns.sql`, which added market_cap/week52_high/week52_low to `ratios_snapshot`) loaded: 18 sectors, 200 assets, 795 fundamentals rows, 200 ratios_snapshot rows, 200 live_prices rows, and 200 "legacy baseline" score rows. **Important:** those legacy scores are stored under `formula_version = "legacy_interim_v1"` and are explicitly documented (in `score_formula_versions`) as the OLD `compute_auto_scores.py` interim automated score — NOT real TrueScore. Never treat `legacy_interim_v1` rows as validated TrueScore output. The script is safe to re-run (upserts everywhere, no duplicates).
+   - **Open item, deliberately not done yet:** the 199 PDF "Company Decks" (in `Old Files/decks/decks/`) were NOT migrated — their content is inside PDF files, not structured data, and extracting text from 199 PDFs is its own task. Revisit when `research_reports` needs real content (PRD B3).
+5. ⬜ Rebuild daily/weekly ingestion pipeline to write into Supabase instead of JSON files (next step)
+6. ⬜ TrueScore back-test/validation (before any coverage expansion to Nifty 500 — see locked ML sequencing rule)
+
+## Local environment reference (Session 4)
+- Python 3.12.10 confirmed installed on Avdhoot's computer.
+- Project folder: `C:\Users\Komal\Desktop\Stock App 2.0\TrueResearch Code` (opened as a VS Code workspace).
+- To resume work in a new terminal session: open a Terminal in VS Code (should default to this folder), then run `.\venv\Scripts\Activate.ps1` to reactivate the virtual environment (look for `(venv)` at the prompt). If PowerShell blocks this with an execution-policy error, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` first, then retry — this is a per-terminal-session setting, needs re-running each new terminal window (not a one-time fix).
+- Files in this folder so far: `Database_Schema.md`, `PROJECT_STATE.md`, `01_create_tables.sql`, `02_grant_permissions.sql`, `03_add_ratio_columns.sql`, `04_migrate_existing_data.py`, `db_client.py`, `market_data_provider.py`, `test_setup.py`, `requirements.txt`, `.env` (secret, git-ignored), `.gitignore`, `venv/` (git-ignored).
+
+## Session 4 changes
+- **Existing data source found:** Avdhoot's prior static site ("ClearStocks," Nifty 200, in `Old Files` folder) already has a working, GitHub-Actions-automated pipeline: `fetch_live_prices.py` (intraday, every 10-15 min via yfinance fast_info), `refresh_weekly_data.py` (heavier weekly fundamentals refresh), `compute_auto_scores.py` (an interim automated sector-relative valuation + ROE score — a precursor to TrueScore, not the real ML model). 199 stocks have `fundamentals_history` CSVs; 199 PDF "Company Decks" also exist. This significantly de-risks Phase B — we're upgrading/relocating a working pipeline into a database, not building ingestion logic from zero.
+- **Known gap flagged:** existing data has no daily price *history* (only current price + fundamentals-history CSVs), so a one-time 5-year historical price backfill from Yahoo Finance is planned as part of steps 4/5, not a separate later phase.
+- **Schema decisions (all confirmed by Avdhoot):**
+  - Tables for Gold/Mutual Funds/Debt/REIT-placeholder/Intl-placeholder are created now (structure only), populated in their own later phases — this is what "sized for" meant in the original Phase B brief.
+  - 200→500 stock sequencing: migrate/validate on the existing 200 first, per the locked TrueScore validation rule; the other 300 stocks' full data comes after validation, not before.
+  - The persona quiz (PRD A2) and the Risk-Profiling Questionnaire (PRD E4) share one `questionnaire_questions`/`questionnaire_options` table structure, tagged by `questionnaire_type` — Avdhoot's explicit call, to avoid duplicate tables for the same shape of data.
+  - **TrueScore composition is NOT hardcoded into fixed columns.** Only the 2 confirmed-known factors (relative valuation, ML rank/score) get dedicated columns in `scores`. Every other factor — current or future, and possibly stock/sector-specific ("to be decided for each stock," Avdhoot's words) — lives in two flexible tables: `score_components` (one row per factor per stock per run) and `score_component_weights` (which factors apply where, and at what weight — a data change, not a schema change). This was a mid-build correction Avdhoot caught before the schema was created; flagged here so it's never accidentally "fixed" back to fixed columns.
+  - Added `score_backtest_results` (one-time validation-gate report per PRD B2) and `score_performance_tracking` (ongoing, continuously-updated decile-based forward-return tracking) — both per Avdhoot's explicit ask: "make sure we use that to show how much successful our scores have been." The `scores` table itself is already historical (new row per `run_date`/`formula_version`, never overwritten).
+  - Added several tables not explicit in the original PRD text but implied by it, caught during a full line-by-line PRD pass (Avdhoot's request): `curated_list_configs`, `themes`, `market_mood_daily`, `peers`, `sector_ratio_config`, `score_formula_versions`, `research_report_templates`, `management_profiles`, `insider_transactions`, `shareholding_pattern`, `learn_content`, `articles`, `ipos`, `preset_screens`, `saved_comparisons`, `calculator_shares`, `alert_subscriptions` (persists placeholder toggle state even though real alerts aren't built), `mutual_fund_nav_history`, `mutual_fund_holdings`, `debt_reference_rates`, `api_keys`, `api_usage_log`, and two new general-purpose ones: `site_content_blocks` (editable disclaimer/legal copy without a code deploy) and `placeholder_copy` (centralized text for every L2-L4 "coming soon" placeholder, per the cross-cutting placeholder rule).
+- **Security default confirmed:** Row Level Security (RLS) enabled on all tables at creation time — tables are inaccessible via the public API until access policies are deliberately written later (matches the earlier "don't auto-expose new tables" choice made during Supabase project setup).
+
+## Locked decisions (carried over, unchanged)
+- **Equity scope:** Nifty 500 (upgraded from 200).
+- **Other asset classes (MVP):** Gold (full L1, proof-of-concept), Mutual Funds (**pulled up to L1** — timeline trade-off already decided: extend timeline, don't cut scope, see Session 3), Debt (L1 = static reference rates only), REIT (L1 = placeholder only), International Equity (L1 = placeholder only).
+- **Mobile:** Progressive Web App — confirmed final for L1, not native.
+- **TrueScore/ML model:** must be back-tested/validated on current 200-stock data BEFORE expanding coverage to 500 or adding auto-retraining. Sequence: validate → expand coverage → automate. TrueScore Rating built alongside core TrueScore but kept visually/structurally distinct.
+- **Education content rule:** every educational point paired with a picture/graph/graphic/flowchart — never text alone.
+- **Newsletter/content:** on-site, text+embedded-images, 3x/week.
+- **Placeholders:** every "coming soon" must say what's coming — now also backed by the `placeholder_copy` table (Session 4).
+- **Build sequencing:** PRD → Design system + wireframes → User journey maps → Code (data pipeline first, then frontend). *(Phase A complete. Phase B in progress — see "Where we are" above.)*
+- **Branding — FULLY DECIDED:** TrueResearch, Navy & Gold, Logo Concept B ("TR Monogram"). TrueScore / TrueScore Rating naming applied everywhere.
+- **Login:** Email + Google via Supabase Auth.
+- **Regulatory framing:** all scores/research = "research signal," never "advice."
+- **Screener/comparison, Portfolio, Calculators, IPO Tracker, Alerting infrastructure:** all as decided in Session 3 (see prior version of this file / `PRD.md` for full detail — unchanged in Session 4).
+
+## Tech stack (unchanged)
+Next.js + React + TypeScript, Tailwind CSS, Supabase/Postgres (**now live**, project `TrueResearch-Prod`, region ap-south-1/Mumbai), Python for ingestion/scoring, GitHub Actions for automation, Vercel hosting. Data provider abstraction layer (never call yfinance directly from business logic) — next step. All free-tier, $0/month + domain cost through Phase 6.
+
+## Feature scope reference
+`Feature_Universe_Scope_v2_Response.xlsx` — source of truth for in/out of scope per phase. `PRD.md` — buildable-spec translation. **`Database_Schema.md` (Session 4) is now the buildable-spec translation of the PRD into actual data structures** — read it for "what table holds this," read PRD.md for "what does this feature do."
+
+## Open/pending items
+- Exact revised timeline (dates) for Phase B–F — still not worked out; will become clearer once ingestion pipeline (steps 3-5) is built and real build velocity is known.
+- Legal/regulatory review — deferred to pre-commercial-launch.
+- **Next immediate step:** Phase B, Step 5 — rebuild the daily/weekly ingestion pipeline (adapting the existing `fetch_live_prices.py` / `refresh_weekly_data.py` logic from `Old Files`) to write into Supabase via `market_data_provider.py`/`db_client.py`, instead of writing JSON files. New chat should open with: "Read PROJECT_STATE.md, continuing TrueResearch, Phase B, we're on Step 5 (daily/weekly ingestion pipeline)."
+
+## Working protocol
+- One `PROJECT_STATE.md` update at the end of each work session.
+- New chat → say "read PROJECT_STATE.md, continuing [project], we're on [step]" → attach/reference this file.
+- I flag every new idea raised mid-build as either "same session" or "later phase," with reasoning — never silently deferred or silently accepted.
+- Token efficiency: reference this file instead of re-explaining locked decisions.
+- **User is a non-coder and needs extreme hand-holding for every execution step** — including multi-step code execution. Never assume familiarity with terminals, git, file paths, or dev tools. Every instruction spells out exactly which button/menu/field, in order, with no skipped steps.
+- **Any time a script is updated (not just created new), the ENTIRE revised script is given in full** (never a diff/snippet/"add this line"), plus explicit plain-language instructions on exactly what to do with it (which file to replace, where it lives, how to run it, what output to expect).
+- **New (Session 4):** all new Phase B code/scripts/docs are written into the `TrueResearch Code` folder on Avdhoot's computer (a sibling folder to `Old Files`, both inside `Stock App 2.0`) — never into `Old Files`, which stays untouched as the live old site until migration is complete.
