@@ -39,7 +39,9 @@ BEGIN
         'fundamentals',
         'prices_daily',
         'live_prices',
-        'peers'
+        'peers',
+        'shareholding_pattern',
+        'ingestion_runs'
     ]
     LOOP
         EXECUTE format('DROP POLICY IF EXISTS "Public read access" ON %I;', tbl);

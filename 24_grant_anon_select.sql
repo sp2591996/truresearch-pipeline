@@ -41,7 +41,9 @@ BEGIN
         'fundamentals',
         'prices_daily',
         'live_prices',
-        'peers'
+        'peers',
+        'shareholding_pattern',
+        'ingestion_runs'
     ]
     LOOP
         EXECUTE format('GRANT SELECT ON %I TO anon, authenticated;', tbl);
