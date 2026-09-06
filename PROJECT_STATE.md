@@ -1,8 +1,20 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 10, part 13 — fixed the frontend's "no data at all" bug (RLS + anon GRANT were missing two separate permission gates), then found and started fixing a second, separate gap: 291 of 500 stocks had no `live_prices` row at all because the 300 Nifty 500 expansion stocks never got their first live price fetch. **The Session 10 part 9 model sanity-check concern below is STILL OPEN and unrelated to this session's work** — don't mistake this session's permissions/price fixes for that being resolved.*
+*Read this at the start of every new chat. Last updated: Session 11, part 1 — confirmed and closed out Session 10's open item (see entry below). **The Session 10 part 9 model sanity-check concern (IDEA scoring 98 "Strong" despite -96.6% ROE) is STILL OPEN** — not touched this session, next priority.*
 
-**`trueresearch-frontend` is now on GitHub too:** `https://github.com/sp2591996/trueresearch-frontend` (private) — separate repo from `truresearch-pipeline` (the Python pipeline's repo). First push done in Session 9 (`git remote add origin` + `git push -u origin main`); future sessions just need plain `git push` from inside that folder, same as the pipeline repo. **Session 10's new files have NOT been pushed yet** — see the open item below.
+## Session 11, part 1 — closed out Session 10's open item: price refresh confirmed + everything pushed to GitHub
+
+**Price refresh confirmed complete.** Re-ran `venv\Scripts\python.exe 05_daily_price_refresh.py --force` (the run Session 10 part 13 kicked off but never confirmed finished). Result: **499/500 stocks now have live prices.** Only `ASTRAL` failed — flagged as a small follow-up (likely a ticker-symbol mismatch between the data source and our `assets` table for this one stock), not urgent, not investigated yet.
+
+**Both repos pushed to GitHub, fully caught up:**
+- `TrueResearch Code` (pipeline repo): commit `71c1f51` — `23_add_public_read_policies.sql`, `24_grant_anon_select.sql` (shareholding_pattern additions), `PROJECT_STATE.md`, and `Claude outputs/Design_System.md` + `Claude outputs/Session_Log_Phase_C_Permissions_and_Prices.md`. (Two stray duplicate files, `23_add_public_read_policies-1.sql` and `24_grant_anon_select-1.sql`, were deliberately left uncommitted — they look like accidental duplicate saves; safe to delete manually in File Explorer whenever convenient.)
+- `trueresearch-frontend`: commit `8cf7165` — the Screener page, Stock Detail page, the disabled `debug-schema` page, and all Session 10 components (`AssetCard`, `ChangePill`, `DisclaimerBar`, `Footer`, `InfoTip`, `LearnCallout`, `Nav`, `PlaceholderPanel`, `PriceChart`, `ScoreBadge`, `ScreenerTable`, `SectorChip`, `ShareholdingChart`, `Sparkline`, `icons`) were all previously local-only; now on GitHub.
+
+**Confirmed the scheduled GitHub Actions workflow (`daily-prices.yml`) is already correctly configured** — weekday cron runs at market open, every 15 min through the trading day, and at close (IST) — and since it wasn't in the uncommitted-changes list, it was already live on GitHub before this session; this session's push doesn't change its behavior, just backs up the rest of the code alongside it. This should prevent the "300 new stocks never got a first price fetch" gap from recurring.
+
+**Next immediate step:** unchanged from Session 10 part 9/13 — the model sanity-check concern (IDEA scoring 98/100 "Strong" despite -96.6% ROE and negative book value) is the top open priority, followed by the `shareholding_pattern` data-source decision (part 10) and the ASTRAL price-fetch failure above.
+
+**`trueresearch-frontend` is now on GitHub too:** `https://github.com/sp2591996/trueresearch-frontend` (private) — separate repo from `truresearch-pipeline` (the Python pipeline's repo). First push done in Session 9 (`git remote add origin` + `git push -u origin main`); future sessions just need plain `git push` from inside that folder, same as the pipeline repo.
 
 ## Session 10, part 13 — frontend permissions fix (whole-site "no data" bug) + live price gap found
 
