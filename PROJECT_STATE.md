@@ -1,6 +1,65 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 9 (Phase C, Step 3 — sector-neutral robustness check on the TrueScore ML model. PASSED. See "Session 9 — sector-neutral robustness check" below.)*
+*Read this at the start of every new chat. Last updated: Session 9 (Phase C — frontend now confirmed reading LIVE Supabase data. See "Session 9 — frontend connected to Supabase" below.)*
+
+## Session 9 — frontend connected to Supabase
+Continues straight on from "Session 9 — frontend build begins" above (same session).
+
+**What was built:** `lib/supabaseClient.ts` (the one file that creates the Supabase connection frontend-side — same role as `db_client.py` on the Python side, uses the PUBLISHABLE/anon key only, never the secret key) and a temporary `app/test-connection/page.tsx` that pulls the top 5 highest-scoring stocks straight from the live `scores`+`assets`+`sectors` tables. Both written directly into `trueresearch-frontend` (granted folder access this session).
+
+**Real permissions gap found and fixed — worth remembering for any future table added to the frontend.** Confirming this connection took 3 attempts, each surfacing a different, real layer:
+1. **Invalid API key** — the Supabase "Publishable key" display is truncated on-screen (ends in "..."); manually selecting the visible text instead of using the copy-icon button copies a truncated, invalid key. Fix: always use the copy icon, never select-by-hand, for this key.
+2. **Row Level Security blocked all reads** — RLS was enabled on every table back in Session 4 with no read policies ever added (deliberate, so nothing was public by accident) — meaning correct keys still return zero rows or a permission error until policies exist. Fixed via new `23_add_public_read_policies.sql` (adds `FOR SELECT USING (true)` policies — read-only, no write access granted).
+3. **Table-level GRANT missing (Postgres error 42501, separate from RLS)** — even after RLS policies existed, the `anon` database role itself was never granted basic SELECT access to any table (Session 4 only ever granted `service_role`, since the frontend didn't exist yet). Fixed via new `24_grant_anon_select.sql` (`GRANT USAGE ON SCHEMA public` + `GRANT SELECT` per table, to `anon` and `authenticated` roles).
+
+**Both scripts only grant READ access** — the frontend's anon/publishable key still cannot insert, update, or delete anything; all writes still only happen from the Python pipeline via the separate secret/service_role key, which never reaches the browser.
+
+**Tables covered so far** (in both new SQL scripts): `assets`, `sectors`, `scores`, `score_components`, `score_backtest_results`, `score_performance_tracking`, `ratios_snapshot`, `fundamentals`, `prices_daily`, `live_prices`, `peers`. **Add more tables to both scripts as the build reaches pages needing them** (e.g. `research_reports`, `ipos`, `learn_content`, `articles`, `mutual_fund_nav_history` once J3 data exists, etc.) — this is meant to be extended, not treated as a one-time complete list.
+
+**Confirmed working:** `http://localhost:3000/test-connection` renders a real table of 5 live stocks (IDEA 98.4/Strong, INDIAMART 95.8/Strong, FINCABLES 92.9/Strong, FORCEMOT 91.0/Strong, ERIS 89.8/Strong — run_date 2026-09-06) pulled directly from Supabase.
+
+**Next immediate step:** per the plan from earlier this session — build the two site-wide components Wireframes.md flags as needed before any individual page (Disclaimer Bar, Learn Callout) plus basic layout/nav, then start on the Home page.
+
+## Session 9 — frontend build begins
+Avdhoot chose the frontend build (over scaling qualitative research content, deferred to later) as Phase C's next focus, after all 3 PRD open decisions were resolved (see below).
+
+**Local environment set up on Avdhoot's computer (non-coder, needed full hand-holding — record this so a future session knows what's already done and doesn't re-explain from scratch):**
+- Node.js v24.20.0 and npm 11.19.0 installed (were not present before this session).
+- Windows PowerShell execution-policy fix required for npm to run: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` — same fix pattern as the Python venv activation issue from earlier sessions; needs re-running per new terminal window (not permanent), same as that one.
+
+**New project created:** `trueresearch-frontend` — a **separate folder, sibling to `TrueResearch Code` and `Old Files`** inside `Stock App 2.0` (same separation-of-concerns pattern as Session 4's decision to keep Python pipeline code out of `Old Files`). Created via `npx create-next-app@latest trueresearch-frontend`, using the tool's "recommended defaults" bundle: TypeScript, ESLint, Tailwind CSS, App Router, Turbopack, **no `src/` directory** (the only deviation from the original plan — a cosmetic folder-structure choice, not functionally significant), plus a couple of newer-tool extras (No React Compiler, an `AGENTS.md` file). Automatically initialized its own local Git repository — **separate from** the `truresearch-pipeline` GitHub repo; not yet connected to a GitHub remote or pushed anywhere — this is still local-only, needs backing up once we reach that point.
+
+**Confirmed working:** `npm run dev` starts the local dev server successfully (Next.js 16.3.4, Turbopack), and the default starter page loads correctly at `http://localhost:3000` in the browser. This confirms the full toolchain (Node → npm → Next.js → browser) works end to end before any real content was added.
+
+**Next immediate steps (in order, per the plan agreed with Avdhoot):** (1) connect the frontend to the live Supabase database (same one the Python pipeline writes into) — install `@supabase/supabase-js`, set up environment variables, confirm a real data read works; (2) build the two site-wide components Wireframes.md flags as needed before any individual page (Disclaimer Bar, Learn Callout) plus basic layout/nav; (3) build pages in order: Home, then Stock Detail Page (most important), then Screener, then the rest; (4) deploy to Vercel for a real public URL, likely once a few pages exist rather than waiting for full completion.
+
+
+## Session 9 — newsletter cadence + PWA reconfirmation
+Closes the remaining 2 of 3 items on `PRD.md`'s "Immediate open decisions" list (Mutual Funds, the 3rd, was resolved earlier this same session — see below).
+
+**Newsletter cadence — DECIDED: average 2x/week, SEO-driven.** Replaces the original "daily" framing (which the PRD itself flagged as unrealistic) and the "3-5x/week" range it suggested as a fallback — Avdhoot picked a specific number rather than leaving it a range. Two new requirements beyond just picking a cadence: (1) **SEO-driven** is now an explicit spec, not just a description — every article needs a defined target keyword before writing starts, correct on-page structure (H1/H2 hierarchy, meta description, image alt text), and links out to whichever stock/sector/glossary pages it mentions (reusing the site-wide "every mention is a link" rule already locked in elsewhere). (2) Still text + embedded images per article, video/story formats still deferred. `PRD.md` Section G2 rewritten to match.
+
+**PWA — RECONFIRMED, no override.** Avdhoot explicitly confirmed he's fine with the existing PWA-not-native decision (`PRD.md` K3) now that he's deeper into the project — this was a formality check, not new analysis; nothing changes.
+
+**`PRD.md` updated:** G2 rewritten with the cadence + SEO spec; closing "Immediate open decisions" list — all 3 items now marked resolved.
+
+**Next immediate step:** with all 3 PRD open decisions resolved, decide Phase C's own next build focus — leading candidates remain frontend build (Next.js/React) and scaling qualitative research content to the new 300 stocks.
+
+## Session 9 — Mutual Funds scope decision
+**Quick disambiguation (easy to blur these two together — read this before touching either page):** the **Stock Detail Page's** "mutual fund exposure" section is a **Placeholder Panel** ("coming soon" — needs holdings data we don't have). The **Sector Page's** "top mutual funds" section is NOT a placeholder — it's a **live, working category-based approximation** (funds whose AMFI category matches the sector, ranked by AUM), just honestly labeled as category-based rather than holdings-based. Two different pages, two different treatments, for the reason explained below.
+
+Avdhoot picked this as the next open item to resolve (from the "Immediate open decisions" list in `PRD.md`): whether Mutual Funds (J3), pulled up to L1 during scoping and flagged as "comparable in size to the entire original equity Phase 1," should extend the timeline or be held back post-launch.
+
+**Investigated the actual data landscape first, before deciding:** NAV history is fully free (AMFI publishes it officially; free wrapper APIs like MFapi.in expose it with no key needed) and category classification comes bundled with it. Expense ratio and AUM are also free via a second API (ISIN-keyed, e.g. captnemo.in-style). **Portfolio holdings (which stocks a fund holds) is the one genuinely hard piece** — India has no free, structured, cross-fund holdings API; it only exists as monthly PDF factsheets per fund house (AMC), same category of problem as the Screener.in-for-fundamentals decision already made for equities.
+
+**Decision:** Mutual Funds stays in L1, but its scope is narrowed to **NAV + category + expense ratio + AUM + a category-relative score** only. Portfolio-holdings overlap is explicitly deferred to L2 (already tracked as C6, Mutual Fund Overlap Detector) — this removes the one piece that actually justified the "as big as equity Phase 1" concern, so Mutual Funds no longer needs the timeline-extend-or-hold-back trade-off the original PRD flagged.
+
+**Documents updated to match (avoiding promising something not being built):**
+- `PRD.md`: Section 0 timeline flag marked resolved; J3 rewritten with final scope + data sourcing plan; B1 (stock detail page) — "exposure across mutual funds that hold it" removed from L1, becomes a placeholder; A3 (sector pages) — "top mutual funds exposed to sector" downgraded to a category-based approximation, explicitly labeled as such (not true holdings-based); closing "Immediate open decisions" list updated.
+- `Wireframes.md`: Stock Detail Page's "Mutual fund exposure" block is now a Placeholder Panel, not a live section; Sector Page's fund list relabeled "investing in this space" (category-based, not holdings-based) with a note explaining why; **new Mutual Fund Detail Page wireframe added**, structured to mirror the Stock Detail Page (reuses Score Badge, Asset Card, Disclaimer Bar components — same pattern that already proved out for Gold/J2); Screener wireframe gets a new asset-type toggle (Equities/Mutual Funds/Gold).
+- `Database_Schema.md` — **not yet updated this session** (not part of this chat's uploaded files); flag to update its Mutual Fund tables description to match this narrowed scope before Phase C's frontend or data-pipeline build reaches Mutual Funds.
+
+**Next immediate step:** two other "Immediate open decisions" items remain open (newsletter cadence — daily vs. 3-5x/week; confirming PWA as final, though that one's likely just a formality). Separately, decide Phase C's own next build focus: frontend build (Next.js/React) is still the leading candidate, alongside scaling qualitative research content to the new 300 stocks.
 
 ## Session 9 — sector-neutral robustness check
 Avdhoot chose this as Phase C's next step (over frontend build, scaling qualitative content to the new 300 stocks, or deciding the Mutual Funds timeline). This closes an item that had been open since Session 4/6: "should happen before ever expanding past 200 stocks" — which had, by Session 8, already happened, making this overdue.
@@ -129,10 +188,10 @@ Once Phase 5 (deeper research/content work) is underway, retrain TrueScore's ML 
 ## Locked decisions (carried over, unchanged)
 - **Equity scope:** Nifty 500 — LIVE as of Session 8, not just planned. 498 of 500 stocks have real TrueScore data (see "Session 8 — scaling to Nifty 500" above).
 - **Other asset classes (MVP):** Gold (full L1, proof-of-concept), Mutual Funds (**pulled up to L1** — timeline trade-off already decided: extend timeline, don't cut scope, see Session 3), Debt (L1 = static reference rates only), REIT (L1 = placeholder only), International Equity (L1 = placeholder only).
-- **Mobile:** Progressive Web App — confirmed final for L1, not native.
+- **Mobile:** Progressive Web App — confirmed final for L1, not native. **Reconfirmed by Avdhoot in Session 9** — no override.
 - **TrueScore/ML model:** must be back-tested/validated on current 200-stock data BEFORE expanding coverage to 500 or adding auto-retraining. Sequence: validate → expand coverage → automate. TrueScore Rating built alongside core TrueScore but kept visually/structurally distinct. **Sector-neutral robustness check: DONE, PASSED (Session 9)** — model's edge holds up within sectors, not just pooled across the universe; no sector persistently dominates top picks. Still open: re-running this same check against the full 500-stock universe (currently only checked against the original 200), and the Screener.in 10-year-data retrain planned for Phase 5.
 - **Education content rule:** every educational point paired with a picture/graph/graphic/flowchart — never text alone.
-- **Newsletter/content:** on-site, text+embedded-images, 3x/week.
+- **Newsletter/content:** on-site, **SEO-driven** articles + embedded images, **average 2x/week** (decided Session 9, replaces the earlier "daily"/"3-5x/week" range — see below).
 - **Placeholders:** every "coming soon" must say what's coming — now also backed by the `placeholder_copy` table (Session 4).
 - **Build sequencing:** PRD → Design system + wireframes → User journey maps → Code (data pipeline first, then frontend). *(Phase A complete. Phase B in progress — see "Where we are" above.)*
 - **Branding — FULLY DECIDED:** TrueResearch, Navy & Gold, Logo Concept B ("TR Monogram"). TrueScore / TrueScore Rating naming applied everywhere.
@@ -147,6 +206,7 @@ Next.js + React + TypeScript, Tailwind CSS, Supabase/Postgres (**now live**, pro
 `Feature_Universe_Scope_v2_Response.xlsx` — source of truth for in/out of scope per phase. `PRD.md` — buildable-spec translation. **`Database_Schema.md` (Session 4) is now the buildable-spec translation of the PRD into actual data structures** — read it for "what table holds this," read PRD.md for "what does this feature do."
 
 ## Open/pending items
+- **TEMPORARY PROVISION — flagged for L2 update (Session 9):** the two mutual-fund-holdings stand-ins (Stock Detail Page's "coming soon" Placeholder Panel, and Sector Page's category-based-approximation fund list) are NOT permanent designs — they exist only because holdings data doesn't exist yet at L1. The moment C6 (Mutual Fund Overlap Detector) ships with real holdings data, BOTH need to be swapped for the real thing: the stock-page placeholder becomes a live "held by these N funds" list, and the sector-page category-approximation gets upgraded to true holdings-based "funds actually holding stocks in this sector." The database is already prepared for this — `mutual_fund_holdings` table was created back in Session 4 (structure only, per the "sized for" note above), so this is a data-population + UI-logic swap when the time comes, not a schema change. Do not silently forget this swap once C6 is built — check this note.
 - Exact revised timeline (dates) for Phase B–F — still not worked out; will become clearer once ingestion pipeline (steps 3-5) is built and real build velocity is known.
 - Legal/regulatory review — deferred to pre-commercial-launch.
 - **Phase B is DONE.** All 6 foundation steps complete: schema, data provider layer, migration, automated daily/weekly ingestion, and now a validated, signed-off, live TrueScore for all 200 stocks.
