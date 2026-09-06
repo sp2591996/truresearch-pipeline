@@ -1,6 +1,20 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 11, part 2 — the Session 10 part 9 model sanity-check concern (IDEA scoring 98 "Strong" despite -96.6% ROE) is now FIXED via a distress guardrail in `14_score_current_stocks.py` (see entry below). Next priority: the `shareholding_pattern` data-source decision (Session 10 part 10), then the ASTRAL price-fetch failure.*
+*Read this at the start of every new chat. Last updated: Session 11, part 3 — the `shareholding_pattern` data-source decision (Session 10 part 10) is now RESOLVED: real promoter/FII/DII/public data is live for 497/500 stocks (see entry below). Next priority: the ASTRAL price-fetch failure and the 3 shareholding fetch failures (MCX, ABBOTINDIA, BAYERCROP), then Screener follow-ups (multi-select compare, preset filters).*
+
+## Session 11, part 3 — shareholding_pattern data source decision resolved: real data now live for 497/500 stocks
+
+**Decision made (see chat, not just this file):** between (A) free NSE XBRL scraping and (B) a paid vendor API, went with (A) — consistent with every other data source in this project (prices, fundamentals, gold, MF NAV all free-first). Investigated NSE's actual filing structure before writing any code (same discipline as the MF holdings/J3 investigation): NSE's quick summary endpoint only gives Promoter-vs-Public (2 categories), but each company's underlying XBRL filing is a standardised SEBI-mandated document (same tag names for every company) that reports the full Promoter/DII/FII/Public breakdown Wireframes.md's stacked-chart spec calls for. Confirmed the exact tag structure against a real filing (`ShareholdingOfPromoterAndPromoterGroup_ContextI`, `InstitutionsDomestic_ContextI`, `InstitutionsForeign_ContextI`, `PublicShareholding_ContextI`, all under the repeated element `ShareholdingAsAPercentageOfTotalNumberOfShares`) before writing the parser, to avoid a script that fails on real data.
+
+**New script: `25_shareholding_refresh.py`.** Uses the `nse` PyPI package (added to `requirements.txt`) to get each stock's list of quarterly filings (handles NSE's cookie/session requirements), downloads each filing's XBRL file directly (no session needed for the static files), and parses out the 4 category percentages via the tag/contextRef pattern above. Upserts one row per (asset_id, quarter_end_date) into `shareholding_pattern` — the exact shape `components/ShareholdingChart.tsx` (built Session 10, unused until now) already expected. `--quarters N` flag controls how much history to pull (run with `--quarters 8` this session, i.e. ~2 years).
+
+**Needed one small DB fix along the way:** `ingestion_runs.run_type` has a check constraint allowing only a fixed list of values (same pattern as Session 9's `16_add_performance_tracking_run_type.sql`). Added `26_add_shareholding_run_type.sql` (Avdhoot ran it) to add `shareholding_refresh` as an allowed value.
+
+**Result:** ran `25_shareholding_refresh.py --quarters 8` — **497/500 stocks got real data, 2,573 quarter-rows saved total.** Only 3 stocks failed (`MCX`, `ABBOTINDIA`, `BAYERCROP`) — likely a filing-format or symbol-matching quirk specific to those three, not investigated yet, low priority.
+
+**Frontend needed only a 1-line change, not a rebuild:** `app/stocks/[ticker]/page.tsx` already queried `shareholding_pattern` and rendered `ShareholdingChart` (built ahead of the data, Session 10 part 11/12) — it was just showing the placeholder because the table was empty. Bumped its query limit from 4 to 8 quarters to match the new backfilled history; no other change needed. Real shareholding charts should now render on every stock page that has data.
+
+**Next immediate step:** the ASTRAL live-price failure (Session 11 part 1) and the 3 shareholding failures above are minor, low-priority follow-ups. Bigger-picture next items, per the earlier priority list: Screener follow-ups (multi-select compare, preset filters) and eventually the Mutual Fund Overlap Detector (C6) once holdings data becomes available.
 
 ## Session 11, part 2 — TrueScore distress guardrail added (fixes the Session 10 part 9 sanity-check failure)
 
