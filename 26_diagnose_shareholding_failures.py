@@ -1,30 +1,18 @@
 """
 26_diagnose_shareholding_failures.py
 -------------------------------------------------------------------
-One-off diagnostic script -- Session 11, part 12. Avdhoot asked why
-SWIGGY, FIRSTCRY, and THERMAX specifically fail in
-25_shareholding_refresh.py.
+One-off diagnostic script -- Session 11, part 12 (re-used for the
+MCX / ABBOTINDIA / BAYERCROP follow-up). Originally used to diagnose
+why SWIGGY, FIRSTCRY, and THERMAX failed in 25_shareholding_refresh.py
+(root cause found: NSE's "Employee Benefit Trusts" category, fixed).
 
-Round 2: round 1 confirmed the filings download fine (HTTP 200, real
-XBRL content) -- so the failure is in parsing/the sum-sanity-check, not
-network/fetching. Working theory, from the raw NSE filing records
-themselves (each has an `employeeTrusts` field: 5.08% for SWIGGY,
-6.98% for FIRSTCRY, 5.46% for THERMAX): NSE's shareholding XBRL schema
-was revised (the file references schema version "2025-10", newer than
-whatever version 25_shareholding_refresh.py was originally built and
-tested against) and now reports "Employee Benefit Trusts" as its OWN
-top-level category, separate from Promoter/DII/FII/Public. The script
-doesn't know about this 5th category, so for any company with a
-nonzero employee-trust holding, promoter+dii+fii+public no longer sums
-to ~100% -- it lands a few % short (roughly the size of the missing
-employee-trust slice), which trips the script's own 95-105% sum sanity
-check and causes the whole quarter (and therefore the whole stock, if
-every recent quarter has this) to be silently rejected.
+Now re-pointed at the 3 remaining stocks that still fail:
+MCX, ABBOTINDIA, BAYERCROP -- cause not yet known.
 
 This script dumps EVERY (contextRef, value) pair found for the
-percentage tag in one real filing per ticker, so we can see the exact
-contextRef NSE uses for the employee-trust category before changing
-the real ingestion script to handle it.
+percentage tag in one real filing per ticker, so we can see exactly
+what NSE's filing looks like for these 3 and compare it against what
+25_shareholding_refresh.py expects.
 
 Run:
     venv\\Scripts\\python.exe 26_diagnose_shareholding_failures.py
@@ -36,7 +24,7 @@ import xml.etree.ElementTree as ET
 
 import requests
 
-TICKERS = ["SWIGGY", "FIRSTCRY", "THERMAX"]
+TICKERS = ["MCX", "ABBOTINDIA", "BAYERCROP"]
 PCT_TAG_LOCALNAME = "ShareholdingAsAPercentageOfTotalNumberOfShares"
 
 REQUEST_HEADERS = {
