@@ -60,11 +60,22 @@ from ingestion_log import start_run, finish_run
 # every company's filing (confirmed against a real filing before writing
 # this script -- these are the same tag names for every company, since
 # the format is SEBI-mandated, not company-specific).
+#
+# IMPORTANT (Session 11 part 5 fix): in SEBI's shareholding format,
+# "Public Shareholding" (PublicShareholding_ContextI) is the TOTAL of
+# every non-promoter shareholder -- DII and FII are sub-categories
+# INSIDE that total, not separate from it. Storing that raw total
+# directly as `public_pct` alongside separate dii_pct/fii_pct values
+# double-counts institutional holders and made Promoter+DII+FII+Public
+# sum to well over 100% (caught by Avdhoot testing the chart). The raw
+# tag is now labelled "_total" and `public_pct` is computed as that
+# total minus DII and FII, giving 4 genuinely mutually-exclusive
+# categories that sum to ~100%.
 CONTEXT_TO_COLUMN = {
     "ShareholdingOfPromoterAndPromoterGroup_ContextI": "promoter_pct",
     "InstitutionsDomestic_ContextI": "dii_pct",
     "InstitutionsForeign_ContextI": "fii_pct",
-    "PublicShareholding_ContextI": "public_pct",
+    "PublicShareholding_ContextI": "public_pct_total",  # raw total, corrected below
 }
 PCT_TAG_LOCALNAME = "ShareholdingAsAPercentageOfTotalNumberOfShares"
 
@@ -85,7 +96,19 @@ def parse_shareholding_xbrl(xml_bytes: bytes) -> dict:
     """Given one filing's raw XBRL bytes, returns
     {'promoter_pct': .., 'dii_pct': .., 'fii_pct': .., 'public_pct': ..}
     (values already converted to a 0-100 scale). Missing categories are
-    left out of the dict rather than guessed."""
+    left out of the dict rather than guessed.
+
+    Session 11 part 5, second fix: NSE's filings are NOT perfectly
+    consistent in how this percentage element encodes its value --
+    most filings store it as a fraction (0.4387 = 43.87%), but at least
+    one real filing was found storing it as an already-scaled percentage
+    (50.80 meaning 50.80%, not 5080%). Multiplying that by 100 as if it
+    were always a fraction produced the "5080.0%" nonsense Avdhoot
+    caught. A shareholding percentage can never legitimately exceed
+    100, so: treat any raw value > 1 as already being a percentage
+    (don't re-multiply), and as a hard safety net, drop -- not clamp,
+    not guess -- any value that's still outside 0-100 after that. A
+    missing/dropped data point is honest; a fabricated one isn't."""
     root = ET.fromstring(xml_bytes)
     result = {}
     for el in root.iter():
@@ -96,12 +119,33 @@ def parse_shareholding_xbrl(xml_bytes: bytes) -> dict:
         if column is None or el.text is None:
             continue
         try:
-            fraction = float(el.text.strip())
+            raw = float(el.text.strip())
         except ValueError:
             continue
+        # A real shareholding fraction is always <= 1 (100%). If the
+        # filing already reported it as a percentage (e.g. 50.80), raw
+        # will be > 1 -- use it as-is instead of multiplying by 100.
+        pct = raw if raw > 1 else raw * 100
+        if not (0 <= pct <= 100):
+            continue  # unparseable/garbage value -- skip, don't fabricate
         # Only keep the first occurrence per category (a filing can
         # legitimately repeat a context in footnote sections).
-        result.setdefault(column, round(fraction * 100, 2))
+        result.setdefault(column, round(pct, 2))
+
+    # Correct the raw "Public" total into a mutually-exclusive retail
+    # figure -- see the CONTEXT_TO_COLUMN comment above for why. Only
+    # do this if we actually found a total to correct; a filing missing
+    # this tag entirely should stay missing, not become a fabricated 0.
+    if "public_pct_total" in result:
+        dii = result.get("dii_pct", 0)
+        fii = result.get("fii_pct", 0)
+        public = result.pop("public_pct_total") - dii - fii
+        # Final sanity net: if the corrected public share is still
+        # outside a believable range, something upstream was wrong for
+        # this filing -- drop it rather than save a suspicious number.
+        if 0 <= public <= 100:
+            result["public_pct"] = round(public, 2)
+
     return result
 
 
@@ -188,6 +232,16 @@ def main():
                     continue  # one bad quarter shouldn't sink the whole stock
 
                 if not categories:
+                    continue
+
+                # Last line of defence: even if every individual category
+                # passed its own 0-100 check, they should still sum to
+                # roughly 100% together. A wider gap means something
+                # about this specific filing didn't parse the way this
+                # script expects -- better to skip the quarter than save
+                # numbers nobody should trust.
+                total = sum(categories.values())
+                if not (95 <= total <= 105):
                     continue
 
                 supabase.table("shareholding_pattern").upsert({
