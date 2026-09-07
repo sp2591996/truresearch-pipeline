@@ -1,6 +1,80 @@
 # PROJECT_STATE.md — TrueResearch Investment Platform
 
-*Read this at the start of every new chat. Last updated: Session 11, part 3 — the `shareholding_pattern` data-source decision (Session 10 part 10) is now RESOLVED: real promoter/FII/DII/public data is live for 497/500 stocks (see entry below). Next priority: the ASTRAL price-fetch failure and the 3 shareholding fetch failures (MCX, ABBOTINDIA, BAYERCROP), then Screener follow-ups (multi-select compare, preset filters).*
+*Read this at the start of every new chat. Last updated: Session 11, part 13 — the Employee Benefit Trusts fix for `25_shareholding_refresh.py` is CONFIRMED working: SWIGGY/FIRSTCRY/THERMAX all fixed on re-run (497/500 now, up from 493/500). Only MCX, ABBOTINDIA, and BAYERCROP still fail — a separate, not-yet-investigated cause. "Expand beyond Nifty 500 to all NSE-listed stocks (~2,000)" was discussed and explicitly PARKED for later — Avdhoot wants to revisit it once the full product is built out, not now. Next priority: commit+push both repos to GitHub — a lot of pending work has piled up (TrueScore guardrail, shareholding pipeline + chart, candlestick toggle, all the Screener/Compare work) and hasn't been pushed yet.*
+
+## Session 11, part 13 — root cause found and fixed: SWIGGY/FIRSTCRY/THERMAX shareholding failures
+
+Avdhoot asked specifically why these 3 (of the ~6-7 recurring failures in `25_shareholding_refresh.py`) were failing. Rather than guess, built and ran two rounds of one-off diagnostic scripts (`26_diagnose_shareholding_failures.py`, not part of the regular pipeline) against real NSE filings for these tickers:
+
+- Round 1 confirmed the filings download fine (HTTP 200, real XBRL content) — so it wasn't a network/fetch problem.
+- Round 2 dumped every `(contextRef, value)` pair found in one real filing per ticker. Found `EmployeeBenefitsTrusts_ContextI` present in all 3, with values (5.08% SWIGGY, 6.98% FIRSTCRY, 5.46% THERMAX) matching the `employeeTrusts` field already visible in NSE's raw filing-list JSON.
+
+**Root cause:** NSE's shareholding XBRL schema was revised (this schema version is dated "2025-10", newer than whichever version `25_shareholding_refresh.py` was originally built/tested against) to report Employee Benefit Trust holdings as their own top-level category — separate from, and NOT included inside, `PublicShareholding_ContextI`'s total. The script didn't know this category existed, so for any stock with a nonzero employee-trust holding, Promoter+DII+FII+Public landed a few % short of 100%, tripping the script's own 95-105% sum-sanity-check and silently rejecting every quarter for that stock. The sanity check was doing exactly its job — just against a data shape it hadn't been built to expect.
+
+**Fix:** `25_shareholding_refresh.py` now also extracts `EmployeeBenefitsTrusts_ContextI` and folds it into `public_pct` (the honest bucket for "not promoter-controlled, not a tracked institution") rather than adding a 5th DB column/chart segment for what's usually a small, non-controlling holding. Pushed to Avdhoot's computer and verified landed.
+
+**Status: CONFIRMED.** Avdhoot re-ran the full script: 497/500 stocks now saved (2,498 quarter-rows), up from 493/500. SWIGGY, FIRSTCRY, and THERMAX all fixed. Only 3 stocks still fail: MCX, ABBOTINDIA, BAYERCROP -- a different, not-yet-investigated cause (JKCEMENT's earlier one-off failure also resolved itself, likely was the internet-drop mentioned before this run). Not investigated further this session -- genuinely low priority now that the size of the problem shrank from ~7 stocks to 3.
+
+**Separately raised and parked:** Avdhoot asked about expanding coverage beyond the Nifty 500 to all NSE-listed stocks (~2,000) or NSE+BSE (~5,000+). Explained the tradeoffs (roughly 4x longer script runs, patchier data quality for small/micro-caps, TrueScore's ML model would need re-validation on the bigger universe for Option A; BSE needs an entirely separate data pipeline for Option B, multi-week project on its own). Avdhoot's decision: park it, revisit once the full product is built out — not a rejected idea, just sequenced for later.
+
+## Session 11, parts 10-11 — Compare page: frozen-header bug fully fixed, themed scrollbar, "Add stock" search box
+
+**Part 10 — the frozen-header bug, for real this time.** Avdhoot's testing kept finding the ticker header row covering rows underneath it instead of just freezing in place — took 3 real attempts to actually fix, each one uncovering a deeper cause:
+1. First attempt: `position: sticky` on the whole `<thead>`. Broke because `<thead>` + `sticky` + `border-collapse` (needed for the table's borders) has a known Chrome bug where the sticky box covers the row(s) right below it.
+2. Second attempt: moved `sticky` to each `<th>` individually instead of the `<thead>` — same underlying border-collapse conflict resurfaced anyway.
+3. Real fix: switched the table from `border-collapse` to `border-separate` (moving every border from `<tr>` to each `<td>`/`<th>`, since `border-collapse` is what `<tr>`-level borders depend on) AND made the table scroll inside its own box (`max-h-[70vh] overflow-auto`) instead of relying on the page's own scroll combined with a guessed pixel offset for the site's Nav bar height — that guessed offset was still wrong even after the border fix, confirmed by Avdhoot seeing the bug with zero scrolling. Scoping the scroll locally removes the guesswork for good: the header's `top-0` now always lines up with its true resting position.
+
+**Part 10b — themed scrollbar.** The table's own scroll box needed its own scrollbar once it became independently scrollable, and the browser's default (especially Chrome/Edge on Windows) looked like a raw OS control against the dark theme. Added a reusable `.tr-scroll-thin` utility class (`app/globals.css`) — slim, dark, rounded thumb, matches the theme — for this table now and any future scroll box.
+
+**Part 11 — "+ Add stock to compare."** Avdhoot's suggestion: once already comparing 2 stocks, adding a 3rd shouldn't mean going back to the Screener and re-checking boxes. New small client component `components/AddStockToCompare.tsx` — a search box in the Compare page's header (only shown when under the 4-stock max) that filters the full Nifty 500 ticker/name list client-side and, on picking one, pushes a new `?tickers=` URL with it appended. The Compare page itself stays a server component; it just re-renders with the added stock like any other navigation.
+
+Files touched: `app/compare/page.tsx`, `app/globals.css`, `components/AddStockToCompare.tsx` (new). All pushed to Avdhoot's computer and verified landed (this session's `device_commit_files` silent-write bug hit repeatedly across all these changes — sometimes needing 4-5 retries in a row before the actual new content showed up on re-stage+grep — every push below was double-checked before telling Avdhoot to test).
+
+**Next immediate step:** Avdhoot re-tests the Compare page (frozen header, scrollbar, add-stock box), then commits/pushes the frontend repo — this is now a good natural stopping point to get everything from this session onto GitHub before starting the next feature.
+
+## Session 11, part 9 — Compare page expanded with more metrics
+
+After Avdhoot's first real test of the Compare page (part 8's ROCE/Margin/Debt-Equity data-gap fix + redesign), he asked "what further parameters can we add." Presented 4 realistic options — all backed by data already sitting in the database, nothing fabricated — and he picked all 4:
+
+- **More valuation ratios**: P/B, EV/EBITDA, Price/Sales, 52-Week High/Low — all already computed for the Stock Detail Page, just not queried on Compare yet.
+- **More profitability stats**: Net Profit Margin, ROA, FCF Margin, Net Income Growth (YoY) — same derived-from-`fundamentals` formulas the Stock Detail Page already uses.
+- **New "Shareholding" section**: latest Promoter holding %, plus how it's changed over roughly the last 4 reported quarters (~1 year) — a real signal investors watch (a promoter steadily raising or cutting their stake).
+- **New "TrueScore Breakdown" section**: the 2 real component signals behind the headline TrueScore number (Relative Valuation score, ML Rank score), so the comparison isn't just one opaque number per stock.
+
+`app/compare/page.tsx` now renders 5 sections total (TrueScore & Performance, Profitability, Valuation & Size, Shareholding, TrueScore Breakdown) instead of 3, still with the same "drop a row entirely if not one of the selected stocks has data for it" rule from part 8. Pushed to Avdhoot's computer and verified landed (grepped for "TrueScore Breakdown" / "Promoter Change" after the push — this session's `device_commit_files` silent-write bug hit twice during this change, both times fixed by resending the identical commit).
+
+**Next immediate step:** Avdhoot re-tests the expanded Compare page, then commits/pushes the frontend repo.
+
+## Session 11, part 7 — Screener follow-ups: multi-select comparison + preset filter chips
+
+Picked up "Screener follow-ups" from the priority list once Avdhoot confirmed the shareholding chart (part 6) was working. Two genuinely new pieces, not small tweaks:
+
+**1. Checkbox multi-select → new Comparison Page (`app/compare/page.tsx`, brand new file).**
+`components/ScreenerTable.tsx` gained a checkbox column (max 4 stocks selectable at once) and a "Compare selected" action bar that appears once 1+ stocks are checked — shows a Clear button, and either a working "Compare selected" link (2+ picked) or a disabled-looking "Pick 1 more to compare" hint (exactly 1 picked, since a comparison needs at least 2). The link is `/compare?tickers=TICKER1,TICKER2,...` — the query string doubles as the shareable link PRD.md C3 asked for, no extra work needed for that.
+
+The new `/compare` page is a server component (same pattern as the Stock Detail Page): reads the `tickers` param, fetches scores/live prices/ratios/fundamentals/recent prices for just those stocks, and renders a metric-by-metric comparison table (TrueScore, 1-month return, revenue growth YoY, ROE, ROCE, margin, debt/equity, P/E, market cap) with the best figure in each row highlighted green. Shows a friendly message (not an error) if fewer than 2 tickers are given.
+
+**2. Preset filter chips.** 3 one-click chips above the Screener's filter bar: "Top Rated" (TrueScore ≥ 80), "Undervalued (by P/E)" (bottom quartile of stocks with a positive P/E), "Large Cap" (top quartile by market cap). Undervalued/Large Cap cutoffs are computed live from the actual data (a percentile helper function), not hardcoded numbers — so they won't go stale as scores/prices change. Each chip shows its exact rule on hover so it's never a mystery what "Top Rated" means.
+
+**Status: built and pushed to Avdhoot's computer, verified the files actually landed (re-staged + grepped for known strings — this session hit the silent-write bug on `device_commit_files` multiple times in earlier parts, so every push now gets double-checked). NOT yet tested by Avdhoot** — next step is guiding him to restart the dev server and click through it.
+
+Files touched: `components/ScreenerTable.tsx` (rewritten), `app/compare/page.tsx` (new).
+
+**Next immediate step:** Avdhoot tests the Screener checkbox select + Compare page + preset chips locally, then commits/pushes the frontend repo. After that: the ASTRAL and shareholding fetch-failure follow-ups, and eventually the Mutual Fund Overlap Detector (C6) once holdings data exists.
+
+## Session 11, parts 4-6 — candlestick toggle, shareholding hover tooltips, and a full shareholding chart redesign
+
+Three rounds of frontend polish on the Stock Detail Page, requested together ("1) Shareholding pattern, lets show %ages when we take cursor over the bars 2) toggle for the performance graph — candle graph like in stock graphs?"):
+
+**Part 4 — Price chart candlestick toggle.** `components/PriceChart.tsx` gained a Line/Candles toggle. Candlestick mode draws real OHLC bars (red/green body by close vs open, high-low wicks), sourced from `prices_daily`'s `open`/`high`/`low` columns which were already being written by the ingestion script but not previously selected by the frontend query — `app/stocks/[ticker]/page.tsx` and the `PricePoint` type were both updated to carry full OHLC instead of just `date`/`close`.
+
+**Part 5 — shareholding tooltip bugs, found via Avdhoot's testing.** First attempt at hover tooltips got flagged ("THE THEMED TOOLPICK IS NOT APPLICABLE YEY") — the bar container's `overflow-hidden` was clipping the tooltip popup; fixed by removing it and rounding only the first/last visible segment's corners instead. Second bug, caught in the same round from a screenshot: percentages were showing as 4917%, 5080%, etc. Root cause was two real data bugs, not a display bug:
+- SEBI's "Public Shareholding" XBRL tag is actually the TOTAL of every non-promoter holder (institutions included as a subset), not a separate parallel category like the other three — so it was double-counting DII/FII inside "Public" too. Fixed in `25_shareholding_refresh.py`'s parser by subtracting DII+FII from the raw Public figure.
+- Some companies' filings store the percentage pre-scaled (e.g. "50.80" meaning 50.80%) rather than as a fraction (0.5080) — the parser was unconditionally multiplying by 100, turning legitimate values into nonsense like 5080%. Fixed by detecting which scale a given number is already in.
+
+**Part 6 — full redesign.** Avdhoot's reaction to the first redesign attempt (a smooth "area chart"): "this now is even more confusing ui. additionally we have latest on left, it dhould be on right. pla think of few professional designs show me then implement." Per that explicit instruction, 3 labeled design options (mockup HTML sent for review, not implemented blind) were presented before writing any more code; Avdhoot picked Option A. `components/ShareholdingChart.tsx` was rebuilt a final time as discrete stacked columns per quarter (not a continuous area — we only have point-in-time quarterly snapshots, so implying a smooth trend between them would be dishonest), with the newest-on-left bug fixed (the area version had accidentally reversed already-ordered data a second time) and a hover tooltip showing the exact %age for every category in the hovered quarter.
+
+All of the above is confirmed working by Avdhoot ("the forntend for shareholding is working") and pushed to GitHub for the frontend repo.
 
 ## Session 11, part 3 — shareholding_pattern data source decision resolved: real data now live for 497/500 stocks
 

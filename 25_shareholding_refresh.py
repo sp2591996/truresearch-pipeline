@@ -71,11 +71,27 @@ from ingestion_log import start_run, finish_run
 # tag is now labelled "_total" and `public_pct` is computed as that
 # total minus DII and FII, giving 4 genuinely mutually-exclusive
 # categories that sum to ~100%.
+#
+# Session 11 part 12 fix: NSE revised this XBRL schema (this file now
+# references schema version "2025-10") to add "Employee Benefit
+# Trusts" as its OWN top-level category, separate from and NOT included
+# inside PublicShareholding_ContextI's total (confirmed against real
+# filings for SWIGGY/FIRSTCRY/THERMAX -- each has a nonzero employee-
+# trust holding, and Promoter% + PublicShareholding% + EmployeeTrust%
+# sums to ~100% on its own). Before this fix, that slice (5-7% for
+# those 3 stocks) was silently missing from every category, so
+# promoter+dii+fii+public landed a few % short of 100% and tripped the
+# sum-sanity-check below -- rejecting every quarter for any stock with
+# a nonzero employee-trust holding. Rather than add a 5th DB column/
+# chart segment for what's usually a small, non-controlling holding,
+# it's folded into `public_pct` below (the honest bucket for "not
+# promoter-controlled, not a tracked institution").
 CONTEXT_TO_COLUMN = {
     "ShareholdingOfPromoterAndPromoterGroup_ContextI": "promoter_pct",
     "InstitutionsDomestic_ContextI": "dii_pct",
     "InstitutionsForeign_ContextI": "fii_pct",
     "PublicShareholding_ContextI": "public_pct_total",  # raw total, corrected below
+    "EmployeeBenefitsTrusts_ContextI": "employee_trust_pct_raw",  # folded into public below, never stored as its own column
 }
 PCT_TAG_LOCALNAME = "ShareholdingAsAPercentageOfTotalNumberOfShares"
 
@@ -139,12 +155,25 @@ def parse_shareholding_xbrl(xml_bytes: bytes) -> dict:
     if "public_pct_total" in result:
         dii = result.get("dii_pct", 0)
         fii = result.get("fii_pct", 0)
-        public = result.pop("public_pct_total") - dii - fii
+        # Employee Benefit Trusts are reported as their OWN top-level
+        # category by NSE (confirmed: NOT included inside
+        # PublicShareholding_ContextI's total) -- folded in here rather
+        # than given a 5th DB column/chart segment, since it's usually
+        # small and isn't promoter-controlled or a tracked institution
+        # either. `pop` (not `get`) so this temp key never leaks into
+        # the row that gets saved to the database.
+        employee_trust = result.pop("employee_trust_pct_raw", 0)
+        public = result.pop("public_pct_total") - dii - fii + employee_trust
         # Final sanity net: if the corrected public share is still
         # outside a believable range, something upstream was wrong for
         # this filing -- drop it rather than save a suspicious number.
         if 0 <= public <= 100:
             result["public_pct"] = round(public, 2)
+    else:
+        # No public total tag at all -- still discard the raw employee-
+        # trust value rather than accidentally saving it under a column
+        # name (`employee_trust_pct_raw`) the database doesn't have.
+        result.pop("employee_trust_pct_raw", None)
 
     return result
 
