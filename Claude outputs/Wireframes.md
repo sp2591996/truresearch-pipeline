@@ -65,6 +65,8 @@
 5. Sector-vs-sector toggle (switches the whole screener into sector-aggregate mode).
 6. **Asset-type toggle (new, Phase C):** Equities / Mutual Funds / Gold — switching to Mutual Funds swaps the filter set to category, AUM, expense ratio, category-relative score (reuses the same table/filter-panel component, different columns and filter fields only, not a separate page).
 
+**Built (Session 11):** items 2 and 3 above are live — checkbox multi-select (max 4) plus 3 preset chips (Top Rated / Undervalued by P/E / Large Cap) with a "Compare selected" action bar linking to `/compare`. Sector-vs-sector toggle and the asset-type toggle are not yet built.
+
 ---
 
 ## Comparison Page (X vs Y [vs Z, vs W])
@@ -72,6 +74,15 @@
 2. Metric rows: growth, margins, ROE, debt, P/E, TrueScore, performance — one row per metric, one column per stock.
 3. Shareable URL shown/copyable.
 4. "Add another" (up to 4 total).
+
+**Built (Session 11) — actual shipped layout, supersedes the sketch above:**
+1. Header row: page title, "← Back to Screener" link, and the Add-stock control (see below) inline.
+2. Table header row is **sticky** within its own scroll container (`max-h-[70vh] overflow-auto` on the table wrapper, not the page) — first column is the metric label, one column per stock (ticker, name, sector chip).
+3. Rows are grouped into 5 labeled sections rather than a flat metric list: **TrueScore & Performance**, **Profitability**, **Valuation & Size**, **Shareholding**, **TrueScore Breakdown**. A metric row is omitted entirely (not shown as blank dashes) if not one of the selected stocks has data for it; an empty section is omitted too.
+4. The best value in a row gets a small **"✓ Best" badge** next to the cell — no full-cell background highlight (the earlier version did this and looked unprofessional; changed per feedback).
+5. Scrollbar inside the table container is custom-styled (`.tr-scroll-thin` in `Design_System.md`) to match the dark theme instead of the OS-default scrollbar.
+6. **"Add stock to compare"** (replaces item 4's plain "Add another"): a dashed-border button that reveals a live search box (ticker/name match) right on the Compare page itself — no trip back to Screener needed. Disabled with a "Comparing the max of 4 stocks" message once at the cap.
+7. Shareable URL (`/compare?tickers=...`) — as originally planned, no extra work needed since state lives in the URL.
 
 ---
 

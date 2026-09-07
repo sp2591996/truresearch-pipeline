@@ -114,6 +114,7 @@
 ### B7. Shareholding Pattern Trends
 - **What it does:** Chart of promoter/FII/DII/public shareholding **over the last several quarters** (expanded from a current-snapshot-only view), shown on every stock page (not just in decks).
 - **Acceptance criteria:** at least 4 historical quarters visible per stock where data exists; present on all 500 stock pages, not only the ones with flagship research.
+- **Status (Session 11): data pipeline live.** `25_shareholding_refresh.py` ingests NSE XBRL filings; 497/500 Nifty 500 stocks now have at least one quarter saved. Fixed a real bug this session: NSE added a new "Employee Benefit Trusts" XBRL category (schema version "2025-10") that isn't part of the Public total — without accounting for it, promoter+DII+FII+public no longer summed to ~100%, tripping the pipeline's own sanity check and silently rejecting the quarter. This was causing SWIGGY, FIRSTCRY, and THERMAX (among others) to fail; fixed by folding the employee-trust % into `public_pct`. Promoter % now also feeds the Compare page's Shareholding section (latest vs. ~4 quarters back). Still failing, different unresolved cause: MCX, ABBOTINDIA, BAYERCROP. The shareholding *chart itself* on the stock detail page (B1) is not yet confirmed built — only the data pipeline and its use in Compare are confirmed.
 
 ### Deferred in Section B (placeholder text required)
 - **B8. Credit Rating Change Tracking (L2)** — Placeholder: labeled "Credit Rating: Coming Soon" section on banks/NBFCs/debt-heavy company pages.
@@ -129,6 +130,7 @@
 - **What it does:** Filterable table across market cap, sector, growth, quality, valuation, momentum, TrueScore.
 - **New per your feedback:** support comparing **3+ companies** (not just 2) from within the screener, and a **sector-vs-sector comparison** mode (reusing the Section A3 sector aggregates — no new pipeline).
 - **Acceptance criteria:** a user can select 3–4 stocks from screener results and land on a working comparison page (C3); a sector-vs-sector view exists and pulls from the same aggregate data as the sector pages.
+- **Status (Session 11): BUILT.** Checkbox multi-select (max 4) added to the results table, plus 3 preset filter chips ("Top Rated" — score ≥80, "Undervalued (by P/E)" — bottom quartile positive P/E, "Large Cap" — top quartile market cap). A "Compare selected" action bar links straight to `/compare`. Sector-vs-sector mode is **not yet built** — still open.
 
 ### C2. Preset Screens
 - **What it does:** One-click named filter combinations (High Growth, Undervalued, QARP, etc.) on top of C1. No change from original scope.
@@ -136,6 +138,7 @@
 ### C3. Multi-Stock Comparison Page (X vs Y vs Z)
 - **What it does:** Side-by-side comparison across growth, margins, ROE, debt, P/E, performance, TrueScore, with a shareable URL — also a key SEO page type.
 - **Acceptance criteria:** supports 2–4 stocks per comparison; URL is stable/shareable; page is server-rendered for SEO.
+- **Status (Session 11): BUILT.** Live at `/compare?tickers=A,B,C,D`, server-rendered. Metrics are grouped into 5 sections — TrueScore & Performance, Profitability, Valuation & Size, Shareholding, TrueScore Breakdown — covering valuation ratios (P/E, P/B, EV/EBITDA, price/sales, 52-week range), profitability stats (net margin, ROA, FCF margin, YoY growth), shareholding pattern (promoter %, latest vs. ~4 quarters back), and a TrueScore component breakdown. A metric row is dropped entirely if none of the selected stocks have data for it, rather than showing blank dashes — an honest-data-gap rule worth carrying into other pages (B1, A3) that show sparse fields. The best value in each row gets a small "✓ Best" badge next to the cell, not a full-cell highlight. Header row is sticky within its own scrolling container so it stays visible while scrolling through metrics. A user can add a 3rd/4th stock directly from the page (search box, no trip back to Screener) via `AddStockToCompare`.
 
 ### C4. Custom User-Defined Ratios/Formulas — **launch scope is fixed filters only**
 - **What it does at L1:** the standard filter set from C1. The flexible "define your own formula" builder is **explicitly L2**, not launch scope — confirming, not changing, the original plan.

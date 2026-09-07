@@ -107,11 +107,16 @@ All three are loaded via Google Fonts, same mechanism as the earlier Geist fonts
 | **Sector Chip** | Everywhere a sector is mentioned | Small pill, links to sector page |
 | **Placeholder Panel** | Every L2–L4 "coming soon" feature | Icon + one-sentence explanation of what's coming (never blank) |
 | **Disclaimer Bar** | Every page with a score/research/calculator output | Compact, dismissible-per-session but never permanently hidden, "research signal, not advice"; styled amber/gold (Section 2b) since it's a notice, not an error |
-| **Comparison Table** | Multi-stock/sector/cross-asset comparison | Supports 2–4 columns, sticky first column (asset name) on scroll |
+| **Comparison Table** | Multi-stock/sector/cross-asset comparison | Supports 2–4 columns; **built (Session 11)** for the Compare page — sticky **header row** (not first column) within its own local scroll container, sections with zebra striping, "✓ Best" badge pattern (small pill next to the winning cell) rather than a full-cell highlight — use this same pattern for any future comparison-style UI (sector-vs-sector, cross-asset) rather than reinventing it |
+| **Best-value badge** | Any comparison table (new, Session 11) | Small rounded pill reading "✓ Best" placed beside the winning value in a row — replaces full-cell color highlighting, which read as unprofessional in testing |
 | **Learn Callout** | Attached to any jargon term | Small "?" icon → inline plain-English explainer + link to full Learn article, always paired with a simple visual per the hard content rule |
 | **Chart (line/candlestick)** | Price history, score history, sector trend | Consistent axis styling, consistent positive/negative color coding across every chart on the site |
 
-Built so far (Session 10, in `trueresearch-frontend/components/`): Score Badge, Asset Card, Placeholder Panel, Disclaimer Bar, Learn Callout, plus a site-wide Nav and Footer. Not yet built: Sector Chip, Comparison Table, Chart.
+Built so far (Session 10, in `trueresearch-frontend/components/`): Score Badge, Asset Card, Placeholder Panel, Disclaimer Bar, Learn Callout, plus a site-wide Nav and Footer.
+
+**Session 11 additions:** Comparison Table (Compare page) and the Best-value badge pattern, both above. Not yet built: Sector Chip, Chart.
+
+**New reusable CSS utility (Session 11): `.tr-scroll-thin`** (in `globals.css`) — a themed, slim scrollbar (rounded thumb, colored to match `--tr-border`) for any scrollable panel, replacing the OS-default scrollbar which looked out of place against the dark theme. Apply this to any future scrollable container (tables, side panels, dropdown lists) instead of leaving the browser default.
 
 ---
 
