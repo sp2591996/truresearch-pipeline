@@ -1,0 +1,28 @@
+name: Market Mood Refresh
+
+# PRD.md A6 says Market Mood is "a single daily gauge" -- unlike Daily
+# Price Refresh (daily-prices.yml), which runs every 15 minutes during
+# NSE hours to keep live prices fresh, this only needs to run ONCE a
+# day, after that day's prices_daily data is fully in. Scheduled 30
+# minutes after daily-prices.yml's last run of the day (10:00 UTC =
+# NSE close) so 62_calculate_market_mood.py always sees a complete,
+# final set of today's closing prices before it scores the day.
+
+on:
+  schedule:
+    - cron: '30 10 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 62_calculate_market_mood.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
