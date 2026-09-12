@@ -1,0 +1,1091 @@
+matched: {'ipo_id': 1, 'company_name': 'Pranav Constructions Limited', 'symbol': 'PRANAV'}
+offset: 3
+offer_summary: {'matched_title': 'OFFER DOCUMENT SUMMARY', 'score': 1.0, 'start': 18, 'end': 26}
+objects_of_offer: {'matched_title': 'OBJECTS OF THE OFFER', 'score': 1.0, 'start': 100, 'end': 126}
+industry_overview: {'matched_title': 'INDUSTRY OVERVIEW', 'score': 1.0, 'start': 140, 'end': 180}
+our_business: {'matched_title': 'OUR BUSINESS', 'score': 1.0, 'start': 201, 'end': 229}
+risk_factors: {'matched_title': 'SECTION II – RISK FACTORS', 'score': 0.85, 'start': 32, 'end': 66}
+
+=== RAW OFFER_SUMMARY TEXT ===
+OFFER DOCUMENT SUMMARY
+This section is a general summary of the terms of the Offer, certain disclosures included in this Draft Red Herring Prospectus
+and are neither exhaustive, nor does it purport to contain a summary of all the disclosures in this Draft Red Herring Prospectus
+or all details relevant to prospective investors. This summary should be read in conjunction with, and is qualified in its entirety
+by, the more detailed information appearing elsewhere in this Draft Red Herring Prospectus, including the sections titled “Risk
+Factors”, “The Offer”, “Capital Structure”, “Objects of the Offer”, “Industry Overview”, “Our Business”, “Promoters and
+Promoter Group”, “Restated Financial Information”, “Management’s Discussions and Analysis of Financial Condition and
+Results of Operations”, “Outstanding Litigation and Material Developments”, and “Offer Structure”, on pages 30, 65, 80, 98,
+138, 199, 262, 268, 351, 380 and 404, respectively.
+Summary of Primary business of our Company
+We have adopted an integrated Redevelopment model, with capabilities and in-house resources to execute Redevelopment
+Projects from initiation to completion. We are the leading real estate company, based on the supply of units and number of
+completed and under construction MCGM - Redevelopment1 projects in the Western Suburbs2, with a total of 1,503 units and
+27 MCGM - Redevelopment projects (completed and under construction) whereas other developers have 2 to 7 MCGM -
+Redevelopment projects, each launched between CY 17 –CY 24 (Source: C&W Report).
+Summary of the Industry in which our Company operates
+As per industry estimates, the housing sector is expected to account for ~13% share in India’s GDP by 2025 and the cumulative
+real estate sector is expected grow to USD 1 Tn by 2030. The real estate & construction sector is considered as the largest
+employer after agriculture in India. MMR alone saw a 71% YoY rise in new residential units launched in CY 21 followed by a
+48% rise in CY 22. Over the last few years including 2020 and 2021, MMR has remained resilient compared to other cities in
+India. On an average, MMR accounts for 28% of the total share of new residential unit launches across the top 8 cities of India
+between 2019 to 2024 (Source: C&W Report).
+Names of the Promoters
+Our Promoters are Pranav Kiran Ashar and Ravi Ramalingam. For further details, see “Promoters and Promoter Group” on
+page 262.
+Offer Size
+The following table summarises the details of the Offer:
+Offer (1) Up to [●] Equity Shares of face value of ₹ 10 each for cash at price of ₹ [●] per Equity Share (including a
+premium of [●] per Equity Share), aggregating up to ₹ [●] million.
+of which
+Fresh Issue (2) Up to [●] Equity Shares face value of ₹ 10 each aggregating up to ₹ 3,920.00 million.
+Offer for Sale(3) Up to 2,856,869 Equity Shares face value of ₹ 10 each by the Selling Shareholders aggregating up to ₹ [●]
+million.
+(1) The Offer has been authorized by a resolution of our Board dated February 21, 2025 and the Fresh Issue has been authorized by a special resolution of
+our Shareholders dated February 24, 2025.
+(2) Our Company, in consultation with the BRLMs, may consider a Pre-IPO Placement for an amount aggregating up to ₹784.00 million, at its discretion,
+prior to the filing of the Red Herring Prospectus. The Pre-IPO Placement, if undertaken, will be at a price to be decided by our Company, in consultation
+with the BRLMs. If the Pre-IPO Placement is completed, the amount raised pursuant to the Pre-IPO Placement will be reduced from the Fresh Issue,
+subject to compliance with Rule 19(2)(b) of the SCRR. The Pre-IPO Placement, if undertaken, shall not exceed 20% of the size of the Fresh Issue. Prior
+to the completion of the Offer, our Company shall appropriately, intimate the subscribers to the Pre-IPO Placement, prior to allotment pursuant to the
+Pre-IPO Placement, that there is no guarantee that our Company may proceed with the Offer or the Offer may be successful and will result into listing
+of the Equity Shares on the Stock Exchanges. Further, relevant disclosures in relation to such intimation to the subscribers to the Pre-IPO Placement (if
+undertaken) shall be appropriately made in the relevant sections of the Red Herring Prospectus and the Prospectus.
+(3) The Equity Shares being offered by the Selling Shareholders are eligible for being offered for sale pursuant to the Offer for Sale in terms of the SEBI
+ICDR Regulations. For details of the authorisations by the Selling Shareholders in relation to the Offered Shares, see “Other Regulatory and Statutory
+Disclosures” on page 387.
+For details of the Selling Shareholders and their respective portion of Offered Shares, please see the sections titled “The Offer”
+and “Other Regulatory and Statutory Disclosures” on pages 65 and 387, respectively.
+Objects of the Offer
+Our Company proposes to utilise the Net Proceeds towards funding the following objects:
+1 “MCGM - Redevelopment” includes redevelopment projects under DCPR 2034 rule 33(7), 33(7)(A) and 33(7)(B)
+2 “Western Suburbs” means the micro markets of Vile Parle, Santacruz, Juhu, Andheri, Jogeshwari, Goregaon, Malad, Kandivali,
+Borivali and Dahisar in the western suburban areas of the MCGM Region.
+16
+Particulars Estimated amount(1) (in ₹ million)
+Funding costs towards obtaining government and statutory approvals and purchase of 2,237.50
+additional FSI and cost towards compensation to members towards alternate
+accommodation, and hardship compensation, in relation to the development of certain of
+our Under-construction Redevelopment Projects, and certain of our Upcoming
+Redevelopment Projects(1)
+Repayment or pre-payment, in full or in part, of certain of our outstanding borrowings 740.00
+availed by our Company(1)
+Funding acquisition of future redevelopment projects and general corporate purposes (2) [●]
+Net Proceeds(1)(2) [●]
+(1) Our Company, in consultation with the BRLMs, may consider a Pre-IPO Placement for an amount aggregating up to ₹784.00 million, at its discretion,
+prior to the filing of the Red Herring Prospectus. The Pre-IPO Placement, if undertaken, will be at a price to be decided by our Company, in consultation
+with the BRLMs. If the Pre-IPO Placement is completed, the amount raised pursuant to the Pre-IPO Placement will be reduced from the Fresh Issue,
+subject to compliance with Rule 19(2)(b) of the SCRR. The Pre-IPO Placement, if undertaken, shall not exceed 20% of the size of the Fresh Issue. Prior
+to the completion of the Offer, our Company shall appropriately, intimate the subscribers to the Pre-IPO Placement, prior to allotment pursuant to the
+Pre-IPO Placement, that there is no guarantee that our Company may proceed with the Offer or the Offer may be successful and will result into listing
+of the Equity Shares on the Stock Exchanges. Further, relevant disclosures in relation to such intimation to the subscriber to the Pre-IPO Placement (if
+undertaken) shall be appropriately made in the relevant sections of the Red Herring Prospectus and Prospectus.
+(2) To be finalised upon determination of the Offer Price and updated in the Prospectus prior to filing with the RoC. The amount to be utilised for funding
+acquisition of future redevelopment projects and general corporate purposes will not individually exceed 25% of the Gross Proceeds respectively, and
+will not collectively exceed 35% of the Gross Proceeds.
+For further details, see “Objects of the Offer” on page 98.
+Aggregate pre-Offer shareholding of our Promoters, Promoter Group and Selling Shareholders
+The aggregate pre-Offer shareholding of our Promoters and Selling Shareholders as a percentage of the pre-Offer paid-up
+Equity Share capital of our Company is set out below^:
+S. No. Name of the Shareholder* Pre-Offer equity share capital
+No. of equity shares of % of paid-up equity share capital
+face value of ₹10
+Promoters
+1. Pranav Kiran Ashar 40,496,986 46.46%
+2. Ravi Ramalingam* 14,721,859 16.89%
+Total (A) 55,218,845 63.35%
+Promoter Group
+1. Pranav Ashar Trust 500 0.00%
+Total (B) 500 0.00%
+Selling Shareholders
+1. BioUrja India Infra Private Limited 3,794,968 4.35%
+Total (C) 3,794,968 4.35%
+Total (A+B+C) 59,014,313 67.70%
+* Also, Promoter Selling Shareholder
+For further details, see “Capital Structure” on page 80.
+Select Financial Information
+The following details of our Equity Share capital, net worth, revenue from operations, restated profit for the year, restated
+earnings per Equity Share (basic and diluted), net asset value per Equity Share and total borrowings for the nine month period
+ended December 31, 2024 and financial years ended March 31, 2024, March 31, 2023, and March 31, 2022, are derived from
+the Restated Financial Information:
+(₹ in million, except per share data)
+Particulars Consolidated Standalone
+December 31, March 31, 2024 March 31, 2023 March 31, 2022
+2024
+Equity share capital 630.60 36.51 34.99 24.93
+Revenue from operations 4,305.89 4,474.83 3,552.59 2,187.93
+Restated Profit/(Loss) for the year 430.45 396.17 203.47 36.13
+– Basic earnings per share(1) 5.01 4.66 2.53 0.07
+– Diluted earnings per share(2) 5.01 4.66 2.53 0.07
+Net asset value per Equity Share(3) 17.94 10.30 4.09 2.22
+Total Borrowings(4) 1,498.79 993.35 976.92 801.90
+Net Worth(5) 1,563.62 883.65 336.58 182.59
+Notes:
+1. Basic EPS = Basic earnings per share are calculated by dividing the net restated profit or loss for the period/year attributable to equity shareholders by the
+weighted average number of Equity Shares outstanding during the period/year.
+17
+2. Diluted EPS = Diluted earnings per share are calculated by dividing the net restated profit or loss for the period/ year attributable to equity shareholders
+by the weighted average number of Equity Shares outstanding during the period/ year as adjusted for the effects of all dilutive potential Equity Shares
+outstanding during the period/year.
+3. Net Asset Value per share = Net Asset Value Per Equity Share represents ratio of net worth to total equity shares of the Company.
+4. Total borrowings includes current and non-current borrowings.
+5. Net worth is defined as total equity, which is equity share capital plus general reserve, retained earnings, securities premium and non-controlling interest.
+For further details, see “Other Financial Information” on page 335.
+Qualifications of the Statutory Auditor which have not been given effect to in the Restated Financial Information
+Our Statutory Auditors have not made any qualifications that have not been given effect to in the Restated Financial Information.
+Summary of Outstanding Litigation
+A summary of outstanding litigation proceedings involving our Company, Promoters, and Directors as on the date of this Draft
+Red Herring Prospectus as disclosed in the section titled “Outstanding Litigation and Material Developments” in terms of the
+SEBI ICDR Regulations and the Materiality Policy is provided below:
+Name of Criminal Tax Statutory or Disciplinary actions by Material civil Aggregate amount
+Entity Proceedings Proceedings Regulatory SEBI or Stock litigation# involved (₹ in
+(direct and Proceedings Exchanges against our million)*
+indirect tax) Promoters in the last
+five years
+Company
+By our Nil Nil Nil Not applicable Nil Nil
+Company
+Against our Nil 4 Nil Not applicable 1$ 11.16
+Company
+Directors (other than Promoter)
+By our Nil Nil Nil Not applicable Nil Nil
+Directors
+Against our Nil 2 Nil Not applicable Nil 0.22
+Directors
+Promoters
+By our Nil Nil Nil Nil Nil Nil
+Promoters
+Against our Nil 2 Nil Nil 1 101.48
+Promoters
+Subsidiaries
+By our Nil Nil Nil Not applicable Nil Nil
+Subsidiaries
+Against our Nil Nil Nil Not applicable Nil Nil
+Subsidiaries
+#In accordance with the Materiality Policy
+*To the extent quantifiable.
+$Not quantifiable
+As on the date of this Draft Red Herring Prospectus, there is no outstanding litigation involving our Group Companies which
+may have a material impact on our Company. For further details of the outstanding litigation proceedings, see “Outstanding
+Litigation and Material Developments” on page 380.
+Risk Factors
+Specific attention of Investors is invited to the section “Risk Factors” on page 30. Investors are advised to read the risk factors
+carefully before taking an investment decision in the Offer. Set forth below are the top 10 risk factors applicable to our
+Company:
+Sr. no. Description of Risk
+1. Our Redevelopment activities are geographically concentrated in the MCGM Region, and more specifically, the Western
+Suburbs.
+2. An inability to complete our Under-construction Redevelopment Projects and Upcoming Redevelopment Projects by their
+respective expected completion dates or at all.
+3. Inability to sell our Redevelopment Projects inventory in a timely manner.
+4. We do not enter into agreements for supply of construction materials for our Redevelopment Projects.
+5. We depend on a limited number of suppliers for construction materials for our Redevelopment Projects.
+6. We depend on a limited number of contractors for our business activities and operations.
+7. We may not be able to successfully identify and acquire Redevelopment Projects in the future.
+18
+Sr. no. Description of Risk
+8. We have entered into Redevelopment agreements with Co-operative Housing Societies to acquire Redevelopment rights
+which may entail risks pertaining to irregularities in the title or use of land for which we have acquired Redevelopment
+rights.
+9. Our business is capital intensive and requires significant expenditure for Redevelopment Projects and is dependent on the
+availability of financing, which may not be available on terms acceptable to us in a timely manner or at all.
+10. We are subject to penalty clauses under the Redevelopment agreements entered into with Co-operative Housing Societies
+for any delay in the completion or defects in construction of the Redevelopment Projects.
+Summary of Contingent Liabilities of our Company
+Except as stated below, there are no contingent liabilities of our Company as at December 31, 2024 derived from the Restated
+Financial Information:
+(₹ in million)
+Particulars As at
+December 31, 2024
+Bank guarantees 59.11
+Income tax liability that may arise in respect of matters in appeal* 7.60
+Total 66.71
+* Income tax demand comprise demand from the Income tax authorities pertaining to a matter related to the financial year 2016-17. The Company has received
+order dated May 30, 2023 of demand amounting to ₹ 7.60 Million. The Company has filed an appeal against this Assessment Order with the Commissioner of
+Income-tax (Appeals), Mumbai.
+For further details of the contingent liabilities of our Company as on December 31, 2024, see “Restated Financial Information
+– Note 47(b)” on page 333.
+Summary of Related Party Transactions
+A summary of related party transactions (post inter-company eliminations) as per Ind AS 24 – Related Party Disclosures, read
+with the SEBI ICDR Regulations entered into by our Company for the nine-month period ended December 31, 2024 and
+financial years ended March 31, 2024, March 31, 2023 and March 31, 2022, as per Ind AS 24 –Related Party Disclosures read
+with SEBI ICDR Regulations and derived from the Restated Financial Information are as set forth below:
+(in ₹ million)
+Particulars Name of the related Consolidated Standalone
+party December 31, 2024 March 31, 2024 March 31, 2023 March 31, 2022
+Details of related party transactions carried out during the Period / Year
+Revenue from Real Vaisshali Ashar - 1.47 1.89 4.70
+Estate Development Krish Investment - 6.91 307.71 -
+- 8.38 309.60 4.70
+Amounts Received Vaisshali Ashar - 0.90 7.58 0.50
+towards Sale of Flats Krish Investment(1) - 218.24 250.00 44.50
+- 219.14 257.58 45.00
+Amounts Repaid on Krish Investment 14.39 454.35 0.35 53.43
+Cancellation of Flats
+14.39 454.35 0.35 53.43
+Miscellaneous Income Pranav Kiran Ashar - - 0.20 -
+- 0.20 -
+-
+Interest Expense Pranav Kiran Ashar 29.64 60.49 65.02 20.99
+29.64 60.49 65.02 20.99
+Managerial Late Kiran Ashar* - - 11.05 15.00
+remuneration Pranav Kiran Ashar 30.82 41.09 22.00 15.00
+Ravi Ramalingam 26.42 35.22 17.00 -
+Ritu Jain 1.61 1.52 1.12 0.74
+Suneet Desai 5.50 5.87 2.78 1.14
+Ninad Patkar 4.72 4.82 1.08 0.36
+Dilkhush Malesha 6.95 - - -
+Akshay Kriplani 10.13 - - -
+86.15 88.52 55.03 32.24
+Sitting Fees Pritesh Patangia 0.21 0.02 0.10 0.02
+Gautam Gulabchand 0.25 - - -
+Parekh
+Harish Gopinath Kale 0.26 - - -
+Sreedhar Muppala 0.11 - - -
+19
+Particulars Name of the related Consolidated Standalone
+party December 31, 2024 March 31, 2024 March 31, 2023 March 31, 2022
+Details of related party transactions carried out during the Period / Year
+Nina Pradip Kapasi 0.21 - - -
+Nihar Niranjan 0.29 - - -
+Jambusaria
+1.33 0.02 0.10 0.02
+Employee Benefit Samidha Prabhu 3.99 4.09 - -
+Expense
+3.99 4.09 - -
+Professional fees Ninad Patkar - - 1.98 1.99
+Samidha Prabhu - - 1.98 1.68
+Ravi Ramalingam - - 4.85 4.84
+Deepthi - - 4.80 4.39
+Chandrasekhar
+Deepthi & Ravi - - 1.89 1.92
+Techsec Digital Global 5.82 1.24 - -
+Private Limited
+5.82 1.24 15.50 14.82
+Compensation Krish Investment - 27.39 - 14.12
+- 27.39 - 14.12
+Purchase of Asset Techsec Digital Global 4.14 - - -
+Private Limited
+4.14 - - -
+Project Expenses Professional Homes - 1.80 1.80 -
+(Consultancy Charges) Positive Constructions 1.52 1.13 0.84 -
+Nine Realms - 0.30 1.80 -
+Constructions
+Krish Development - 1.83 1.80 -
+Corporation
+Angstroms - - - 1.80 -
+Partnership firms
+En-vision Design 0.48 - - -
+Studio Private Limited
+2.00 5.06 8.04 -
+Reimbursement of Pranav Kiran Ashar 0.29 1.55 18.21 93.71
+Expenses Samidha Prabhu - - 0.18 -
+Ravi Ramalingam(2) - 0.00 1.48 30.41
+Suneet Desai - - - 0.01
+Ninad Patkar - 0.00 - 0.01
+Pritesh Patangia(3) - 0.00 - -
+Dilkhush Malesha 0.04 - - -
+0.33 1.55 19.87 124.14
+Advance Given(4) Positive Constructions 0.06 0.16 0.65 -
+Techsec Digital Global - 0.07 - -
+Private Limited
+Ravi Ramalingam - - 1.46 -
+Late Kiran Ashar* - - - 1.07
+Pranav Kiran Ashar - - 0.21 14.91
+Angstroms - - 0.40 0.89
+Krish Investment(5) - 3.76 - 1.29
+0.06 3.99 2.72 18.16
+Advance Returned Positive Constructions - 0.16 0.65 -
+Techsec Digital Global - 0.07 - -
+Private Limited
+Ravi Ramalingam - - 1.46 -
+Kiran Ashar - - - 1.07
+Pranav Kiran Ashar - - - 2.27
+Krish Investment - 1.30 - 1.29
+- 1.53 2.11 4.63
+Loan taken during the Pranav Kiran Ashar 125.00 797.00 273.50 231.00
+Period / Year 125.00 797.00 273.50 231.00
+Loan repaid during the Pranav Kiran Ashar 267.40 717.50 388.90 52.05
+Period / Year 267.40 717.50 388.90 52.05
+Balances outstanding at the end of the Period / Year
+Managerial Late Kiran Ashar* - - 0.52 2.65
+Remuneration Pranav Kiran Ashar 2.12 1.97 2.41 0.88
+20
+Particulars Name of the related Consolidated Standalone
+party December 31, 2024 March 31, 2024 March 31, 2023 March 31, 2022
+Details of related party transactions carried out during the Period / Year
+Ritu Jain 0.14 0.11 - 0.06
+Suneet Desai 0.44 0.35 - 0.08
+Ravi Ramalingam 1.82 1.69 - -
+Ninad Patkar 0.37 0.29 - 0.07
+Dilkhush Malesha 0.44 - - -
+Akshay Kriplani 0.75 - - -
+6.08 4.41 2.93 3.74
+Loan Outstanding Pranav Kiran Ashar 62.48 204.88 125.38 240.78
+62.48 204.88 125.38 240.78
+Payable to Directors Pranav Kiran Ashar 36.60 54.44 14.01 33.32
+Ravi Ramalingam - - 0.82 0.07
+36.60 54.44 14.83 33.39
+Payable for employee Samidha Prabhu 0.29 0.24 - -
+benefits 0.29 0.24 - -
+Trade Payables Ravi Ramalingam - - 0.35 -
+Ninad Patkar - - 0.04 0.14
+Deepthi & Ravi - - - 0.01
+Samidha Prabhu - - 0.16 0.27
+Angstroms - - 0.04 0.43
+Techsec Digital Global 0.28 - - -
+Private Limited
+0.28 0.00 0.59 0.85
+Advance Received from Krish Investment - - 3.47 0.35
+Customers - - 3.47 0.35
+Trade Receivables Vaisshali Ashar - - 0.45 3.63
+Krish Investment - 8.38 12.85 0.35
+- 8.38 13.30 3.98
+Guarantee Given on Pranav Kiran Ashar 59.11 63.64 69.31 74.73
+Behalf of 59.11 63.64 69.31 74.73
+Guarantee Taken(6) Pranav Kiran Ashar 1,147.54 547.43 546.85 302.98
+1,147.54 547.43 546.85 302.98
+Reimbursement Pranav Kiran Ashar 0.01 - - -
+Account
+0.01 - - -
+(1) Amounts received towards sale of flats includes amount for discharge of tax deducted at source on behalf of related party, amounting to ₹ 2.47 million
+in March 2023.
+(2) Reimbursement in case of Ravi Ramalingam is less than ₹ 10,000
+(3) Reimbursement in case of Pritesh Patangia is less than ₹ 10,000
+(4) Advance given includes expenses incurred by Company on behalf of related parties.
+(5) Advance given during the year ended March 31, 2024 includes amount of tax deducted at source discharged on behalf of related party, amounting to ₹
+2.47 million which was received along with sale of flats during year ended March 31, 2023.
+(6) Mr. Pranav Kiran Ashar has provided personal guarantee in respect of various construction finance and OD Facility obtained from Banks and Financial
+Institutions.
+* Demised on January 16, 2023
+For details of the related party transactions, see “Restated Financial Information - Note 40 – Related Party Transactions” on
+page 321.
+Further, the percentage of the arithmetic aggregated absolute total of related party transactions (post inter-company
+eliminations) to our revenue from operations for the nine-month period ended December 31, 2024 and financial years ended
+March 31, 2024, March 31, 2023 and March 31, 2022, is 12.55%, 53.42%, 39.37% and 28.12%, respectively.
+Financing Arrangements
+There have been no financing arrangements whereby our Promoters, members of our Promoter Group, our Directors and their
+relatives (as defined under the Companies Act) have financed the purchase by any other person of securities of our Company,
+other than in the normal course of the business of the financing activity during a period of six months immediately preceding
+the date of this Draft Red Herring Prospectus.
+Details of price at which specified securities were acquired by our Promoters, members of the Promoter Group, Selling
+Shareholders and Shareholders with the right to nominate Directors or any other special rights in the three years
+preceding the date of this Draft Red Herring Prospectus
+21
+Except as stated below, there have been no specified securities that were acquired in the last three years preceding the date of
+this Draft Red Herring Prospectus, by the Promoters, members of our Promoter Group in the Company:
+Sr. Name of the Category Date of acquisition of the Number of Face value Acquisition price
+No. acquirer/ Equity Shares Equity Shares per Equity Share
+Shareholder acquired (in ₹)
+1. Pranav Kiran Ashar Promoter January 19, 2023 54,324 10 NA
+May 25, 2024 13,786,208 10 NA
+May 31, 2024 13,786,208 10 NA
+January 7, 2025 11,201,294 10 NA
+2. Ravi Ramalingam Promoter and May 25, 2024 5,040,000 10 NA
+Promoter Selling May 31, 2024 5,040,000 10 NA
+Shareholder January 7, 2025 4,095,000 10 NA
+3. BioUrja India Infra Investor Selling December 12, 2023 10,000 10 1,000
+Private Limited Shareholder December 30, 2023 151,488 10 1,000
+May 25, 2024 1,291,904 10 NA
+May 31, 2024 1,291,904 10 NA
+January 7, 2025 1,049,672 10 NA
+4. Kiran D. Ashar and Member of March 22, 2022 1,000 10 1,200
+Pranav K. Ashar Promoter Group March 22, 2022 1,000 10 1,200
+(holding on behalf March 22, 2022 1,000 10 1,200
+of Krish March 22, 2022 1,000 10 1,200
+Investment) March 22, 2022 1,000 10 1,200
+March 22, 2022 1,000 10 1,200
+March 22, 2022 1,000 10 1,200
+March 22, 2022 5,000 10 1,170
+March 22, 2022 5,000 10 1,170
+March 22, 2022 5,000 10 1,170
+March 22, 2022 5,000 10 1,170
+March 22, 2022 5,000 10 1,170
+March 22, 2022 5,000 10 1,170
+5. Nine Realms Member of December 2, 2024 500,000 10 250
+Advisory LLP Promoter Group January 7, 2025 191,176 10 NA
+6. Pranav Ashar Trust Member of January 30, 2025 500 10 240
+Promoter Group
+As on the date of this Draft Red Herring Prospectus our Company do not have any Shareholders entitled with the right to
+nominate directors or other rights in the Company.
+Average cost of acquisition for our Promoters and Selling Shareholders
+The average cost of acquisition per Equity Share for shares held by our Promoters as at the date of this Draft Red Herring
+Prospectus is:
+Name of the Promoter Number of Equity Shares held Average cost of acquisition per
+Equity Share (in ₹)*
+Pranav Kiran Ashar 40,496,986 0.29
+Ravi Ramalingam^ 14,721,859 2.79
+As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.
+^ Also, Promoter Selling Shareholder
+The average cost of acquisition per Equity Share for shares held by the Selling Shareholders as at the date of this Draft Red
+Herring Prospectus is:
+Name of the Selling Shareholder Number of Equity Shares held Average cost of acquisition per
+share (in ₹)*
+BioUrja India Infra Private Limited 37,94,968 42.55
+*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.
+Weighted average price at which the Equity Shares were acquired by our Promoters and Selling Shareholders in the
+one year preceding the date of this Draft Red Herring Prospectus
+The weighted average price at which the Equity Shares have been acquired by our Promoters in the one year preceding the date
+of this Draft Red Herring Prospectus is provided below:
+22
+Name of the Promoter Number of Equity Shares acquired Weighted average price of
+in the last one year acquisition per Equity Share (in
+₹)*
+Pranav Kiran Ashar 38,773,710 Nil
+Ravi Ramalingam^ 14,175,000 Nil
+*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.
+^Also, Promoter Selling Shareholder
+The weighted average price at which the Equity Shares have been acquired by the Selling Shareholders in the one year preceding
+the date of this Draft Red Herring Prospectus is provided below:
+Name of the Selling shareholder Number of Equity Shares Weighted average price of
+acquired in the last one year acquisition per Equity Share (in ₹)*
+BioUrja India Infra Private Limited 3,633,480 Nil
+*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.
+Weighted average cost of acquisition of Equity Shares transacted in one year, 18 months and three years preceding the
+date of this Draft Red Herring Prospectus:
+Period Weighted average cost of Cap Price is ‘x’ times the Range of acquisition price per
+acquisition per Equity weighted average cost of Equity Share: lowest price –
+Share (in ₹)* acquisition*^ highest price (in ₹)*
+Last one year preceding the date of this 8.02 [●] Nil – 4,130
+Draft Red Herring Prospectus
+Last 18 months preceding the date of this 9.92 [●] Nil – 4,130
+Draft Red Herring Prospectus
+Last three years preceding the date of this 16.27 [●] Nil – 4,130
+Draft Red Herring Prospectus
+*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.
+^To be updated in the Prospectus following finalisation of Cap Price, as per the finalised Price Band.
+There are no Shareholders with right to nominate directors or other special rights.
+Details of pre-IPO Placement
+Our Company, in consultation with the BRLMs, may consider a Pre-IPO Placement for an amount aggregating up to ₹784.00
+million, at its discretion, prior to the filing of the Red Herring Prospectus. The Pre-IPO Placement, if undertaken, will be at a
+price to be decided by our Company, in consultation with the BRLMs. If the Pre-IPO Placement is completed, the amount
+raised pursuant to the Pre-IPO Placement will be reduced from the Fresh Issue, subject to compliance with Rule 19(2)(b) of the
+SCRR. The Pre-IPO Placement, if undertaken, shall not exceed 20% of the size of the Fresh Issue. Prior to the completion of
+the Offer, our Company shall appropriately, intimate the subscribers to the Pre-IPO Placement, prior to allotment pursuant to
+the Pre-IPO Placement, that there is no guarantee that our Company may proceed with the Offer or the Offer may be successful
+and will result into listing of the Equity Shares on the Stock Exchanges. Further, relevant disclosures in relation to such
+intimation to the subscribers to the Pre-IPO Placement (if undertaken) shall be appropriately made in the relevant sections of
+the Red Herring Prospectus and the Prospectus.
+Issue of Equity Shares for consideration other than cash in the last one year
+Except as disclosed below, our Company has not issued any Equity Shares for consideration other than cash in the one year
+preceding the date of this Draft Red Herring Prospectus:
+Date of Nature of Details of allottees/ shareholders and Number of Face value Issue price Benefits, if
+allotment allotment Equity Shares Equity Shares per Equity per Equity any, that
+allotted allotted Share Share have
+(₹) (₹) accrued to
+our
+Company
+May 25, Bonus issue in the See note(1) 29,204,704 10 N/A N/A
+2024 ratio of 8 Equity
+Shares for every 1
+Equity Share held.
+May 31, Bonus issue in the See note(2) 29,204,704 10 N/A N/A
+2024 ratio of 8 Equity
+Shares for every 9
+Equity Shares held.
+January 7, Bonus issue in the See note(3) 24,111,174 10 N/A N/A
+2025 ratio of 13 Equity
+23
+Date of Nature of Details of allottees/ shareholders and Number of Face value Issue price Benefits, if
+allotment allotment Equity Shares Equity Shares per Equity per Equity any, that
+allotted allotted Share Share have
+(₹) (₹) accrued to
+our
+Company
+Shares for every 34
+Equity Shares held
+(1) Allotment of 13,786,208 Equity Shares to Pranav Kiran Ashar, 5,040,000 Equity Shares to Ravi Ramalingam, 8,053,600 Equity Shares to RiverCrest
+India Infrastructure Private Limited, 1,291,904 Equity Shares to BioUrja India Infra Private Limited, 464,992 Equity Shares to Jitendra Kantilal Shah,
+120,000 Equity Shares to Vishwas Mahadeo Kokane and Vrushali Suryakant Pathare, 80,000 Equity Shares to Jugal Prafulchandra Shah, 80,000 Equity
+Shares to Jyoti Jugal Shah, 16,000 Equity Shares to Yogesh Ratilal Shah and Sangeeta Yogesh Shah, 12,000 Equity Shares to Sangeeta Yogesh Shah and
+Yogesh Ratilal Shah, 4,000 Equity Shares to Chintan Yogesh Shah, 20,000 Equity Shares to Jesal Manish Shah, 80,000 Equity Shares to Harish Gopinath
+Kale, 16,000 Equity Shares to Samir Rasik Hingoo, 16,000 Equity Shares to Nirav Rasik Hingoo, 16,000 Equity Shares to Kinjal Rasiklal Hingoo, 20,000
+Equity Shares to Pankaj Arvindbhai Patel, 8,000 Equity Shares to Jatin Popatlal Shah, 8,000 Equity Shares to Kalpana Jatin Shah, 8,000 Equity Shares
+to Kaushal Jatin Shah, 8,000 Equity Shares to Priti Kaushal Shah, 8,000 Equity Shares to Kris Kaushal Shah, 8,000 Equity Shares to Jully Vikram Shah,
+8,000 Equity Shares to Chaitali Tejas Shah, 8,000 Equity Shares to Abhay Shashikant Salot, 8,000 Equity Shares to Darshan Kiran Shah, 8,000 Equity
+Shares to Shreyansh Manish Shah and 8,000 Equity Shares to Mansi Yogesh Shah.
+(2) Allotment of 13,786,208 Equity Shares to Pranav Kiran Ashar, 5,040,000 Equity Shares to Ravi Ramalingam, 8,053,600 Equity Shares to RiverCrest
+India Infrastructure Private Limited, 1,291,904 Equity Shares to BioUrja India Infra Private Limited, 464,992 Equity Shares to Jitendra Kantilal Shah,
+120,000 Equity Shares to Vishwas Mahadeo Kokane and Vrushali Suryakant Pathare, 80,000 Equity Shares to Jugal Prafulchandra Shah, 80,000 Equity
+Shares to Jyoti Jugal Shah, 16,000 Equity Shares to Yogesh Ratilal Shah and Sangeeta Yogesh Shah, 12,000 Equity Shares to Sangeeta Yogesh Shah and
+Yogesh Ratilal Shah, 4,000 Equity Shares to Chintan Yogesh Shah, 20,000 Equity Shares to Jesal Manish Shah, 80,000 Equity Shares to Harish Gopinath
+Kale, 16,000 Equity Shares to Samir Rasik Hingoo, 16,000 Equity Shares to Nirav Rasik Hingoo, 16,000 Equity Shares to Kinjal Rasiklal Hingoo, 20,000
+Equity Shares to Pankaj Arvindbhai Patel, 8,000 Equity Shares to Jatin Popatlal Shah, 8,000 Equity Shares to Kalpana Jatin Shah, 8,000 Equity Shares
+to Kaushal Jatin Shah, 8,000 Equity Shares to Priti Kaushal Shah, 8,000 Equity Shares to Kris Kaushal Shah, 8,000 Equity Shares to Jully Vikram Shah,
+8,000 Equity Shares to Chaitali Tejas Shah, 8,000 Equity Shares to Abhay Shashikant Salot, 8,000 Equity Shares to Darshan Kiran Shah, 8,000 Equity
+Shares to Shreyansh Manish Shah and 8,000 Equity Shares to Mansi Yogesh Shah.
+(3) Allotment of 11,201,294 Equity Shares to Pranav Kiran Ashar, 4,095,000 Equity Shares to Ravi Ramalingam, 6,543,550 Equity Shares to RiverCrest
+India Infrastructure Private Limited, 1,049,672 Equity Shares to BioUrja India Infra Private Limited, 530,747 Equity Shares to Jitendra Kantilal Shah,
+191,176 Equity Shares to Nine Realms Advisory LLP, 97,500 Equity Shares to Vishwas Mahadeo Kokane and Vrushali Suryakant Pathare, 65,000 Equity
+Shares to Jugal Prafulchandra Shah, 65,000 Equity Shares to Jyoti Jugal Shah, 65,000 Equity Shares to Harish Gopinath Kale, 38,235 Equity Shares to
+Pooja Jinit Dharia, 16,250 Equity Shares to Jesal Manish Shah, 16,250 Equity Shares to Pankaj Arvindbhai Patel, 13,000 Equity Shares to Yogesh
+Ratilal Shah and Sangeeta Yogesh Shah, 13,000 Equity Shares to Samir Rasik Hingoo, 13,000 Equity Shares to Nirav Rasik Hingoo, 13,000 Equity Shares
+to Kinjal Rasiklal Hingoo, 9,750 Equity Shares to Sangeeta Yogesh Shah and Yogesh Ratilal Shah, 6,500 Equity Shares to Jatin Popatlal Shah, 6,500
+Equity Shares to Kalpana Jatin Shah, 6,500 Equity Shares to Kaushal Jatin Shah, 6,500 Equity Shares to Priti Kaushal Shah, 6,500 Equity Shares to Kris
+Kaushal Shah, 6,500 Equity Shares to Jully Vikram Shah, 6,500 Equity Shares to Chaitali Tejas Shah, 6,500 Equity Shares to Abhay Shashikant Salot,
+6,500 Equity Shares to Darshan Kiran Shah, 6,500 Equity Shares to Shreyansh Manish Shah, 6,500 Equity Shares to Mansi Yogesh Shah and 3,250
+Equity Shares to Chintan Yogesh Shah
+Split / Consolidation of Equity Shares in the last one year
+There has been no split or consolidation of the Equity Shares of our Company in the last one year.
+Exemption from complying with provisions of securities laws granted by SEBI
+Pursuant to a letter dated October 24, 2024, our Company had sought an exemption from SEBI under Regulation 300(1)(c) of
+the SEBI ICDR Regulations for relaxation of the strict enforcement of Regulation 2(1)(pp) of the SEBI ICDR Regulations with
+regard to identification of and disclosures relating to (a) Vaisshali Pranav Ashar; (b) Geeta Vasanji Furia and their related
+entities as members of the Promoter Group of our Company in this Draft Red Herring Prospectus, in accordance with the SEBI
+ICDR Regulations.
+Pursuant to its letter dated December 17, 2024, SEBI has not acceded to our Company’s request and has directed our Company
+to inter alia classify and disclose (a) Vaisshali Pranav Ashar; (b) Geeta Vasanji Furia and their related entities as a part of the
+Promoter Group of our Company and include applicable disclosures relating to them based on information available in the
+public domain. For details, see “Risk Factors – One of the members of our Promoter Group has an estranged relationship with
+one of our Promoters, therefore we will not be able to obtain any details regarding this member of Promoter Group which are
+required to be disclosed in relation to Promoter Group under the SEBI ICDR Regulations in this Prospectus. The disclosures
+relating to this member of the Promoter Group has been included in this Draft Red Herring Prospectus based on information
+available in public domain. Accordingly, we cannot assure you that the disclosures relating to such members of our Promoter
+Group are accurate, complete, or updated. Further, details in relation to Connected Persons which may qualify as a member
+of our Promoter Group have not been disclosed in this Prospectus.” and “Promoters and Promoter Group” on pages 48 and
+262, respectively.
+24
+
+=== LINE-BY-LINE (with length) ===
+[0] (len=22) 'OFFER DOCUMENT SUMMARY'
+[1] (len=126) 'This section is a general summary of the terms of the Offer, certain disclosures included in this Draft Red Herring Prospectus'
+[2] (len=128) 'and are neither exhaustive, nor does it purport to contain a summary of all the disclosures in this Draft Red Herring Prospectus'
+[3] (len=131) 'or all details relevant to prospective investors. This summary should be read in conjunction with, and is qualified in its entirety'
+[4] (len=127) 'by, the more detailed information appearing elsewhere in this Draft Red Herring Prospectus, including the sections titled “Risk'
+[5] (len=119) 'Factors”, “The Offer”, “Capital Structure”, “Objects of the Offer”, “Industry Overview”, “Our Business”, “Promoters and'
+[6] (len=116) 'Promoter Group”, “Restated Financial Information”, “Management’s Discussions and Analysis of Financial Condition and'
+[7] (len=123) 'Results of Operations”, “Outstanding Litigation and Material Developments”, and “Offer Structure”, on pages 30, 65, 80, 98,'
+[8] (len=51) '138, 199, 262, 268, 351, 380 and 404, respectively.'
+[9] (len=42) 'Summary of Primary business of our Company'
+[10] (len=116) 'We have adopted an integrated Redevelopment model, with capabilities and in-house resources to execute Redevelopment'
+[11] (len=122) 'Projects from initiation to completion. We are the leading real estate company, based on the supply of units and number of'
+[12] (len=120) 'completed and under construction MCGM - Redevelopment1 projects in the Western Suburbs2, with a total of 1,503 units and'
+[13] (len=111) '27 MCGM - Redevelopment projects (completed and under construction) whereas other developers have 2 to 7 MCGM -'
+[14] (len=80) 'Redevelopment projects, each launched between CY 17 –CY 24 (Source: C&W Report).'
+[15] (len=53) 'Summary of the Industry in which our Company operates'
+[16] (len=125) 'As per industry estimates, the housing sector is expected to account for ~13% share in India’s GDP by 2025 and the cumulative'
+[17] (len=123) 'real estate sector is expected grow to USD 1 Tn by 2030. The real estate & construction sector is considered as the largest'
+[18] (len=122) 'employer after agriculture in India. MMR alone saw a 71% YoY rise in new residential units launched in CY 21 followed by a'
+[19] (len=122) '48% rise in CY 22. Over the last few years including 2020 and 2021, MMR has remained resilient compared to other cities in'
+[20] (len=127) 'India. On an average, MMR accounts for 28% of the total share of new residential unit launches across the top 8 cities of India'
+[21] (len=42) 'between 2019 to 2024 (Source: C&W Report).'
+[22] (len=22) 'Names of the Promoters'
+[23] (len=116) 'Our Promoters are Pranav Kiran Ashar and Ravi Ramalingam. For further details, see “Promoters and Promoter Group” on'
+[24] (len=9) 'page 262.'
+[25] (len=10) 'Offer Size'
+[26] (len=56) 'The following table summarises the details of the Offer:'
+[27] (len=117) 'Offer (1) Up to [●] Equity Shares of face value of ₹ 10 each for cash at price of ₹ [●] per Equity Share (including a'
+[28] (len=66) 'premium of [●] per Equity Share), aggregating up to ₹ [●] million.'
+[29] (len=8) 'of which'
+[30] (len=101) 'Fresh Issue (2) Up to [●] Equity Shares face value of ₹ 10 each aggregating up to ₹ 3,920.00 million.'
+[31] (len=123) 'Offer for Sale(3) Up to 2,856,869 Equity Shares face value of ₹ 10 each by the Selling Shareholders aggregating up to ₹ [●]'
+[32] (len=8) 'million.'
+[33] (len=153) '(1) The Offer has been authorized by a resolution of our Board dated February 21, 2025 and the Fresh Issue has been authorized by a special resolution of'
+[34] (len=41) 'our Shareholders dated February 24, 2025.'
+[35] (len=149) '(2) Our Company, in consultation with the BRLMs, may consider a Pre-IPO Placement for an amount aggregating up to ₹784.00 million, at its discretion,'
+[36] (len=153) 'prior to the filing of the Red Herring Prospectus. The Pre-IPO Placement, if undertaken, will be at a price to be decided by our Company, in consultation'
+[37] (len=144) 'with the BRLMs. If the Pre-IPO Placement is completed, the amount raised pursuant to the Pre-IPO Placement will be reduced from the Fresh Issue,'
+[38] (len=150) 'subject to compliance with Rule 19(2)(b) of the SCRR. The Pre-IPO Placement, if undertaken, shall not exceed 20% of the size of the Fresh Issue. Prior'
+[39] (len=150) 'to the completion of the Offer, our Company shall appropriately, intimate the subscribers to the Pre-IPO Placement, prior to allotment pursuant to the'
+[40] (len=149) 'Pre-IPO Placement, that there is no guarantee that our Company may proceed with the Offer or the Offer may be successful and will result into listing'
+[41] (len=153) 'of the Equity Shares on the Stock Exchanges. Further, relevant disclosures in relation to such intimation to the subscribers to the Pre-IPO Placement (if'
+[42] (len=114) 'undertaken) shall be appropriately made in the relevant sections of the Red Herring Prospectus and the Prospectus.'
+[43] (len=155) '(3) The Equity Shares being offered by the Selling Shareholders are eligible for being offered for sale pursuant to the Offer for Sale in terms of the SEBI'
+[44] (len=150) 'ICDR Regulations. For details of the authorisations by the Selling Shareholders in relation to the Offered Shares, see “Other Regulatory and Statutory'
+[45] (len=25) 'Disclosures” on page 387.'
+[46] (len=130) 'For details of the Selling Shareholders and their respective portion of Offered Shares, please see the sections titled “The Offer”'
+[47] (len=83) 'and “Other Regulatory and Statutory Disclosures” on pages 65 and 387, respectively.'
+[48] (len=20) 'Objects of the Offer'
+[49] (len=87) 'Our Company proposes to utilise the Net Proceeds towards funding the following objects:'
+[50] (len=106) '1 “MCGM - Redevelopment” includes redevelopment projects under DCPR 2034 rule 33(7), 33(7)(A) and 33(7)(B)'
+[51] (len=124) '2 “Western Suburbs” means the micro markets of Vile Parle, Santacruz, Juhu, Andheri, Jogeshwari, Goregaon, Malad, Kandivali,'
+[52] (len=70) 'Borivali and Dahisar in the western suburban areas of the MCGM Region.'
+[53] (len=2) '16'
+[54] (len=46) 'Particulars Estimated amount(1) (in ₹ million)'
+[55] (len=91) 'Funding costs towards obtaining government and statutory approvals and purchase of 2,237.50'
+[56] (len=73) 'additional FSI and cost towards compensation to members towards alternate'
+[57] (len=86) 'accommodation, and hardship compensation, in relation to the development of certain of'
+[58] (len=74) 'our Under-construction Redevelopment Projects, and certain of our Upcoming'
+[59] (len=25) 'Redevelopment Projects(1)'
+[60] (len=93) 'Repayment or pre-payment, in full or in part, of certain of our outstanding borrowings 740.00'
+[61] (len=25) 'availed by our Company(1)'
+[62] (len=91) 'Funding acquisition of future redevelopment projects and general corporate purposes (2) [●]'
+[63] (len=22) 'Net Proceeds(1)(2) [●]'
+[64] (len=149) '(1) Our Company, in consultation with the BRLMs, may consider a Pre-IPO Placement for an amount aggregating up to ₹784.00 million, at its discretion,'
+[65] (len=153) 'prior to the filing of the Red Herring Prospectus. The Pre-IPO Placement, if undertaken, will be at a price to be decided by our Company, in consultation'
+[66] (len=144) 'with the BRLMs. If the Pre-IPO Placement is completed, the amount raised pursuant to the Pre-IPO Placement will be reduced from the Fresh Issue,'
+[67] (len=150) 'subject to compliance with Rule 19(2)(b) of the SCRR. The Pre-IPO Placement, if undertaken, shall not exceed 20% of the size of the Fresh Issue. Prior'
+[68] (len=150) 'to the completion of the Offer, our Company shall appropriately, intimate the subscribers to the Pre-IPO Placement, prior to allotment pursuant to the'
+[69] (len=149) 'Pre-IPO Placement, that there is no guarantee that our Company may proceed with the Offer or the Offer may be successful and will result into listing'
+[70] (len=152) 'of the Equity Shares on the Stock Exchanges. Further, relevant disclosures in relation to such intimation to the subscriber to the Pre-IPO Placement (if'
+[71] (len=110) 'undertaken) shall be appropriately made in the relevant sections of the Red Herring Prospectus and Prospectus.'
+[72] (len=155) '(2) To be finalised upon determination of the Offer Price and updated in the Prospectus prior to filing with the RoC. The amount to be utilised for funding'
+[73] (len=148) 'acquisition of future redevelopment projects and general corporate purposes will not individually exceed 25% of the Gross Proceeds respectively, and'
+[74] (len=55) 'will not collectively exceed 35% of the Gross Proceeds.'
+[75] (len=59) 'For further details, see “Objects of the Offer” on page 98.'
+[76] (len=90) 'Aggregate pre-Offer shareholding of our Promoters, Promoter Group and Selling Shareholders'
+[77] (len=119) 'The aggregate pre-Offer shareholding of our Promoters and Selling Shareholders as a percentage of the pre-Offer paid-up'
+[78] (len=54) 'Equity Share capital of our Company is set out below^:'
+[79] (len=62) 'S. No. Name of the Shareholder* Pre-Offer equity share capital'
+[80] (len=57) 'No. of equity shares of % of paid-up equity share capital'
+[81] (len=17) 'face value of ₹10'
+[82] (len=9) 'Promoters'
+[83] (len=39) '1. Pranav Kiran Ashar 40,496,986 46.46%'
+[84] (len=37) '2. Ravi Ramalingam* 14,721,859 16.89%'
+[85] (len=27) 'Total (A) 55,218,845 63.35%'
+[86] (len=14) 'Promoter Group'
+[87] (len=31) '1. Pranav Ashar Trust 500 0.00%'
+[88] (len=19) 'Total (B) 500 0.00%'
+[89] (len=20) 'Selling Shareholders'
+[90] (len=54) '1. BioUrja India Infra Private Limited 3,794,968 4.35%'
+[91] (len=25) 'Total (C) 3,794,968 4.35%'
+[92] (len=31) 'Total (A+B+C) 59,014,313 67.70%'
+[93] (len=36) '* Also, Promoter Selling Shareholder'
+[94] (len=56) 'For further details, see “Capital Structure” on page 80.'
+[95] (len=28) 'Select Financial Information'
+[96] (len=125) 'The following details of our Equity Share capital, net worth, revenue from operations, restated profit for the year, restated'
+[97] (len=126) 'earnings per Equity Share (basic and diluted), net asset value per Equity Share and total borrowings for the nine month period'
+[98] (len=118) 'ended December 31, 2024 and financial years ended March 31, 2024, March 31, 2023, and March 31, 2022, are derived from'
+[99] (len=35) 'the Restated Financial Information:'
+[100] (len=37) '(₹ in million, except per share data)'
+[101] (len=35) 'Particulars Consolidated Standalone'
+[102] (len=57) 'December 31, March 31, 2024 March 31, 2023 March 31, 2022'
+[103] (len=4) '2024'
+[104] (len=45) 'Equity share capital 630.60 36.51 34.99 24.93'
+[105] (len=59) 'Revenue from operations 4,305.89 4,474.83 3,552.59 2,187.93'
+[106] (len=62) 'Restated Profit/(Loss) for the year 430.45 396.17 203.47 36.13'
+[107] (len=49) '– Basic earnings per share(1) 5.01 4.66 2.53 0.07'
+[108] (len=51) '– Diluted earnings per share(2) 5.01 4.66 2.53 0.07'
+[109] (len=57) 'Net asset value per Equity Share(3) 17.94 10.30 4.09 2.22'
+[110] (len=49) 'Total Borrowings(4) 1,498.79 993.35 976.92 801.90'
+[111] (len=42) 'Net Worth(5) 1,563.62 883.65 336.58 182.59'
+[112] (len=6) 'Notes:'
+[113] (len=161) '1. Basic EPS = Basic earnings per share are calculated by dividing the net restated profit or loss for the period/year attributable to equity shareholders by the'
+[114] (len=76) 'weighted average number of Equity Shares outstanding during the period/year.'
+[115] (len=2) '17'
+[116] (len=159) '2. Diluted EPS = Diluted earnings per share are calculated by dividing the net restated profit or loss for the period/ year attributable to equity shareholders'
+[117] (len=151) 'by the weighted average number of Equity Shares outstanding during the period/ year as adjusted for the effects of all dilutive potential Equity Shares'
+[118] (len=35) 'outstanding during the period/year.'
+[119] (len=132) '3. Net Asset Value per share = Net Asset Value Per Equity Share represents ratio of net worth to total equity shares of the Company.'
+[120] (len=64) '4. Total borrowings includes current and non-current borrowings.'
+[121] (len=160) '5. Net worth is defined as total equity, which is equity share capital plus general reserve, retained earnings, securities premium and non-controlling interest.'
+[122] (len=67) 'For further details, see “Other Financial Information” on page 335.'
+[123] (len=113) 'Qualifications of the Statutory Auditor which have not been given effect to in the Restated Financial Information'
+[124] (len=129) 'Our Statutory Auditors have not made any qualifications that have not been given effect to in the Restated Financial Information.'
+[125] (len=33) 'Summary of Outstanding Litigation'
+[126] (len=124) 'A summary of outstanding litigation proceedings involving our Company, Promoters, and Directors as on the date of this Draft'
+[127] (len=124) 'Red Herring Prospectus as disclosed in the section titled “Outstanding Litigation and Material Developments” in terms of the'
+[128] (len=67) 'SEBI ICDR Regulations and the Materiality Policy is provided below:'
+[129] (len=89) 'Name of Criminal Tax Statutory or Disciplinary actions by Material civil Aggregate amount'
+[130] (len=82) 'Entity Proceedings Proceedings Regulatory SEBI or Stock litigation# involved (₹ in'
+[131] (len=55) '(direct and Proceedings Exchanges against our million)*'
+[132] (len=35) 'indirect tax) Promoters in the last'
+[133] (len=10) 'five years'
+[134] (len=7) 'Company'
+[135] (len=41) 'By our Nil Nil Nil Not applicable Nil Nil'
+[136] (len=7) 'Company'
+[137] (len=45) 'Against our Nil 4 Nil Not applicable 1$ 11.16'
+[138] (len=7) 'Company'
+[139] (len=31) 'Directors (other than Promoter)'
+[140] (len=41) 'By our Nil Nil Nil Not applicable Nil Nil'
+[141] (len=9) 'Directors'
+[142] (len=45) 'Against our Nil 2 Nil Not applicable Nil 0.22'
+[143] (len=9) 'Directors'
+[144] (len=9) 'Promoters'
+[145] (len=30) 'By our Nil Nil Nil Nil Nil Nil'
+[146] (len=9) 'Promoters'
+[147] (len=34) 'Against our Nil 2 Nil Nil 1 101.48'
+[148] (len=9) 'Promoters'
+[149] (len=12) 'Subsidiaries'
+[150] (len=41) 'By our Nil Nil Nil Not applicable Nil Nil'
+[151] (len=12) 'Subsidiaries'
+[152] (len=46) 'Against our Nil Nil Nil Not applicable Nil Nil'
+[153] (len=12) 'Subsidiaries'
+[154] (len=42) '#In accordance with the Materiality Policy'
+[155] (len=28) '*To the extent quantifiable.'
+[156] (len=17) '$Not quantifiable'
+[157] (len=123) 'As on the date of this Draft Red Herring Prospectus, there is no outstanding litigation involving our Group Companies which'
+[158] (len=122) 'may have a material impact on our Company. For further details of the outstanding litigation proceedings, see “Outstanding'
+[159] (len=50) 'Litigation and Material Developments” on page 380.'
+[160] (len=12) 'Risk Factors'
+[161] (len=131) 'Specific attention of Investors is invited to the section “Risk Factors” on page 30. Investors are advised to read the risk factors'
+[162] (len=122) 'carefully before taking an investment decision in the Offer. Set forth below are the top 10 risk factors applicable to our'
+[163] (len=8) 'Company:'
+[164] (len=27) 'Sr. no. Description of Risk'
+[165] (len=118) '1. Our Redevelopment activities are geographically concentrated in the MCGM Region, and more specifically, the Western'
+[166] (len=8) 'Suburbs.'
+[167] (len=118) '2. An inability to complete our Under-construction Redevelopment Projects and Upcoming Redevelopment Projects by their'
+[168] (len=47) 'respective expected completion dates or at all.'
+[169] (len=77) '3. Inability to sell our Redevelopment Projects inventory in a timely manner.'
+[170] (len=103) '4. We do not enter into agreements for supply of construction materials for our Redevelopment Projects.'
+[171] (len=104) '5. We depend on a limited number of suppliers for construction materials for our Redevelopment Projects.'
+[172] (len=91) '6. We depend on a limited number of contractors for our business activities and operations.'
+[173] (len=96) '7. We may not be able to successfully identify and acquire Redevelopment Projects in the future.'
+[174] (len=2) '18'
+[175] (len=27) 'Sr. no. Description of Risk'
+[176] (len=116) '8. We have entered into Redevelopment agreements with Co-operative Housing Societies to acquire Redevelopment rights'
+[177] (len=120) 'which may entail risks pertaining to irregularities in the title or use of land for which we have acquired Redevelopment'
+[178] (len=7) 'rights.'
+[179] (len=124) '9. Our business is capital intensive and requires significant expenditure for Redevelopment Projects and is dependent on the'
+[180] (len=109) 'availability of financing, which may not be available on terms acceptable to us in a timely manner or at all.'
+[181] (len=121) '10. We are subject to penalty clauses under the Redevelopment agreements entered into with Co-operative Housing Societies'
+[182] (len=89) 'for any delay in the completion or defects in construction of the Redevelopment Projects.'
+[183] (len=48) 'Summary of Contingent Liabilities of our Company'
+[184] (len=124) 'Except as stated below, there are no contingent liabilities of our Company as at December 31, 2024 derived from the Restated'
+[185] (len=22) 'Financial Information:'
+[186] (len=14) '(₹ in million)'
+[187] (len=17) 'Particulars As at'
+[188] (len=17) 'December 31, 2024'
+[189] (len=21) 'Bank guarantees 59.11'
+[190] (len=73) 'Income tax liability that may arise in respect of matters in appeal* 7.60'
+[191] (len=11) 'Total 66.71'
+[192] (len=154) '* Income tax demand comprise demand from the Income tax authorities pertaining to a matter related to the financial year 2016-17. The Company has received'
+[193] (len=150) 'order dated May 30, 2023 of demand amounting to ₹ 7.60 Million. The Company has filed an appeal against this Assessment Order with the Commissioner of'
+[194] (len=29) 'Income-tax (Appeals), Mumbai.'
+[195] (len=125) 'For further details of the contingent liabilities of our Company as on December 31, 2024, see “Restated Financial Information'
+[196] (len=26) '– Note 47(b)” on page 333.'
+[197] (len=37) 'Summary of Related Party Transactions'
+[198] (len=124) 'A summary of related party transactions (post inter-company eliminations) as per Ind AS 24 – Related Party Disclosures, read'
+[199] (len=112) 'with the SEBI ICDR Regulations entered into by our Company for the nine-month period ended December 31, 2024 and'
+[200] (len=121) 'financial years ended March 31, 2024, March 31, 2023 and March 31, 2022, as per Ind AS 24 –Related Party Disclosures read'
+[201] (len=102) 'with SEBI ICDR Regulations and derived from the Restated Financial Information are as set forth below:'
+[202] (len=14) '(in ₹ million)'
+[203] (len=55) 'Particulars Name of the related Consolidated Standalone'
+[204] (len=68) 'party December 31, 2024 March 31, 2024 March 31, 2023 March 31, 2022'
+[205] (len=74) 'Details of related party transactions carried out during the Period / Year'
+[206] (len=50) 'Revenue from Real Vaisshali Ashar - 1.47 1.89 4.70'
+[207] (len=51) 'Estate Development Krish Investment - 6.91 307.71 -'
+[208] (len=18) '- 8.38 309.60 4.70'
+[209] (len=49) 'Amounts Received Vaisshali Ashar - 0.90 7.58 0.50'
+[210] (len=63) 'towards Sale of Flats Krish Investment(1) - 218.24 250.00 44.50'
+[211] (len=21) '- 219.14 257.58 45.00'
+[212] (len=58) 'Amounts Repaid on Krish Investment 14.39 454.35 0.35 53.43'
+[213] (len=21) 'Cancellation of Flats'
+[214] (len=23) '14.39 454.35 0.35 53.43'
+[215] (len=50) 'Miscellaneous Income Pranav Kiran Ashar - - 0.20 -'
+[216] (len=8) '- 0.20 -'
+[217] (len=1) '-'
+[218] (len=59) 'Interest Expense Pranav Kiran Ashar 29.64 60.49 65.02 20.99'
+[219] (len=23) '29.64 60.49 65.02 20.99'
+[220] (len=44) 'Managerial Late Kiran Ashar* - - 11.05 15.00'
+[221] (len=55) 'remuneration Pranav Kiran Ashar 30.82 41.09 22.00 15.00'
+[222] (len=35) 'Ravi Ramalingam 26.42 35.22 17.00 -'
+[223] (len=29) 'Ritu Jain 1.61 1.52 1.12 0.74'
+[224] (len=32) 'Suneet Desai 5.50 5.87 2.78 1.14'
+[225] (len=32) 'Ninad Patkar 4.72 4.82 1.08 0.36'
+[226] (len=27) 'Dilkhush Malesha 6.95 - - -'
+[227] (len=27) 'Akshay Kriplani 10.13 - - -'
+[228] (len=23) '86.15 88.52 55.03 32.24'
+[229] (len=49) 'Sitting Fees Pritesh Patangia 0.21 0.02 0.10 0.02'
+[230] (len=28) 'Gautam Gulabchand 0.25 - - -'
+[231] (len=6) 'Parekh'
+[232] (len=31) 'Harish Gopinath Kale 0.26 - - -'
+[233] (len=27) 'Sreedhar Muppala 0.11 - - -'
+[234] (len=2) '19'
+[235] (len=55) 'Particulars Name of the related Consolidated Standalone'
+[236] (len=68) 'party December 31, 2024 March 31, 2024 March 31, 2023 March 31, 2022'
+[237] (len=74) 'Details of related party transactions carried out during the Period / Year'
+[238] (len=29) 'Nina Pradip Kapasi 0.21 - - -'
+[239] (len=25) 'Nihar Niranjan 0.29 - - -'
+[240] (len=10) 'Jambusaria'
+[241] (len=19) '1.33 0.02 0.10 0.02'
+[242] (len=45) 'Employee Benefit Samidha Prabhu 3.99 4.09 - -'
+[243] (len=7) 'Expense'
+[244] (len=13) '3.99 4.09 - -'
+[245] (len=44) 'Professional fees Ninad Patkar - - 1.98 1.99'
+[246] (len=28) 'Samidha Prabhu - - 1.98 1.68'
+[247] (len=29) 'Ravi Ramalingam - - 4.85 4.84'
+[248] (len=21) 'Deepthi - - 4.80 4.39'
+[249] (len=13) 'Chandrasekhar'
+[250] (len=28) 'Deepthi & Ravi - - 1.89 1.92'
+[251] (len=36) 'Techsec Digital Global 5.82 1.24 - -'
+[252] (len=15) 'Private Limited'
+[253] (len=21) '5.82 1.24 15.50 14.82'
+[254] (len=45) 'Compensation Krish Investment - 27.39 - 14.12'
+[255] (len=15) '- 27.39 - 14.12'
+[256] (len=51) 'Purchase of Asset Techsec Digital Global 4.14 - - -'
+[257] (len=15) 'Private Limited'
+[258] (len=10) '4.14 - - -'
+[259] (len=49) 'Project Expenses Professional Homes - 1.80 1.80 -'
+[260] (len=61) '(Consultancy Charges) Positive Constructions 1.52 1.13 0.84 -'
+[261] (len=25) 'Nine Realms - 0.30 1.80 -'
+[262] (len=13) 'Constructions'
+[263] (len=31) 'Krish Development - 1.83 1.80 -'
+[264] (len=11) 'Corporation'
+[265] (len=22) 'Angstroms - - - 1.80 -'
+[266] (len=17) 'Partnership firms'
+[267] (len=27) 'En-vision Design 0.48 - - -'
+[268] (len=22) 'Studio Private Limited'
+[269] (len=16) '2.00 5.06 8.04 -'
+[270] (len=57) 'Reimbursement of Pranav Kiran Ashar 0.29 1.55 18.21 93.71'
+[271] (len=34) 'Expenses Samidha Prabhu - - 0.18 -'
+[272] (len=36) 'Ravi Ramalingam(2) - 0.00 1.48 30.41'
+[273] (len=23) 'Suneet Desai - - - 0.01'
+[274] (len=26) 'Ninad Patkar - 0.00 - 0.01'
+[275] (len=30) 'Pritesh Patangia(3) - 0.00 - -'
+[276] (len=27) 'Dilkhush Malesha 0.04 - - -'
+[277] (len=22) '0.33 1.55 19.87 124.14'
+[278] (len=56) 'Advance Given(4) Positive Constructions 0.06 0.16 0.65 -'
+[279] (len=33) 'Techsec Digital Global - 0.07 - -'
+[280] (len=15) 'Private Limited'
+[281] (len=26) 'Ravi Ramalingam - - 1.46 -'
+[282] (len=28) 'Late Kiran Ashar* - - - 1.07'
+[283] (len=33) 'Pranav Kiran Ashar - - 0.21 14.91'
+[284] (len=23) 'Angstroms - - 0.40 0.89'
+[285] (len=33) 'Krish Investment(5) - 3.76 - 1.29'
+[286] (len=20) '0.06 3.99 2.72 18.16'
+[287] (len=53) 'Advance Returned Positive Constructions - 0.16 0.65 -'
+[288] (len=33) 'Techsec Digital Global - 0.07 - -'
+[289] (len=15) 'Private Limited'
+[290] (len=26) 'Ravi Ramalingam - - 1.46 -'
+[291] (len=22) 'Kiran Ashar - - - 1.07'
+[292] (len=29) 'Pranav Kiran Ashar - - - 2.27'
+[293] (len=30) 'Krish Investment - 1.30 - 1.29'
+[294] (len=16) '- 1.53 2.11 4.63'
+[295] (len=68) 'Loan taken during the Pranav Kiran Ashar 125.00 797.00 273.50 231.00'
+[296] (len=41) 'Period / Year 125.00 797.00 273.50 231.00'
+[297] (len=68) 'Loan repaid during the Pranav Kiran Ashar 267.40 717.50 388.90 52.05'
+[298] (len=40) 'Period / Year 267.40 717.50 388.90 52.05'
+[299] (len=52) 'Balances outstanding at the end of the Period / Year'
+[300] (len=42) 'Managerial Late Kiran Ashar* - - 0.52 2.65'
+[301] (len=51) 'Remuneration Pranav Kiran Ashar 2.12 1.97 2.41 0.88'
+[302] (len=2) '20'
+[303] (len=55) 'Particulars Name of the related Consolidated Standalone'
+[304] (len=68) 'party December 31, 2024 March 31, 2024 March 31, 2023 March 31, 2022'
+[305] (len=74) 'Details of related party transactions carried out during the Period / Year'
+[306] (len=26) 'Ritu Jain 0.14 0.11 - 0.06'
+[307] (len=29) 'Suneet Desai 0.44 0.35 - 0.08'
+[308] (len=29) 'Ravi Ramalingam 1.82 1.69 - -'
+[309] (len=29) 'Ninad Patkar 0.37 0.29 - 0.07'
+[310] (len=27) 'Dilkhush Malesha 0.44 - - -'
+[311] (len=26) 'Akshay Kriplani 0.75 - - -'
+[312] (len=19) '6.08 4.41 2.93 3.74'
+[313] (len=62) 'Loan Outstanding Pranav Kiran Ashar 62.48 204.88 125.38 240.78'
+[314] (len=26) '62.48 204.88 125.38 240.78'
+[315] (len=63) 'Payable to Directors Pranav Kiran Ashar 36.60 54.44 14.01 33.32'
+[316] (len=29) 'Ravi Ramalingam - - 0.82 0.07'
+[317] (len=23) '36.60 54.44 14.83 33.39'
+[318] (len=49) 'Payable for employee Samidha Prabhu 0.29 0.24 - -'
+[319] (len=22) 'benefits 0.29 0.24 - -'
+[320] (len=41) 'Trade Payables Ravi Ramalingam - - 0.35 -'
+[321] (len=26) 'Ninad Patkar - - 0.04 0.14'
+[322] (len=25) 'Deepthi & Ravi - - - 0.01'
+[323] (len=28) 'Samidha Prabhu - - 0.16 0.27'
+[324] (len=23) 'Angstroms - - 0.04 0.43'
+[325] (len=33) 'Techsec Digital Global 0.28 - - -'
+[326] (len=15) 'Private Limited'
+[327] (len=19) '0.28 0.00 0.59 0.85'
+[328] (len=52) 'Advance Received from Krish Investment - - 3.47 0.35'
+[329] (len=23) 'Customers - - 3.47 0.35'
+[330] (len=47) 'Trade Receivables Vaisshali Ashar - - 0.45 3.63'
+[331] (len=34) 'Krish Investment - 8.38 12.85 0.35'
+[332] (len=17) '- 8.38 13.30 3.98'
+[333] (len=61) 'Guarantee Given on Pranav Kiran Ashar 59.11 63.64 69.31 74.73'
+[334] (len=33) 'Behalf of 59.11 63.64 69.31 74.73'
+[335] (len=67) 'Guarantee Taken(6) Pranav Kiran Ashar 1,147.54 547.43 546.85 302.98'
+[336] (len=29) '1,147.54 547.43 546.85 302.98'
+[337] (len=43) 'Reimbursement Pranav Kiran Ashar 0.01 - - -'
+[338] (len=7) 'Account'
+[339] (len=10) '0.01 - - -'
+[340] (len=154) '(1) Amounts received towards sale of flats includes amount for discharge of tax deducted at source on behalf of related party, amounting to ₹ 2.47 million'
+[341] (len=14) 'in March 2023.'
+[342] (len=66) '(2) Reimbursement in case of Ravi Ramalingam is less than ₹ 10,000'
+[343] (len=67) '(3) Reimbursement in case of Pritesh Patangia is less than ₹ 10,000'
+[344] (len=85) '(4) Advance given includes expenses incurred by Company on behalf of related parties.'
+[345] (len=150) '(5) Advance given during the year ended March 31, 2024 includes amount of tax deducted at source discharged on behalf of related party, amounting to ₹'
+[346] (len=90) '2.47 million which was received along with sale of flats during year ended March 31, 2023.'
+[347] (len=151) '(6) Mr. Pranav Kiran Ashar has provided personal guarantee in respect of various construction finance and OD Facility obtained from Banks and Financial'
+[348] (len=13) 'Institutions.'
+[349] (len=29) '* Demised on January 16, 2023'
+[350] (len=125) 'For details of the related party transactions, see “Restated Financial Information - Note 40 – Related Party Transactions” on'
+[351] (len=9) 'page 321.'
+[352] (len=117) 'Further, the percentage of the arithmetic aggregated absolute total of related party transactions (post inter-company'
+[353] (len=120) 'eliminations) to our revenue from operations for the nine-month period ended December 31, 2024 and financial years ended'
+[354] (len=102) 'March 31, 2024, March 31, 2023 and March 31, 2022, is 12.55%, 53.42%, 39.37% and 28.12%, respectively.'
+[355] (len=22) 'Financing Arrangements'
+[356] (len=119) 'There have been no financing arrangements whereby our Promoters, members of our Promoter Group, our Directors and their'
+[357] (len=123) 'relatives (as defined under the Companies Act) have financed the purchase by any other person of securities of our Company,'
+[358] (len=125) 'other than in the normal course of the business of the financing activity during a period of six months immediately preceding'
+[359] (len=46) 'the date of this Draft Red Herring Prospectus.'
+[360] (len=117) 'Details of price at which specified securities were acquired by our Promoters, members of the Promoter Group, Selling'
+[361] (len=113) 'Shareholders and Shareholders with the right to nominate Directors or any other special rights in the three years'
+[362] (len=55) 'preceding the date of this Draft Red Herring Prospectus'
+[363] (len=2) '21'
+[364] (len=128) 'Except as stated below, there have been no specified securities that were acquired in the last three years preceding the date of'
+[365] (len=98) 'this Draft Red Herring Prospectus, by the Promoters, members of our Promoter Group in the Company:'
+[366] (len=90) 'Sr. Name of the Category Date of acquisition of the Number of Face value Acquisition price'
+[367] (len=58) 'No. acquirer/ Equity Shares Equity Shares per Equity Share'
+[368] (len=27) 'Shareholder acquired (in ₹)'
+[369] (len=60) '1. Pranav Kiran Ashar Promoter January 19, 2023 54,324 10 NA'
+[370] (len=29) 'May 25, 2024 13,786,208 10 NA'
+[371] (len=29) 'May 31, 2024 13,786,208 10 NA'
+[372] (len=32) 'January 7, 2025 11,201,294 10 NA'
+[373] (len=60) '2. Ravi Ramalingam Promoter and May 25, 2024 5,040,000 10 NA'
+[374] (len=45) 'Promoter Selling May 31, 2024 5,040,000 10 NA'
+[375] (len=43) 'Shareholder January 7, 2025 4,095,000 10 NA'
+[376] (len=73) '3. BioUrja India Infra Investor Selling December 12, 2023 10,000 10 1,000'
+[377] (len=62) 'Private Limited Shareholder December 30, 2023 151,488 10 1,000'
+[378] (len=28) 'May 25, 2024 1,291,904 10 NA'
+[379] (len=28) 'May 31, 2024 1,291,904 10 NA'
+[380] (len=31) 'January 7, 2025 1,049,672 10 NA'
+[381] (len=61) '4. Kiran D. Ashar and Member of March 22, 2022 1,000 10 1,200'
+[382] (len=60) 'Pranav K. Ashar Promoter Group March 22, 2022 1,000 10 1,200'
+[383] (len=48) '(holding on behalf March 22, 2022 1,000 10 1,200'
+[384] (len=38) 'of Krish March 22, 2022 1,000 10 1,200'
+[385] (len=41) 'Investment) March 22, 2022 1,000 10 1,200'
+[386] (len=29) 'March 22, 2022 1,000 10 1,200'
+[387] (len=29) 'March 22, 2022 1,000 10 1,200'
+[388] (len=29) 'March 22, 2022 5,000 10 1,170'
+[389] (len=29) 'March 22, 2022 5,000 10 1,170'
+[390] (len=29) 'March 22, 2022 5,000 10 1,170'
+[391] (len=29) 'March 22, 2022 5,000 10 1,170'
+[392] (len=29) 'March 22, 2022 5,000 10 1,170'
+[393] (len=29) 'March 22, 2022 5,000 10 1,170'
+[394] (len=56) '5. Nine Realms Member of December 2, 2024 500,000 10 250'
+[395] (len=57) 'Advisory LLP Promoter Group January 7, 2025 191,176 10 NA'
+[396] (len=59) '6. Pranav Ashar Trust Member of January 30, 2025 500 10 240'
+[397] (len=14) 'Promoter Group'
+[398] (len=119) 'As on the date of this Draft Red Herring Prospectus our Company do not have any Shareholders entitled with the right to'
+[399] (len=50) 'nominate directors or other rights in the Company.'
+[400] (len=70) 'Average cost of acquisition for our Promoters and Selling Shareholders'
+[401] (len=122) 'The average cost of acquisition per Equity Share for shares held by our Promoters as at the date of this Draft Red Herring'
+[402] (len=14) 'Prospectus is:'
+[403] (len=81) 'Name of the Promoter Number of Equity Shares held Average cost of acquisition per'
+[404] (len=20) 'Equity Share (in ₹)*'
+[405] (len=34) 'Pranav Kiran Ashar 40,496,986 0.29'
+[406] (len=32) 'Ravi Ramalingam^ 14,721,859 2.79'
+[407] (len=147) 'As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.'
+[408] (len=36) '^ Also, Promoter Selling Shareholder'
+[409] (len=125) 'The average cost of acquisition per Equity Share for shares held by the Selling Shareholders as at the date of this Draft Red'
+[410] (len=22) 'Herring Prospectus is:'
+[411] (len=92) 'Name of the Selling Shareholder Number of Equity Shares held Average cost of acquisition per'
+[412] (len=13) 'share (in ₹)*'
+[413] (len=51) 'BioUrja India Infra Private Limited 37,94,968 42.55'
+[414] (len=148) '*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.'
+[415] (len=112) 'Weighted average price at which the Equity Shares were acquired by our Promoters and Selling Shareholders in the'
+[416] (len=64) 'one year preceding the date of this Draft Red Herring Prospectus'
+[417] (len=124) 'The weighted average price at which the Equity Shares have been acquired by our Promoters in the one year preceding the date'
+[418] (len=55) 'of this Draft Red Herring Prospectus is provided below:'
+[419] (len=2) '22'
+[420] (len=79) 'Name of the Promoter Number of Equity Shares acquired Weighted average price of'
+[421] (len=53) 'in the last one year acquisition per Equity Share (in'
+[422] (len=3) '₹)*'
+[423] (len=33) 'Pranav Kiran Ashar 38,773,710 Nil'
+[424] (len=31) 'Ravi Ramalingam^ 14,175,000 Nil'
+[425] (len=148) '*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.'
+[426] (len=35) '^Also, Promoter Selling Shareholder'
+[427] (len=126) 'The weighted average price at which the Equity Shares have been acquired by the Selling Shareholders in the one year preceding'
+[428] (len=64) 'the date of this Draft Red Herring Prospectus is provided below:'
+[429] (len=81) 'Name of the Selling shareholder Number of Equity Shares Weighted average price of'
+[430] (len=66) 'acquired in the last one year acquisition per Equity Share (in ₹)*'
+[431] (len=49) 'BioUrja India Infra Private Limited 3,633,480 Nil'
+[432] (len=148) '*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.'
+[433] (len=117) 'Weighted average cost of acquisition of Equity Shares transacted in one year, 18 months and three years preceding the'
+[434] (len=42) 'date of this Draft Red Herring Prospectus:'
+[435] (len=89) 'Period Weighted average cost of Cap Price is ‘x’ times the Range of acquisition price per'
+[436] (len=76) 'acquisition per Equity weighted average cost of Equity Share: lowest price –'
+[437] (len=49) 'Share (in ₹)* acquisition*^ highest price (in ₹)*'
+[438] (len=61) 'Last one year preceding the date of this 8.02 [●] Nil – 4,130'
+[439] (len=28) 'Draft Red Herring Prospectus'
+[440] (len=62) 'Last 18 months preceding the date of this 9.92 [●] Nil – 4,130'
+[441] (len=28) 'Draft Red Herring Prospectus'
+[442] (len=65) 'Last three years preceding the date of this 16.27 [●] Nil – 4,130'
+[443] (len=28) 'Draft Red Herring Prospectus'
+[444] (len=148) '*As certified by Agrawal Jain & Gupta, Chartered Accountants, Independent Chartered Accountants by way of their certificate dated February 28, 2025.'
+[445] (len=102) '^To be updated in the Prospectus following finalisation of Cap Price, as per the finalised Price Band.'
+[446] (len=83) 'There are no Shareholders with right to nominate directors or other special rights.'
+[447] (len=28) 'Details of pre-IPO Placement'
+[448] (len=117) 'Our Company, in consultation with the BRLMs, may consider a Pre-IPO Placement for an amount aggregating up to ₹784.00'
+[449] (len=129) 'million, at its discretion, prior to the filing of the Red Herring Prospectus. The Pre-IPO Placement, if undertaken, will be at a'
+[450] (len=117) 'price to be decided by our Company, in consultation with the BRLMs. If the Pre-IPO Placement is completed, the amount'
+[451] (len=126) 'raised pursuant to the Pre-IPO Placement will be reduced from the Fresh Issue, subject to compliance with Rule 19(2)(b) of the'
+[452] (len=123) 'SCRR. The Pre-IPO Placement, if undertaken, shall not exceed 20% of the size of the Fresh Issue. Prior to the completion of'
+[453] (len=125) 'the Offer, our Company shall appropriately, intimate the subscribers to the Pre-IPO Placement, prior to allotment pursuant to'
+[454] (len=124) 'the Pre-IPO Placement, that there is no guarantee that our Company may proceed with the Offer or the Offer may be successful'
+[455] (len=123) 'and will result into listing of the Equity Shares on the Stock Exchanges. Further, relevant disclosures in relation to such'
+[456] (len=126) 'intimation to the subscribers to the Pre-IPO Placement (if undertaken) shall be appropriately made in the relevant sections of'
+[457] (len=46) 'the Red Herring Prospectus and the Prospectus.'
+[458] (len=77) 'Issue of Equity Shares for consideration other than cash in the last one year'
+[459] (len=121) 'Except as disclosed below, our Company has not issued any Equity Shares for consideration other than cash in the one year'
+[460] (len=56) 'preceding the date of this Draft Red Herring Prospectus:'
+[461] (len=102) 'Date of Nature of Details of allottees/ shareholders and Number of Face value Issue price Benefits, if'
+[462] (len=79) 'allotment allotment Equity Shares Equity Shares per Equity per Equity any, that'
+[463] (len=34) 'allotted allotted Share Share have'
+[464] (len=18) '(₹) (₹) accrued to'
+[465] (len=3) 'our'
+[466] (len=7) 'Company'
+[467] (len=60) 'May 25, Bonus issue in the See note(1) 29,204,704 10 N/A N/A'
+[468] (len=22) '2024 ratio of 8 Equity'
+[469] (len=18) 'Shares for every 1'
+[470] (len=18) 'Equity Share held.'
+[471] (len=60) 'May 31, Bonus issue in the See note(2) 29,204,704 10 N/A N/A'
+[472] (len=22) '2024 ratio of 8 Equity'
+[473] (len=18) 'Shares for every 9'
+[474] (len=19) 'Equity Shares held.'
+[475] (len=63) 'January 7, Bonus issue in the See note(3) 24,111,174 10 N/A N/A'
+[476] (len=23) '2025 ratio of 13 Equity'
+[477] (len=2) '23'
+[478] (len=102) 'Date of Nature of Details of allottees/ shareholders and Number of Face value Issue price Benefits, if'
+[479] (len=79) 'allotment allotment Equity Shares Equity Shares per Equity per Equity any, that'
+[480] (len=34) 'allotted allotted Share Share have'
+[481] (len=18) '(₹) (₹) accrued to'
+[482] (len=3) 'our'
+[483] (len=7) 'Company'
+[484] (len=19) 'Shares for every 34'
+[485] (len=18) 'Equity Shares held'
+[486] (len=146) '(1) Allotment of 13,786,208 Equity Shares to Pranav Kiran Ashar, 5,040,000 Equity Shares to Ravi Ramalingam, 8,053,600 Equity Shares to RiverCrest'
+[487] (len=150) 'India Infrastructure Private Limited, 1,291,904 Equity Shares to BioUrja India Infra Private Limited, 464,992 Equity Shares to Jitendra Kantilal Shah,'
+[488] (len=143) '120,000 Equity Shares to Vishwas Mahadeo Kokane and Vrushali Suryakant Pathare, 80,000 Equity Shares to Jugal Prafulchandra Shah, 80,000 Equity'
+[489] (len=146) 'Shares to Jyoti Jugal Shah, 16,000 Equity Shares to Yogesh Ratilal Shah and Sangeeta Yogesh Shah, 12,000 Equity Shares to Sangeeta Yogesh Shah and'
+[490] (len=147) 'Yogesh Ratilal Shah, 4,000 Equity Shares to Chintan Yogesh Shah, 20,000 Equity Shares to Jesal Manish Shah, 80,000 Equity Shares to Harish Gopinath'
+[491] (len=148) 'Kale, 16,000 Equity Shares to Samir Rasik Hingoo, 16,000 Equity Shares to Nirav Rasik Hingoo, 16,000 Equity Shares to Kinjal Rasiklal Hingoo, 20,000'
+[492] (len=148) 'Equity Shares to Pankaj Arvindbhai Patel, 8,000 Equity Shares to Jatin Popatlal Shah, 8,000 Equity Shares to Kalpana Jatin Shah, 8,000 Equity Shares'
+[493] (len=149) 'to Kaushal Jatin Shah, 8,000 Equity Shares to Priti Kaushal Shah, 8,000 Equity Shares to Kris Kaushal Shah, 8,000 Equity Shares to Jully Vikram Shah,'
+[494] (len=146) '8,000 Equity Shares to Chaitali Tejas Shah, 8,000 Equity Shares to Abhay Shashikant Salot, 8,000 Equity Shares to Darshan Kiran Shah, 8,000 Equity'
+[495] (len=77) 'Shares to Shreyansh Manish Shah and 8,000 Equity Shares to Mansi Yogesh Shah.'
+[496] (len=146) '(2) Allotment of 13,786,208 Equity Shares to Pranav Kiran Ashar, 5,040,000 Equity Shares to Ravi Ramalingam, 8,053,600 Equity Shares to RiverCrest'
+[497] (len=150) 'India Infrastructure Private Limited, 1,291,904 Equity Shares to BioUrja India Infra Private Limited, 464,992 Equity Shares to Jitendra Kantilal Shah,'
+[498] (len=143) '120,000 Equity Shares to Vishwas Mahadeo Kokane and Vrushali Suryakant Pathare, 80,000 Equity Shares to Jugal Prafulchandra Shah, 80,000 Equity'
+[499] (len=146) 'Shares to Jyoti Jugal Shah, 16,000 Equity Shares to Yogesh Ratilal Shah and Sangeeta Yogesh Shah, 12,000 Equity Shares to Sangeeta Yogesh Shah and'
+[500] (len=147) 'Yogesh Ratilal Shah, 4,000 Equity Shares to Chintan Yogesh Shah, 20,000 Equity Shares to Jesal Manish Shah, 80,000 Equity Shares to Harish Gopinath'
+[501] (len=148) 'Kale, 16,000 Equity Shares to Samir Rasik Hingoo, 16,000 Equity Shares to Nirav Rasik Hingoo, 16,000 Equity Shares to Kinjal Rasiklal Hingoo, 20,000'
+[502] (len=148) 'Equity Shares to Pankaj Arvindbhai Patel, 8,000 Equity Shares to Jatin Popatlal Shah, 8,000 Equity Shares to Kalpana Jatin Shah, 8,000 Equity Shares'
+[503] (len=149) 'to Kaushal Jatin Shah, 8,000 Equity Shares to Priti Kaushal Shah, 8,000 Equity Shares to Kris Kaushal Shah, 8,000 Equity Shares to Jully Vikram Shah,'
+[504] (len=146) '8,000 Equity Shares to Chaitali Tejas Shah, 8,000 Equity Shares to Abhay Shashikant Salot, 8,000 Equity Shares to Darshan Kiran Shah, 8,000 Equity'
+[505] (len=77) 'Shares to Shreyansh Manish Shah and 8,000 Equity Shares to Mansi Yogesh Shah.'
+[506] (len=146) '(3) Allotment of 11,201,294 Equity Shares to Pranav Kiran Ashar, 4,095,000 Equity Shares to Ravi Ramalingam, 6,543,550 Equity Shares to RiverCrest'
+[507] (len=150) 'India Infrastructure Private Limited, 1,049,672 Equity Shares to BioUrja India Infra Private Limited, 530,747 Equity Shares to Jitendra Kantilal Shah,'
+[508] (len=143) '191,176 Equity Shares to Nine Realms Advisory LLP, 97,500 Equity Shares to Vishwas Mahadeo Kokane and Vrushali Suryakant Pathare, 65,000 Equity'
+[509] (len=147) 'Shares to Jugal Prafulchandra Shah, 65,000 Equity Shares to Jyoti Jugal Shah, 65,000 Equity Shares to Harish Gopinath Kale, 38,235 Equity Shares to'
+[510] (len=142) 'Pooja Jinit Dharia, 16,250 Equity Shares to Jesal Manish Shah, 16,250 Equity Shares to Pankaj Arvindbhai Patel, 13,000 Equity Shares to Yogesh'
+[511] (len=147) 'Ratilal Shah and Sangeeta Yogesh Shah, 13,000 Equity Shares to Samir Rasik Hingoo, 13,000 Equity Shares to Nirav Rasik Hingoo, 13,000 Equity Shares'
+[512] (len=145) 'to Kinjal Rasiklal Hingoo, 9,750 Equity Shares to Sangeeta Yogesh Shah and Yogesh Ratilal Shah, 6,500 Equity Shares to Jatin Popatlal Shah, 6,500'
+[513] (len=150) 'Equity Shares to Kalpana Jatin Shah, 6,500 Equity Shares to Kaushal Jatin Shah, 6,500 Equity Shares to Priti Kaushal Shah, 6,500 Equity Shares to Kris'
+[514] (len=146) 'Kaushal Shah, 6,500 Equity Shares to Jully Vikram Shah, 6,500 Equity Shares to Chaitali Tejas Shah, 6,500 Equity Shares to Abhay Shashikant Salot,'
+[515] (len=139) '6,500 Equity Shares to Darshan Kiran Shah, 6,500 Equity Shares to Shreyansh Manish Shah, 6,500 Equity Shares to Mansi Yogesh Shah and 3,250'
+[516] (len=36) 'Equity Shares to Chintan Yogesh Shah'
+[517] (len=59) 'Split / Consolidation of Equity Shares in the last one year'
+[518] (len=98) 'There has been no split or consolidation of the Equity Shares of our Company in the last one year.'
+[519] (len=75) 'Exemption from complying with provisions of securities laws granted by SEBI'
+[520] (len=120) 'Pursuant to a letter dated October 24, 2024, our Company had sought an exemption from SEBI under Regulation 300(1)(c) of'
+[521] (len=123) 'the SEBI ICDR Regulations for relaxation of the strict enforcement of Regulation 2(1)(pp) of the SEBI ICDR Regulations with'
+[522] (len=125) 'regard to identification of and disclosures relating to (a) Vaisshali Pranav Ashar; (b) Geeta Vasanji Furia and their related'
+[523] (len=122) 'entities as members of the Promoter Group of our Company in this Draft Red Herring Prospectus, in accordance with the SEBI'
+[524] (len=17) 'ICDR Regulations.'
+[525] (len=122) 'Pursuant to its letter dated December 17, 2024, SEBI has not acceded to our Company’s request and has directed our Company'
+[526] (len=131) 'to inter alia classify and disclose (a) Vaisshali Pranav Ashar; (b) Geeta Vasanji Furia and their related entities as a part of the'
+[527] (len=119) 'Promoter Group of our Company and include applicable disclosures relating to them based on information available in the'
+[528] (len=123) 'public domain. For details, see “Risk Factors – One of the members of our Promoter Group has an estranged relationship with'
+[529] (len=123) 'one of our Promoters, therefore we will not be able to obtain any details regarding this member of Promoter Group which are'
+[530] (len=122) 'required to be disclosed in relation to Promoter Group under the SEBI ICDR Regulations in this Prospectus. The disclosures'
+[531] (len=121) 'relating to this member of the Promoter Group has been included in this Draft Red Herring Prospectus based on information'
+[532] (len=123) 'available in public domain. Accordingly, we cannot assure you that the disclosures relating to such members of our Promoter'
+[533] (len=121) 'Group are accurate, complete, or updated. Further, details in relation to Connected Persons which may qualify as a member'
+[534] (len=117) 'of our Promoter Group have not been disclosed in this Prospectus.” and “Promoters and Promoter Group” on pages 48 and'
+[535] (len=18) '262, respectively.'
+[536] (len=2) '24'
+
+=== BUSINESS EXTRACTION RESULT ===
+'We have adopted an integrated Redevelopment model, with capabilities and in-house resources to execute Redevelopment Projects from initiation to completion. We are the leading real estate company, based on the supply of units and number of completed and under construction MCGM - Redevelopment1 projects in the Western Suburbs2, with a total of 1,503 units and 27 MCGM - Redevelopment projects (completed and under construction) whereas other developers have 2 to 7 MCGM - Redevelopment projects, each launched between CY 17 –CY 24 (Source: C&W Report). Summary of the Industry in which our Company operates As per industry estimates, the housing sector is expected to account for ~13% share in India’s GDP by 2025 and the cumulative real estate sector is expected grow to USD 1 Tn by 2030. The real estate & construction sector is considered as the largest employer after agriculture in India. MMR alone saw a 71% YoY rise in new residential units launched in CY 21 followed by a 48% rise in CY 22. Over the last few years including 2020 and 2021, MMR has remained resilient compared to other cities in India. On an average, MMR accounts for 28% of the total share of new residential unit launches a'
+
+=== INDUSTRY EXTRACTION RESULT ===
+'As per industry estimates, the housing sector is expected to account for ~13% share in India’s GDP by 2025 and the cumulative real estate sector is expected grow to USD 1 Tn by 2030. The real estate & construction sector is considered as the largest employer after agriculture in India. MMR alone saw a 71% YoY rise in new residential units launched in CY 21 followed by a 48% rise in CY 22. Over the last few years including 2020 and 2021, MMR has remained resilient compared to other cities in India. On an average, MMR accounts for 28% of the total share of new residential unit launches across the top 8 cities of India between 2019 to 2024 (Source: C&W Report). Names of the Promoters Our Promoters are Pranav Kiran Ashar and Ravi Ramalingam. For further details, see “Promoters and Promoter Group” on page 262. Offer Size The following table summarises the details of the Offer: Offer (1) Up to [●] Equity Shares of face value of ₹ 10 each for cash at price of ₹ [●] per Equity Share (including a premium of [●] per Equity Share), aggregating up to ₹ [●] million. of which Fresh Issue (2) Up to [●] Equity Shares face value of ₹ 10 each aggregating up to ₹ 3,920.00 million. Offer for Sale(3) U'

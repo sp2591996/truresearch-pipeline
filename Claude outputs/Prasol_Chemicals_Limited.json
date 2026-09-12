@@ -1,0 +1,57 @@
+{
+  "company_snapshot": {
+    "content": "Prasol Chemicals, incorporated in 1992, is a 33-year-old specialty chemicals manufacturer with a forward-integrated acetone- and phosphorous-based chemistry platform, selling over 150 products across five segments: performance chemicals, paints/inks/construction & adhesives (PICA), pharmaceuticals, agrochemicals, and home & personal care.",
+    "is_placeholder": false
+  },
+  "business_model": {
+    "content": "The company manufactures and sells a diversified specialty-chemicals portfolio to industrial customers across five end-markets and exports to 69 countries — a deliberate diversification strategy compared with chemical makers focused on a single product line or market.",
+    "is_placeholder": false
+  },
+  "market_landscape": {
+    "content": "India ranks 6th globally in chemicals production and 14th in exports; specialty chemicals — including agrochemicals, dyes and pigments — make up more than half of India's chemical exports. Specialty chemicals held about 20% of the global chemicals market in 2024, a share expected to grow to 21–23% by 2029 (CARE Report, cited in the DRHP).",
+    "is_placeholder": false
+  },
+  "financials": {
+    "is_placeholder": false,
+    "years": [
+      "FY23",
+      "FY24",
+      "FY25"
+    ],
+    "revenue_cr": [
+      930.1,
+      876.6,
+      1012.5
+    ],
+    "profit_loss_cr": [
+      48.6,
+      18.1,
+      43.6
+    ],
+    "note": "From the DRHP's summary financial statements (converted from ₹ million to ₹ crore). Profit dipped sharply in FY24 before recovering in FY25."
+  },
+  "strengths": {
+    "items": [
+      "Long operating history (33+ years) and a genuinely diversified 5-segment, 150+ product portfolio, reducing single-market dependence",
+      "Export reach to 69 countries, providing geographic diversification of demand",
+      "Positioned in specialty chemicals, a structurally faster-growing, typically higher-margin part of India's chemicals industry versus commodity chemicals",
+      "Revenue has stayed in a relatively narrow band (₹877–₹1,012 crore) across FY23–FY25, without sharp swings"
+    ],
+    "is_placeholder": false
+  },
+  "risks": {
+    "items": [
+      "Top 10 customers contributed as much as ~24% of revenue in the reported periods",
+      "No long-term agreements with most suppliers or customers, so contracts can be lost or repriced with limited notice",
+      "Profit is volatile — it fell from ₹48.6cr (FY23) to ₹18.1cr (FY24) before recovering to ₹43.6cr (FY25)",
+      "Exposure to export markets across 69 countries brings currency, tariff and geopolitical risk",
+      "Handles hazardous or reactive raw materials and byproducts, creating regulatory, safety and environmental compliance risk"
+    ],
+    "is_placeholder": false
+  },
+  "verdict": {
+    "content": "A genuinely diversified, long-running specialty chemicals business with real export reach and a stable revenue band, but the near-3x swing in profit across FY23–FY25 is the key thing to understand and question before applying.",
+    "rating": "Cautious Watch",
+    "is_placeholder": false
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "company_snapshot": {
+    "content": "Rentomojo runs India's largest online rental and subscription platform for home furniture and appliances, by live subscribers and subscription revenue as of Fiscal 2025, with 227,511 live subscribers across 22 Indian cities as of September 2025.",
+    "is_placeholder": false
+  },
+  "business_model": {
+    "content": "Rentomojo operates a full-stack, direct-to-consumer rental model: it owns the furniture and appliances and manages their entire lifecycle in-house — sourcing, refurbishing, servicing, reverse logistics and redeploying items across multiple rental cycles — selling access via subscription rather than one-time sale, through both an online platform and physical experience stores.",
+    "is_placeholder": false
+  },
+  "market_landscape": {
+    "is_placeholder": true,
+    "content": "Illustrative placeholder — the DRHP's industry-overview section wasn't located in the text extracted for this document. India's furniture and appliance rental category is generally understood to be small but fast-growing, riding urban migration and shorter-tenure city living, but exact market-size figures need to be pulled from the DRHP's Industry Overview chapter directly."
+  },
+  "financials": {
+    "is_placeholder": true,
+    "years": [
+      "FY23",
+      "FY24",
+      "FY25"
+    ],
+    "revenue_cr": [
+      140,
+      220,
+      330
+    ],
+    "profit_loss_cr": [
+      -45,
+      -60,
+      -35
+    ],
+    "note": "Illustrative placeholder — a financial summary table wasn't located in the extracted DRHP text for this company. Replace with the real summary financial statements once located in the DRHP's Financial Information chapter."
+  },
+  "strengths": {
+    "items": [
+      "Stated market leadership — the largest platform by subscribers and subscription revenue — in a still-nascent category",
+      "Full-stack, in-house asset-lifecycle model (versus a pure marketplace) gives more control over unit economics and product quality",
+      "Meaningful scale already: 227,500+ live subscribers across 22 Indian cities",
+      "Uses AI and machine learning in its operations per the DRHP, signalling investment in efficiency as it scales"
+    ],
+    "is_placeholder": false
+  },
+  "risks": {
+    "items": [
+      "Revenue depends on subscribers continuing to rent long-term — churn or non-renewal directly hits recurring revenue",
+      "Dependent on third-party vendors for products and third-party transport providers for delivery — failures on either side hurt the customer experience",
+      "Growth strategy depends on continuing to add new subscribers — any slowdown directly slows revenue growth",
+      "Heavy reliance on technology platforms; outages or failures could disrupt operations and subscriber trust",
+      "Exposed to cybersecurity risk given it holds subscriber and payment data, and to delayed or defaulted subscriber payments"
+    ],
+    "is_placeholder": false
+  },
+  "verdict": {
+    "content": "A genuine category leader in a still-young Indian rental market, but the model's success hinges on subscriber retention, vendor/logistics reliability and continued fast growth — none of which is quantified with hard historical financials in the DRHP text reviewed here, so the financials and market-size sections above are placeholders pending that data.",
+    "rating": "High Risk / High Growth",
+    "is_placeholder": false
+  }
+}

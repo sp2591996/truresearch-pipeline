@@ -104,6 +104,8 @@
 2. Recent/listed IPOs: post-listing performance chart.
 3. Per-IPO detail page: prospectus summary, DRHP assessment (where written — tiered, may show "assessment in progress" for newer IPOs), financials, valuation vs. peers, risk factors — no recommendation language anywhere.
 
+**Status (Session 12): built.** `/ipos` and `/ipos/[ipoId]` are live against real NSE data, mainboard IPOs only (SME/NSE-Emerge excluded). DRHP assessment content (business summary, industry summary, objects of the offer, top risks, financial summary table) is populated automatically by a document-parsing script rather than written by hand — see PRD.md H1's status note for how. Still outstanding: the visual redesign of both pages (logos, less plain card layout) flagged as a follow-up.
+
 ---
 
 ## Learn / Glossary

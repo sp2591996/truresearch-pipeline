@@ -1,0 +1,57 @@
+{
+  "company_snapshot": {
+    "content": "Kanohar Electricals is one of India's leading domestic transformer manufacturers by revenue (Fiscal 2025), serving power transmission, railways, renewable energy and power distribution customers. It is one of only five companies in India certified for 500 MVA/400kV transformers and one of four RDSO-certified manufacturers for high-capacity railway transformers.",
+    "is_placeholder": false
+  },
+  "business_model": {
+    "content": "The company manufactures power and distribution transformers at its Gangol facility and sells largely through tender-based contracts, many awarded by government-controlled entities such as power utilities and Indian Railways. Its order book grew from about ₹522 crore (Fiscal 2023) to ₹1,636 crore as of September 2025, giving strong visibility into near-term revenue.",
+    "is_placeholder": false
+  },
+  "market_landscape": {
+    "content": "India's transformer demand is expected to accelerate from CY24 onward as grid capacity and renewable-energy integration expand. By CY30, the high-voltage transformer market alone is projected to reach USD 1.6 billion and medium-voltage transformers over USD 1 billion, with most voltage categories growing at roughly 9% CAGR between CY24 and CY30 (CARE Report, cited in the DRHP).",
+    "is_placeholder": false
+  },
+  "financials": {
+    "is_placeholder": false,
+    "years": [
+      "FY23",
+      "FY24",
+      "FY25"
+    ],
+    "revenue_cr": [
+      303.8,
+      276.7,
+      450.6
+    ],
+    "profit_loss_cr": [
+      16.8,
+      17.8,
+      65.1
+    ],
+    "note": "From the DRHP's summary financial statements (standalone, converted from ₹ million to ₹ crore)."
+  },
+  "strengths": {
+    "items": [
+      "Rare technical certifications — 500 MVA/400kV short-circuit test certified, RDSO-certified for railway transformers — that act as real barriers to entry",
+      "Order book roughly tripled from Fiscal 2023 to September 2025 (₹522cr to ₹1,636cr), signalling strong forward revenue visibility",
+      "Profit nearly quadrupled from Fiscal 2023 to Fiscal 2025 (₹16.8cr to ₹65.1cr) alongside revenue growth",
+      "Positioned in a structurally growing market driven by grid expansion, renewable integration and rail electrification"
+    ],
+    "is_placeholder": false
+  },
+  "risks": {
+    "items": [
+      "Heavy revenue dependence on government and PSU tenders, which follow budget and approval cycles outside the company's control",
+      "Revenue is concentrated in the Transformer Manufacturing segment, particularly high-voltage products",
+      "Geographic concentration in a handful of states (Punjab, Rajasthan, Gujarat, Assam, Himachal Pradesh)",
+      "Manufacturing is concentrated substantially at one facility (Gangol) — a single point of operational risk",
+      "Execution risk from time and cost overruns typical of large capital projects, which can trigger penalties and claims"
+    ],
+    "is_placeholder": false
+  },
+  "verdict": {
+    "content": "Genuine technical differentiation and a rapidly growing order book support the growth story, and the financial trend (profit nearly 4x in two years) backs it up. Heavy tender/government dependence and single-facility concentration are the key risks to underwrite before applying.",
+    "rating": "Constructive",
+    "is_placeholder": false
+  }
+}

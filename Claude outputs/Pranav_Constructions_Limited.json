@@ -1,0 +1,57 @@
+{
+  "company_snapshot": {
+    "content": "Pranav Constructions is a Mumbai-based real estate developer that specialises in “MCGM Redevelopment” projects — redeveloping old buildings under Maharashtra’s DCPR 2034 rules — concentrated in Mumbai’s western suburbs (Vile Parle, Santacruz, Juhu, Andheri, Malad, Borivali and nearby areas). Per the DRHP, it has 1,503 units across 27 completed and under-construction redevelopment projects, versus 2–7 projects for other developers in the same niche.",
+    "is_placeholder": false
+  },
+  "business_model": {
+    "content": "The company signs redevelopment agreements with existing co-operative housing societies, rehouses residents, builds new towers using extra floor space it is permitted to buy, and sells the surplus units — an integrated, in-house model from deal initiation through construction and handover. Growth depends on continuously signing new redevelopment deals and delivering existing ones on schedule.",
+    "is_placeholder": false
+  },
+  "market_landscape": {
+    "content": "India’s housing sector is projected to reach roughly 13% of GDP by 2025, and the broader real estate sector is expected to grow to USD 1 trillion by 2030 (C&W Report, cited in the DRHP). Mumbai’s metropolitan region — the company’s home turf — accounted for about 28% of new residential launches across India’s top 8 cities between 2019 and 2024, and has shown resilient demand even through 2020–2021.",
+    "is_placeholder": false
+  },
+  "financials": {
+    "is_placeholder": true,
+    "years": [
+      "Period A",
+      "Period B",
+      "Period C"
+    ],
+    "revenue_cr": [
+      220,
+      355,
+      431
+    ],
+    "profit_loss_cr": [
+      4,
+      20,
+      43
+    ],
+    "note": "Illustrative placeholder — the DRHP does include real financial figures (restated profit grew from about ₹3.6 crore to ₹43 crore, and revenue reached roughly ₹431 crore consolidated), but the summary table's four columns weren't clearly labelled by fiscal year in the extracted text, so exact year-by-year figures need manual confirmation from the DRHP before replacing this placeholder."
+  },
+  "strengths": {
+    "items": [
+      "Clear market leadership in a narrow niche: 27 MCGM-Redevelopment projects versus 2–7 for competing developers",
+      "Integrated in-house execution model, reducing dependence on external project managers",
+      "Concentrated in Mumbai’s western suburbs, a historically resilient, high-demand micro-market",
+      "Restated profit grew markedly across the reported periods per the DRHP's summary financials"
+    ],
+    "is_placeholder": false
+  },
+  "risks": {
+    "items": [
+      "Business is geographically concentrated in Mumbai's MCGM region, especially the western suburbs — a local slowdown or regulatory change would hit disproportionately",
+      "No firm supply agreements for construction materials and dependence on a limited pool of contractors",
+      "Under-construction and upcoming redevelopment projects could see delays that push back revenue recognition",
+      "Business is capital-intensive and depends on continued access to external financing to fund redevelopment projects",
+      "Contractual penalty clauses apply if the company fails to deliver redevelopment projects to housing societies on time"
+    ],
+    "is_placeholder": false
+  },
+  "verdict": {
+    "content": "A genuine scale leader in a real, differentiated niche with visible profit growth, but narrowly concentrated in one city's redevelopment segment and reliant on contractors and suppliers without long-term agreements. Geographic concentration and execution-timeline risk are the key things to weigh against its scale advantage.",
+    "rating": "Cautious Watch",
+    "is_placeholder": false
+  }
+}

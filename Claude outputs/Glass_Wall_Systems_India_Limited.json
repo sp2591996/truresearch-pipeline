@@ -1,0 +1,57 @@
+{
+  "company_snapshot": {
+    "content": "Glass Wall Systems is an Indian manufacturer of premium façade and fenestration systems — curtain walls, storefront walls, unitized and frameless façades, and luxury windows/doors/skylights — serving customers in India as well as export markets in the United States and Australia, manufactured out of its facility in Vile Bhagad, Maharashtra.",
+    "is_placeholder": false
+  },
+  "business_model": {
+    "content": "Revenue comes from three lines: domestic façade design, fabrication and installation for Indian construction projects; export of customised façade products internationally; and premium fenestration products for India's luxury real-estate segment. The company is now proposing backward integration — setting up its own glass processing unit — to bring a key input in-house.",
+    "is_placeholder": false
+  },
+  "market_landscape": {
+    "content": "India's façade and fenestration market is estimated at ₹250 billion in Fiscal 2025 and is projected to grow to ₹453 billion by Fiscal 2030, driven by rising commercial, residential and institutional construction demand, as the segment matures from a niche into a mainstream part of India's construction ecosystem.",
+    "is_placeholder": false
+  },
+  "financials": {
+    "is_placeholder": true,
+    "years": [
+      "FY23",
+      "FY24",
+      "FY25"
+    ],
+    "revenue_cr": [
+      180,
+      260,
+      340
+    ],
+    "profit_loss_cr": [
+      8,
+      14,
+      22
+    ],
+    "note": "Illustrative placeholder — a financial summary table wasn't located in the extracted DRHP text for this company. The DRHP's risk section does confirm the top 10 clients contributed as much as ~94% of revenue in some periods, implying revenue is genuinely lumpy — replace this chart once the real summary financial statements are located in the DRHP."
+  },
+  "strengths": {
+    "items": [
+      "Diversified geographic footprint — India, US and Australia — rather than dependence on one market",
+      "Technically demanding product category (unitized curtain-wall façades) that's harder for new entrants to replicate quickly",
+      "Growing addressable market: India's façade segment is projected to nearly double from ₹250bn to ₹453bn by FY30",
+      "Backward integration into glass processing could improve margins over time"
+    ],
+    "is_placeholder": false
+  },
+  "risks": {
+    "items": [
+      "Extreme client concentration — top 10 clients contributed as much as ~94% of revenue in some periods",
+      "No long-term agreements with key suppliers, creating input-cost and availability risk",
+      "Close to half of revenue has at times come from overseas operations, exposing the company to currency and cross-border execution risk",
+      "Entirely dependent on a single manufacturing facility (Vile Bhagad, Maharashtra) — a single point of operational failure",
+      "Domestic revenue is also geographically concentrated within Maharashtra, and tied to real-estate sector cyclicality"
+    ],
+    "is_placeholder": false
+  },
+  "verdict": {
+    "content": "A specialised, genuinely growing niche manufacturer with real overseas diversification, but extreme client concentration and a single-factory setup make earnings unusually exposed to the loss of any one large customer or a disruption at its one plant.",
+    "rating": "High Risk / High Reward",
+    "is_placeholder": false
+  }
+}
