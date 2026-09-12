@@ -1,0 +1,32 @@
+name: Crude Oil Refresh
+
+# Keeps Other Assets -> Commodities (WTI/Brent) current, same cadence
+# budget as gold-refresh.yml / silver-refresh.yml / fx-refresh.yml --
+# 2 cheap rows, no need for a tighter schedule. (59_refresh_crude_oil.py
+# itself only gates on weekday, not NSE hours, since WTI/Brent trade
+# on global exchanges well outside NSE's 9:15-15:30 IST window -- but
+# this workflow still only *runs* during that window to keep GitHub
+# Actions usage in line with every other Other Assets refresh job;
+# --force just skips the script's own internal check, which would
+# otherwise agree anyway on a weekday.)
+
+on:
+  schedule:
+    - cron: '45 3 * * 1-5'
+    - cron: '*/15 4-9 * * 1-5'
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 59_refresh_crude_oil.py --force
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
