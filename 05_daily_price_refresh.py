@@ -21,6 +21,15 @@ it's just skipped and recorded in the run's failed_symbols list. This
 run also skips itself entirely outside NSE market hours, same
 protection as before, unless you pass --force.
 
+Session 30 fix: that "never wipes anything" promise used to only cover
+a stock whose PRICE couldn't be fetched from yfinance -- a failure
+SAVING a stock's data to Supabase (e.g. a one-off 504 Gateway Timeout,
+which really happened and crashed a whole run) wasn't caught at all,
+so one bad save killed the entire remaining run for all 500 stocks.
+The two `.upsert().execute()` calls are now wrapped in their own
+try/except too, so a database hiccup on one stock is treated exactly
+like a yfinance hiccup on one stock: skip it, record it, keep going.
+
 Run manually:
     python 05_daily_price_refresh.py
     python 05_daily_price_refresh.py --force   (ignore market hours)
@@ -81,26 +90,34 @@ def main():
             failed_symbols.append(ticker)
             continue
 
-        supabase.table("live_prices").upsert({
-            "asset_id": asset_id,
-            "price": live["price"],
-            "prev_close": live["prev_close"],
-            "day_change_pct": live["day_change_pct"],
-        }, on_conflict="asset_id").execute()
-
-        hist = get_price_history(yf_symbol, period="5d", interval="1d")
-        if not hist.empty:
-            last_row = hist.iloc[-1]
-            bar_date = hist.index[-1].strftime("%Y-%m-%d")
-            supabase.table("prices_daily").upsert({
+        try:
+            supabase.table("live_prices").upsert({
                 "asset_id": asset_id,
-                "date": bar_date,
-                "open": float(last_row["Open"]) if not pd_isna(last_row["Open"]) else None,
-                "high": float(last_row["High"]) if not pd_isna(last_row["High"]) else None,
-                "low": float(last_row["Low"]) if not pd_isna(last_row["Low"]) else None,
-                "close": float(last_row["Close"]) if not pd_isna(last_row["Close"]) else None,
-                "volume": int(last_row["Volume"]) if not pd_isna(last_row["Volume"]) else None,
-            }, on_conflict="asset_id,date").execute()
+                "price": live["price"],
+                "prev_close": live["prev_close"],
+                "day_change_pct": live["day_change_pct"],
+            }, on_conflict="asset_id").execute()
+
+            hist = get_price_history(yf_symbol, period="5d", interval="1d")
+            if not hist.empty:
+                last_row = hist.iloc[-1]
+                bar_date = hist.index[-1].strftime("%Y-%m-%d")
+                supabase.table("prices_daily").upsert({
+                    "asset_id": asset_id,
+                    "date": bar_date,
+                    "open": float(last_row["Open"]) if not pd_isna(last_row["Open"]) else None,
+                    "high": float(last_row["High"]) if not pd_isna(last_row["High"]) else None,
+                    "low": float(last_row["Low"]) if not pd_isna(last_row["Low"]) else None,
+                    "close": float(last_row["Close"]) if not pd_isna(last_row["Close"]) else None,
+                    "volume": int(last_row["Volume"]) if not pd_isna(last_row["Volume"]) else None,
+                }, on_conflict="asset_id,date").execute()
+        except Exception as e:
+            # A database-side hiccup (e.g. a transient 504 Gateway
+            # Timeout from Supabase) on THIS one stock shouldn't take
+            # down the other 499 -- skip it and keep going, same as a
+            # yfinance-side failure above.
+            failed_symbols.append(f"{ticker} (save failed: {e})")
+            continue
 
         ok_count += 1
         if i % 20 == 0:

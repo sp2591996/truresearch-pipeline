@@ -59,26 +59,34 @@ def main():
             failed.append(ticker)
             continue
 
-        supabase.table("live_prices").upsert({
-            "asset_id": a["asset_id"],
-            "price": live["price"],
-            "prev_close": live["prev_close"],
-            "day_change_pct": live["day_change_pct"],
-        }, on_conflict="asset_id").execute()
-
-        hist = get_price_history(yf_symbol, period="5d", interval="1d")
-        if not hist.empty:
-            last_row = hist.iloc[-1]
-            bar_date = hist.index[-1].strftime("%Y-%m-%d")
-            supabase.table("prices_daily").upsert({
+        # Session 30 fix: a database-side hiccup (e.g. a transient 504
+        # Gateway Timeout from Supabase) on saving used to crash the
+        # whole run -- now skipped and recorded, same as a yfinance-side
+        # failure above.
+        try:
+            supabase.table("live_prices").upsert({
                 "asset_id": a["asset_id"],
-                "date": bar_date,
-                "open": float(last_row["Open"]) if last_row["Open"] == last_row["Open"] else None,
-                "high": float(last_row["High"]) if last_row["High"] == last_row["High"] else None,
-                "low": float(last_row["Low"]) if last_row["Low"] == last_row["Low"] else None,
-                "close": float(last_row["Close"]) if last_row["Close"] == last_row["Close"] else None,
-                "volume": int(last_row["Volume"]) if last_row["Volume"] == last_row["Volume"] else None,
-            }, on_conflict="asset_id,date").execute()
+                "price": live["price"],
+                "prev_close": live["prev_close"],
+                "day_change_pct": live["day_change_pct"],
+            }, on_conflict="asset_id").execute()
+
+            hist = get_price_history(yf_symbol, period="5d", interval="1d")
+            if not hist.empty:
+                last_row = hist.iloc[-1]
+                bar_date = hist.index[-1].strftime("%Y-%m-%d")
+                supabase.table("prices_daily").upsert({
+                    "asset_id": a["asset_id"],
+                    "date": bar_date,
+                    "open": float(last_row["Open"]) if last_row["Open"] == last_row["Open"] else None,
+                    "high": float(last_row["High"]) if last_row["High"] == last_row["High"] else None,
+                    "low": float(last_row["Low"]) if last_row["Low"] == last_row["Low"] else None,
+                    "close": float(last_row["Close"]) if last_row["Close"] == last_row["Close"] else None,
+                    "volume": int(last_row["Volume"]) if last_row["Volume"] == last_row["Volume"] else None,
+                }, on_conflict="asset_id,date").execute()
+        except Exception as e:
+            failed.append(f"{ticker} (save failed: {e})")
+            continue
 
         ok_count += 1
 
