@@ -1,0 +1,96 @@
+"""
+46_refresh_benchmark_indices.py
+-------------------------------------------------------------------
+PRD.md Section L2 -- the frequent, lightweight refresh job for the 3
+benchmark indices (NIFTY 50, SENSEX, NIFTY BANK), separate from
+05_daily_price_refresh.py (which only loops over asset_type='equity')
+so this can run on its own, tighter schedule without touching the
+already-working equity refresh job.
+
+PRD.md L2's acceptance criteria calls for the Index Detail Page to
+"live-update every 5 minutes" -- that's what this script is for, meant
+to be called by a GitHub Actions cron every 5 minutes during market
+hours (see .github/workflows/benchmark-indices.yml).
+
+Same "skip outside market hours unless --force" protection as
+05_daily_price_refresh.py, and same "one failure never wipes anything"
+behavior.
+
+Run manually:
+    python 46_refresh_benchmark_indices.py
+    python 46_refresh_benchmark_indices.py --force
+-------------------------------------------------------------------
+"""
+import sys
+from datetime import datetime, timezone, timedelta
+
+from db_client import get_client
+from market_data_provider import get_live_price, get_price_history
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+
+def _within_nse_hours(now_ist: datetime) -> bool:
+    if now_ist.weekday() >= 5:
+        return False
+    minutes = now_ist.hour * 60 + now_ist.minute
+    return (9 * 60 + 15) <= minutes <= (15 * 60 + 30)
+
+
+def main():
+    now_ist = datetime.now(IST)
+    if "--force" not in sys.argv and not _within_nse_hours(now_ist):
+        print(f"Outside NSE market hours ({now_ist.strftime('%Y-%m-%d %H:%M IST')}) - skipping. Pass --force to run anyway.")
+        return
+
+    supabase = get_client()
+    indices = (
+        supabase.table("assets")
+        .select("asset_id, ticker, yfinance_symbol")
+        .eq("asset_type", "index")
+        .eq("is_active", True)
+        .execute()
+    ).data
+
+    ok_count = 0
+    failed = []
+    for idx in indices:
+        yf_symbol = idx.get("yfinance_symbol")
+        ticker = idx["ticker"]
+        if not yf_symbol:
+            failed.append(ticker)
+            continue
+
+        live = get_live_price(yf_symbol)
+        if live is None:
+            failed.append(ticker)
+            continue
+
+        supabase.table("live_prices").upsert({
+            "asset_id": idx["asset_id"],
+            "price": live["price"],
+            "prev_close": live["prev_close"],
+            "day_change_pct": live["day_change_pct"],
+        }, on_conflict="asset_id").execute()
+
+        hist = get_price_history(yf_symbol, period="5d", interval="1d")
+        if not hist.empty:
+            last_row = hist.iloc[-1]
+            bar_date = hist.index[-1].strftime("%Y-%m-%d")
+            supabase.table("prices_daily").upsert({
+                "asset_id": idx["asset_id"],
+                "date": bar_date,
+                "open": float(last_row["Open"]) if last_row["Open"] == last_row["Open"] else None,
+                "high": float(last_row["High"]) if last_row["High"] == last_row["High"] else None,
+                "low": float(last_row["Low"]) if last_row["Low"] == last_row["Low"] else None,
+                "close": float(last_row["Close"]) if last_row["Close"] == last_row["Close"] else None,
+                "volume": int(last_row["Volume"]) if last_row["Volume"] == last_row["Volume"] else None,
+            }, on_conflict="asset_id,date").execute()
+
+        ok_count += 1
+
+    print(f"Done. {ok_count}/{len(indices)} indices refreshed. Failed: {failed if failed else 'none'}")
+
+
+if __name__ == "__main__":
+    main()

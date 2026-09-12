@@ -1,0 +1,27 @@
+name: Benchmark Index Refresh
+
+# PRD.md L2 -- the Markets tab's Index Detail Page needs to "live-update
+# every 5 minutes" during market hours. Runs every 5 minutes across the
+# NSE trading window (9:15am-3:30pm IST = 3:45am-10:00am UTC), Mon-Fri,
+# same cron-window style as daily-prices.yml but tighter (every 5 min,
+# not 15) since this job only touches 3 index rows -- much cheaper per
+# run than looping over all 500 equities.
+
+on:
+  schedule:
+    - cron: '*/5 3-10 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 46_refresh_benchmark_indices.py --force
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

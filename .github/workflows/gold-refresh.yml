@@ -1,0 +1,27 @@
+name: Gold Refresh
+
+# Keeps the Other Assets -> Metals -> Gold page's price current, same
+# cadence as daily-prices.yml (every 15 min across NSE market hours --
+# GOLDBEES.NS is a single, cheap row, so this doesn't need its own
+# tighter schedule the way the 5-min benchmark-indices job does).
+
+on:
+  schedule:
+    - cron: '45 3 * * 1-5'
+    - cron: '*/15 4-9 * * 1-5'
+    - cron: '0 10 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 48_refresh_gold.py --force
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
