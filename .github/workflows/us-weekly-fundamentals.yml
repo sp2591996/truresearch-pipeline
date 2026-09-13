@@ -1,0 +1,35 @@
+name: US Weekly Fundamentals Refresh
+
+# The USA equivalent of weekly-fundamentals.yml -- 69_backfill_us_fundamentals.py
+# (financial statements into `fundamentals`, P/E and other ratios into
+# `ratios_snapshot`, insider/institutional ownership) had NEVER been
+# scheduled at all -- it was only ever run by hand, twice, both times
+# manually from a terminal. Without this, USA's fundamentals/ratios/
+# ownership data would quietly go stale week after week while prices
+# kept refreshing live, exactly the kind of "half-automated" gap
+# Avdhoot asked about ("are you sure... they will refresh exactly the
+# same as india without manual intervention").
+#
+# Scheduled 1 hour after India's own weekly-fundamentals.yml (3:00 UTC
+# Sunday vs. 2:00 UTC) purely so the two don't compete for the same
+# yfinance rate-limit window at the exact same minute -- otherwise
+# identical cadence to India's.
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 69_backfill_us_fundamentals.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

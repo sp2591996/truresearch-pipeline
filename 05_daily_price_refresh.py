@@ -21,6 +21,14 @@ it's just skipped and recorded in the run's failed_symbols list. This
 run also skips itself entirely outside NSE market hours, same
 protection as before, unless you pass --force.
 
+Phase 1 (US expansion) fix: now that the `assets` table can hold
+non-India stocks too (see 66_add_market_column.sql), this script
+only ever touches India's stocks (`.eq("market", "india")`). Without
+this filter, a run during NSE hours would also try to refresh every
+US stock, which is both wrong (US markets aren't open then) and
+wasteful. US stocks get their own separate refresh script, gated to
+US market hours instead.
+
 Session 30 fix: that "never wipes anything" promise used to only cover
 a stock whose PRICE couldn't be fetched from yfinance -- a failure
 SAVING a stock's data to Supabase (e.g. a one-off 504 Gateway Timeout,
@@ -68,6 +76,7 @@ def main():
         .select("asset_id, ticker, yfinance_symbol")
         .eq("asset_type", "equity")
         .eq("is_active", True)
+        .eq("market", "india")
         .execute()
     )
     assets = assets_res.data

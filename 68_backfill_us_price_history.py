@@ -1,30 +1,31 @@
 """
-08_backfill_price_history.py
+68_backfill_us_price_history.py
 -------------------------------------------------------------------
-Phase B, Step 6: one-time backfill of 10 years of daily price history
-for every equity stock, PLUS the Nifty 100 benchmark index -- both
-needed to build a real TrueScore training dataset (the model needs to
-compute "did this stock beat the market" over rolling 3-month windows
-going back years).
+Phase 1 (US expansion), Step 3: one-time backfill of 10 years of
+daily price history for every S&P 500 stock added by
+67_add_sp500_stocks.py, PLUS the S&P 500 index itself as the
+benchmark -- needed later to build a US training dataset the same
+way 09_build_training_data.py does for India (the model needs to
+compute "did this stock beat the market" over rolling 3-month
+windows going back years).
 
-10 years (not 5) deliberately matches the original model's own choice
--- it's the minimum runway that safely covers the COVID crash quarter
-(Jan-Mar 2020) with 3-4 years of lead-in beforehand, rather than
-starting the model's usable history right at the edge of the crash.
+This is the direct US equivalent of 08_backfill_price_history.py --
+same logic, just scoped to `market = "usa"` and using the S&P 500
+(^GSPC) as the benchmark index instead of the Nifty 100.
 
-Run 07_add_index_asset_type.sql in Supabase FIRST -- this script
-inserts the benchmark index as an asset, which needs that column
-constraint updated first.
+10 years (not 5) for the same reason as the India backfill: enough
+runway to safely cover the COVID crash quarter (Jan-Mar 2020) with
+years of lead-in beforehand.
 
 Safe to run more than once (upserts everywhere).
 
-Phase 1 (US expansion) fix: scoped to India only (`.eq("market",
-"india")`) now that the `assets` table also holds US stocks (see
-66_add_market_column.sql). US stocks get their own separate backfill
-script, 68_backfill_us_price_history.py, with its own benchmark index.
+BEFORE YOU RUN THIS: run 67_add_sp500_stocks.py first (adds the
+stocks this script fetches prices for). This will take a while --
+503 stocks, roughly a third of a second pause between each to be
+polite to Yahoo Finance, so expect it to run for several minutes.
 
 Run with:
-    python 08_backfill_price_history.py
+    python 68_backfill_us_price_history.py
 -------------------------------------------------------------------
 """
 import time
@@ -32,32 +33,33 @@ import time
 from db_client import get_client
 from market_data_provider import get_price_history
 
-BENCHMARK_YF_SYMBOL = "^CNX100"  # Nifty 100 -- same benchmark the original model used
+MARKET = "usa"
+BENCHMARK_YF_SYMBOL = "^GSPC"  # S&P 500 index -- the US equivalent of the Nifty 100 benchmark
 
 
 def ensure_benchmark_asset(supabase) -> int:
     existing = (
         supabase.table("assets")
         .select("asset_id")
-        .eq("ticker", "NIFTY100")
+        .eq("ticker", "SPX500")
         .eq("asset_type", "index")
-        .eq("market", "india")
+        .eq("market", MARKET)
         .execute()
     )
     if existing.data:
         return existing.data[0]["asset_id"]
     res = supabase.table("assets").insert({
-        "ticker": "NIFTY100",
-        "name": "Nifty 100 Index",
+        "ticker": "SPX500",
+        "name": "S&P 500 Index",
         "asset_type": "index",
         "yfinance_symbol": BENCHMARK_YF_SYMBOL,
-        "market": "india",
+        "market": MARKET,
         "is_active": True,
     }).execute()
     return res.data[0]["asset_id"]
 
 
-def backfill_one_asset(supabase, asset_id: int, yf_symbol: str, ticker: str) -> int:
+def backfill_one_asset(supabase, asset_id: int, yf_symbol: str) -> int:
     hist = get_price_history(yf_symbol, period="10y", interval="1d")
     if hist.empty:
         return 0
@@ -85,10 +87,10 @@ def backfill_one_asset(supabase, asset_id: int, yf_symbol: str, ticker: str) -> 
 def main():
     supabase = get_client()
 
-    print("Ensuring Nifty 100 benchmark index exists as an asset...")
+    print("Ensuring S&P 500 benchmark index exists as an asset...")
     benchmark_asset_id = ensure_benchmark_asset(supabase)
     print(f"Backfilling benchmark index history ({BENCHMARK_YF_SYMBOL})...")
-    n = backfill_one_asset(supabase, benchmark_asset_id, BENCHMARK_YF_SYMBOL, "NIFTY100")
+    n = backfill_one_asset(supabase, benchmark_asset_id, BENCHMARK_YF_SYMBOL)
     print(f"  -> {n} days of benchmark history loaded.\n")
 
     assets_res = (
@@ -96,11 +98,11 @@ def main():
         .select("asset_id, ticker, yfinance_symbol")
         .eq("asset_type", "equity")
         .eq("is_active", True)
-        .eq("market", "india")
+        .eq("market", MARKET)
         .execute()
     )
     assets = assets_res.data
-    print(f"Backfilling 10-year price history for {len(assets)} stocks. This will take a while...")
+    print(f"Backfilling 10-year price history for {len(assets)} US stocks. This will take a while...")
 
     ok_count = 0
     failed = []
@@ -111,7 +113,7 @@ def main():
             failed.append(ticker)
             continue
         try:
-            n = backfill_one_asset(supabase, a["asset_id"], yf_symbol, ticker)
+            n = backfill_one_asset(supabase, a["asset_id"], yf_symbol)
             if n > 0:
                 ok_count += 1
             else:
@@ -124,7 +126,7 @@ def main():
             print(f"  [{i}/{len(assets)}] done...")
         time.sleep(0.3)
 
-    print(f"\nDone. {ok_count}/{len(assets)} stocks backfilled.")
+    print(f"\nDone. {ok_count}/{len(assets)} US stocks backfilled.")
     if failed:
         print(f"Failed: {failed}")
 

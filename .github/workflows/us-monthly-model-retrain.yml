@@ -1,0 +1,40 @@
+name: Monthly TrueScore Model Retrain (USA)
+
+# The USA equivalent of monthly-model-retrain.yml -- see
+# 80_us_evaluate_and_promote_model.py for the decision logic. Runs 1
+# hour after India's monthly retrain purely to avoid both jobs hitting
+# Supabase/yfinance at the exact same minute.
+
+on:
+  schedule:
+    - cron: '0 6 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 70_build_us_training_data.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      - run: python 72_us_walkforward_validation.py
+      - run: python 80_us_evaluate_and_promote_model.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      - name: Commit updated model files (only changes if a promotion happened)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add us_trueresearch_model.json us_model_feature_columns.json us_model_metrics.json
+          git diff --cached --quiet || git commit -m "Monthly TrueScore model check (USA) - automated"
+          git push

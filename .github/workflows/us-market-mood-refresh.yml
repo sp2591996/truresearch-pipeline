@@ -1,0 +1,34 @@
+name: US Market Mood Refresh
+
+# The USA equivalent of market-mood-refresh.yml (Avdhoot: "yes, i want
+# it to automatically update the way we update for india"). Runs
+# 78_calculate_us_market_mood.py once a day, same "once a day is
+# enough, unlike the 15-minute price refresh" reasoning as India's own
+# workflow.
+#
+# Scheduled at 21:30 UTC -- 30 minutes after the LATER of the two
+# possible US market closes (4:00pm US/Eastern is 20:00 UTC on Eastern
+# Daylight Time, or 21:00 UTC on Eastern Standard Time -- see
+# us-daily-prices.yml's own comment on why the UTC offset moves twice a
+# year). Picking the later time means this always runs comfortably
+# after us-daily-prices.yml's own final run of the day has written a
+# complete, final set of today's US closing prices, in both DST cases.
+
+on:
+  schedule:
+    - cron: '30 21 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 78_calculate_us_market_mood.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

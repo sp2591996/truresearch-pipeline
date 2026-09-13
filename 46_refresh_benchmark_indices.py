@@ -16,6 +16,14 @@ Same "skip outside market hours unless --force" protection as
 05_daily_price_refresh.py, and same "one failure never wipes anything"
 behavior.
 
+US expansion fix: this script is gated to NSE hours, so it now only
+ever touches India's indices (`.eq("market", "india")`) -- without
+that filter it would also try refreshing the 4 US indices (SPX500 +
+the 3 added by 77_add_us_indices.py) during NSE hours, the wrong time
+of day for them. USA's indices are refreshed by
+74_us_daily_price_refresh.py instead, which is already gated to US
+market hours and already covers asset_type='index' for market='usa'.
+
 Run manually:
     python 46_refresh_benchmark_indices.py
     python 46_refresh_benchmark_indices.py --force
@@ -49,6 +57,7 @@ def main():
         .select("asset_id, ticker, yfinance_symbol")
         .eq("asset_type", "index")
         .eq("is_active", True)
+        .eq("market", "india")
         .execute()
     ).data
 

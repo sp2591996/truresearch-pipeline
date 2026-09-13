@@ -1,0 +1,47 @@
+name: Monthly TrueScore Model Retrain (India)
+
+# Implements Avdhoot's described monthly cadence: rebuild the training
+# data, validate a candidate model against updated data, and only
+# promote it to live if it's at least as good as the current live
+# model -- see 15_evaluate_and_promote_model.py for the full decision
+# logic and rationale. If the candidate isn't good enough, the live
+# model file is left completely untouched.
+#
+# Runs on the 1st of each month. Needs write access to the repo
+# because, if the model is promoted, the updated model files get
+# committed back so every later script (scoring, walk-forward, etc.)
+# picks them up from the checkout, exactly like today's manual process.
+
+on:
+  schedule:
+    - cron: '0 5 1 * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 09_build_training_data.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      - run: python 12_walkforward_validation.py
+      - run: python 15_evaluate_and_promote_model.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      - name: Commit updated model files (only changes if a promotion happened)
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add trueresearch_model.json model_feature_columns.json model_metrics.json
+          git diff --cached --quiet || git commit -m "Monthly TrueScore model check (India) - automated"
+          git push

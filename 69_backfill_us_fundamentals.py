@@ -1,56 +1,32 @@
 """
-06_weekly_fundamentals_refresh.py
+69_backfill_us_fundamentals.py
 -------------------------------------------------------------------
-Phase B, Step 5b: the slower, weekly-cadence job -- replaces
-refresh_weekly_data.py. Meant to run once a week (GitHub Actions,
-same idea as your old .github/workflows/refresh-weekly.yml).
+Phase 1 (US expansion), Step 4: one-time fundamentals + ratios load
+for every S&P 500 stock added by 67_add_sp500_stocks.py.
 
-What it does, for every active equity asset in the database:
-  1. Fetches each company's own annual financial statements (income
-     statement, balance sheet, cash flow) and upserts any NEW fiscal
-     year rows into `fundamentals`. Exact same field-cleaning logic as
-     your old script: yfinance returns real NaN floats (not None) for
-     missing line items, and a period where EVERY field is missing
-     isn't a real fiscal year -- both are skipped, never written as
-     fake zeros or the literal text "nan".
-  2. Fetches the current market snapshot and upserts a new
-     `ratios_snapshot` row dated today, for every stock -- not just
-     ones with a research deck.
-  3. On any failure for a stock, that stock's existing data is left
-     completely untouched (never wiped to null) -- same principle as
-     your old script -- and it's recorded in this run's failed list.
+This is the direct US equivalent of 06_weekly_fundamentals_refresh.py
+-- exact same logic (annual financial statements into `fundamentals`,
+current market snapshot into `ratios_snapshot`), just scoped to
+`market = "usa"`. yfinance's annual statements already return several
+years of history in a single call, so running this once gives enough
+historical fundamentals data for the growth score and for building a
+US training dataset later -- this script also doubles as the ongoing
+weekly refresh job for US stocks once the US market goes live (just
+keep re-running it on a schedule, same as 06 does for India).
 
-Session 12 round 7 fix (diagnostic script 28 found this): this script
-originally only ever wrote pe_ratio, pb_ratio, market_cap, and the
-52-week high/low into `ratios_snapshot` -- ev_ebitda, price_to_sales,
-roce, debt_equity, and margin were columns that existed in the
-database and were displayed on the frontend, but were NEVER actually
-populated by any script. 0% of all 500 stocks had a value in any of
-them. Fixed here:
-  - ev_ebitda, price_to_sales, debt_equity, margin: yfinance's `.info`
-    already has these (enterpriseToEbitda, priceToSalesTrailing12Months,
-    debtToEquity, profitMargins) -- they just weren't being read.
-  - debt_equity specifically: yfinance reports this as a PERCENTAGE
-    (e.g. 41.5 meaning a 0.415 ratio), but the frontend shows
-    ratios_snapshot.debt_equity as a raw, un-multiplied ratio -- so
-    it's divided by 100 here to match what's actually displayed.
-  - roce: yfinance has no ROCE field at all. Computed here as
-    EBIT / (Total Debt + Stockholders Equity) from the same annual
-    financial statements already being fetched for `fundamentals` in
-    step 1 -- Capital Employed approximated as Total Debt +
-    Stockholders Equity since Current Liabilities isn't a field this
-    project stores. A standard simplification when only debt+equity
-    figures are on hand, not the textbook-precise version -- documented
-    here rather than silently treated as exact.
+Same field-cleaning rules as 06: yfinance returns real NaN floats
+(not None) for missing line items, and a fiscal year where EVERY
+field is missing isn't a real year -- both are skipped rather than
+written as fake zeros.
 
-Phase 1 (US expansion) fix: now that the `assets` table can hold
-non-India stocks too (see 66_add_market_column.sql), this script
-only ever touches India's stocks (`.eq("market", "india")`). The new
-US stocks get their own separate backfill/refresh scripts, run on
-their own schedule, once the US ML model work is far enough along.
+BEFORE YOU RUN THIS: run 67_add_sp500_stocks.py first (adds the
+stocks this script fetches fundamentals for). This is the SLOW job
+-- one call per stock for financial statements, another for the
+current snapshot, with a polite pause between stocks -- expect it to
+take a while for 503 stocks.
 
 Run manually:
-    python 06_weekly_fundamentals_refresh.py
+    python 69_backfill_us_fundamentals.py
 -------------------------------------------------------------------
 """
 import time
@@ -61,6 +37,8 @@ import pandas as pd
 from db_client import get_client
 from market_data_provider import get_financial_statements, get_fundamentals
 from ingestion_log import start_run, finish_run
+
+MARKET = "usa"
 
 INCOME_ROWS = ["Total Revenue", "Net Income", "EBIT", "EBITDA"]
 BALANCE_ROWS = ["Total Debt", "Stockholders Equity", "Cash And Cash Equivalents", "Total Assets"]
@@ -84,10 +62,7 @@ COLUMN_MAP = {
 
 
 def _clean(v):
-    """None AND pandas/NumPy NaN both mean "missing" -- yfinance returns
-    real NaN floats (not None) for a line item a company didn't report
-    that period. Same fix your old script needed after a real PR review
-    caught literal "nan" text in a CSV."""
+    """None AND pandas/NumPy NaN both mean "missing" -- same fix 06 needed."""
     return None if v is None or (isinstance(v, float) and pd.isna(v)) else v
 
 
@@ -126,11 +101,6 @@ def refresh_one_stock_fundamentals(supabase, asset_id, yf_symbol):
         net_income, equity = cleaned.get("Net Income"), cleaned.get("Stockholders Equity")
         roe = (net_income / equity) if (net_income is not None and equity not in (None, 0)) else None
 
-        # ROCE = EBIT / Capital Employed. Capital Employed approximated
-        # as Total Debt + Stockholders Equity (see file header note) --
-        # only computed, not written to `fundamentals` (that table has
-        # no roce column); the most recent fiscal year's value is
-        # returned below so main() can pass it into ratios_snapshot.
         ebit, total_debt = cleaned.get("EBIT"), cleaned.get("Total Debt")
         capital_employed = (total_debt or 0) + (equity or 0)
         roce = (ebit / capital_employed) if (ebit is not None and capital_employed) else None
@@ -149,12 +119,17 @@ def refresh_one_stock_fundamentals(supabase, asset_id, yf_symbol):
 def refresh_one_stock_ratios(supabase, asset_id, yf_symbol, today, roce=None):
     info = get_fundamentals(yf_symbol)
 
-    # yfinance reports debtToEquity as a PERCENTAGE (e.g. 41.5 meaning a
-    # 0.415 ratio) -- the frontend shows ratios_snapshot.debt_equity as
-    # a raw, un-multiplied ratio, so this divides by 100 to match what's
-    # actually displayed elsewhere on the site.
     debt_equity_pct = info.get("debtToEquity")
     debt_equity = (debt_equity_pct / 100) if debt_equity_pct is not None else None
+
+    # USA "who owns this stock" stat card (76_add_ownership_columns.sql):
+    # yfinance reports these as 0-1 fractions (e.g. 0.663 = 66.3%),
+    # matching the *100 convention every other percentage column on this
+    # page already uses (see roe/roce/margin math elsewhere in this
+    # file) -- multiplied here so the frontend can display them
+    # directly without its own conversion.
+    insider_pct = info.get("heldPercentInsiders")
+    institutional_pct = info.get("heldPercentInstitutions")
 
     snap = {
         "pe_ratio": info.get("trailingPE"),
@@ -162,18 +137,16 @@ def refresh_one_stock_ratios(supabase, asset_id, yf_symbol, today, roce=None):
         "market_cap": info.get("marketCap"),
         "week52_high": info.get("fiftyTwoWeekHigh"),
         "week52_low": info.get("fiftyTwoWeekLow"),
-        # Previously never populated at all (Session 12 round 7 fix --
-        # see file header). yfinance already exposes the first three;
-        # roce is computed in refresh_one_stock_fundamentals above and
-        # passed in here since yfinance has no field for it.
         "ev_ebitda": info.get("enterpriseToEbitda"),
         "price_to_sales": info.get("priceToSalesTrailing12Months"),
         "margin": info.get("profitMargins"),
         "debt_equity": debt_equity,
         "roce": roce,
+        "insider_ownership_pct": (insider_pct * 100) if insider_pct is not None else None,
+        "institutional_ownership_pct": (institutional_pct * 100) if institutional_pct is not None else None,
     }
     if all(v is None for v in snap.values()):
-        return False  # yfinance didn't error, but gave us nothing usable -- treat as a failure, same as old script
+        return False
     supabase.table("ratios_snapshot").upsert({
         "asset_id": asset_id,
         "as_of_date": today,
@@ -189,13 +162,18 @@ def main():
         .select("asset_id, ticker, yfinance_symbol")
         .eq("asset_type", "equity")
         .eq("is_active", True)
-        .eq("market", "india")
+        .eq("market", MARKET)
         .execute()
     )
     assets = assets_res.data
     today = date.today().isoformat()
-    print(f"Refreshing fundamentals + ratios for {len(assets)} equities. This is the slow job -- it'll take a while.")
+    print(f"Refreshing fundamentals + ratios for {len(assets)} US equities. This is the slow job -- it'll take a while.")
 
+    # Note: "weekly_fundamentals" is reused here (rather than a new
+    # "us_fundamentals_backfill" label) because the `ingestion_runs`
+    # table only accepts a fixed, pre-approved list of run_type values
+    # (a database check constraint) -- reusing this existing, already-
+    # allowed value avoids needing a schema change just for a log label.
     run_id = start_run("weekly_fundamentals")
     ok_count = 0
     failed_symbols = []
@@ -227,7 +205,7 @@ def main():
 
         if i % 20 == 0:
             print(f"  [{i}/{len(assets)}] processed...")
-        time.sleep(0.3)  # be polite to Yahoo Finance, same pacing as the old script
+        time.sleep(0.3)
 
     finish_run(run_id, ok_count, failed_symbols)
     print(f"\nDone. {ok_count}/{len(assets)} ok. Failed: {failed_symbols if failed_symbols else 'none'}")

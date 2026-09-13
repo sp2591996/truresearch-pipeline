@@ -1,0 +1,42 @@
+name: US Daily Price Refresh
+
+# The USA equivalent of daily-prices.yml -- 74_us_daily_price_refresh.py
+# was built earlier (Avdhoot: "the latest market numbers are not
+# populated for USA") but was only ever run by hand from a terminal.
+# This is what makes it actually "automatic," the same way India's own
+# daily refresh already is.
+#
+# US market hours are 9:30am-4:00pm US/Eastern, which is 13:30-20:00
+# UTC on Eastern Daylight Time (most of the year) or 14:30-21:00 UTC on
+# Eastern Standard Time (~early Nov to mid-March) -- unlike India's IST
+# (no DST), the UTC offset for US Eastern time shifts twice a year.
+# Rather than maintain two separate schedules for two es different
+# times of year, this cron just covers the wider of the two windows
+# (13:30-21:00 UTC) every 15 minutes -- 74_us_daily_price_refresh.py
+# itself already checks the real US/Eastern market-hours window
+# (`_within_us_market_hours`, timezone-aware via zoneinfo) before doing
+# any work, so the extra ~1hr of runs that fall outside actual market
+# hours on either side of the DST boundary are simply harmless no-ops
+# ("Outside US market hours - skipping"), not wasted work or wrong data.
+# No --force flag here for exactly that reason -- the script's own
+# real-time check is what keeps this correct across DST automatically.
+
+on:
+  schedule:
+    - cron: '*/15 13-20 * * 1-5'
+    - cron: '0,15,30,45 21 * * 1-5'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 74_us_daily_price_refresh.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

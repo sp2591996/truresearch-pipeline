@@ -1,0 +1,31 @@
+name: Weekly TrueScore Refresh (India)
+
+# Re-runs TrueScore for every India stock using the ALREADY-TRAINED
+# live model -- no training happens here, just applying the existing
+# model + growth formula + relative valuation formula to fresh data,
+# exactly what Avdhoot described as the weekly cadence. Safe to run
+# every week: 14_score_current_stocks.py takes no arguments and
+# upserts (see its own header comment).
+#
+# Scheduled 2 hours after weekly-fundamentals.yml (0 2 * * 0) so
+# fresh P/E, ROE, debt/equity etc. are already in the database before
+# the scores that depend on them are recalculated.
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 14_score_current_stocks.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

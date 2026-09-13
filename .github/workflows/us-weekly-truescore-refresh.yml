@@ -1,0 +1,26 @@
+name: Weekly TrueScore Refresh (USA)
+
+# The USA equivalent of weekly-truescore-refresh.yml -- re-runs
+# TrueScore for every US stock using the already-trained live US
+# model. No training happens here. Scheduled 1 hour after
+# us-weekly-fundamentals.yml (0 3 * * 0) so fresh US fundamentals
+# are in the database first.
+
+on:
+  schedule:
+    - cron: '0 4 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 73_score_us_stocks.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
