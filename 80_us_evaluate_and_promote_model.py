@@ -51,6 +51,8 @@ import sys
 
 import pandas as pd
 
+from ingestion_log import start_run, finish_run
+
 WALKFORWARD_RESULTS_FILE = "us_walkforward_results.csv"
 METRICS_FILE = "us_model_metrics.json"
 
@@ -92,6 +94,7 @@ def write_summary(text):
 
 
 def main():
+    run_id = start_run("us_model_retrain")
     new_avg_ic = load_avg_rank_ic()
     previous = load_previous_metrics()
 
@@ -104,6 +107,7 @@ def main():
         )
         with open(METRICS_FILE, "w") as f:
             json.dump({"avg_rank_ic": new_avg_ic}, f)
+        finish_run(run_id, ok_count=1, failed_symbols=[])
         return
 
     old_avg_ic = previous["avg_rank_ic"]
@@ -135,6 +139,7 @@ def main():
     # permanent record of every monthly check, promoted or not -- same as
     # India already does.
     subprocess.run([sys.executable, SAVE_RESULTS_SCRIPT], check=True)
+    finish_run(run_id, ok_count=1, failed_symbols=[] if promote else ["kept existing model (candidate did not beat live model)"])
 
 
 if __name__ == "__main__":

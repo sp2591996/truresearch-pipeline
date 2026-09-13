@@ -34,6 +34,7 @@ from datetime import datetime, timezone, timedelta
 
 from db_client import get_client
 from market_data_provider import get_live_price, get_price_history
+from ingestion_log import start_run, finish_run
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -61,6 +62,7 @@ def main():
         .execute()
     ).data
 
+    run_id = start_run("benchmark_indices")
     ok_count = 0
     failed = []
     for idx in indices:
@@ -106,6 +108,7 @@ def main():
 
         ok_count += 1
 
+    finish_run(run_id, ok_count, failed)
     print(f"Done. {ok_count}/{len(indices)} indices refreshed. Failed: {failed if failed else 'none'}")
 
 

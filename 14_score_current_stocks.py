@@ -80,6 +80,7 @@ import pandas as pd
 from xgboost import XGBRegressor
 
 from db_client import get_client
+from ingestion_log import start_run, finish_run
 
 FORMULA_VERSION = "truescore_v3"
 ML_SUBMODEL_VERSION = "truescore_ml_v2"
@@ -434,6 +435,8 @@ def main():
     today_ts = pd.Timestamp(date.today())
     rows = []
     years_by_asset = {}  # asset_id -> up to 3 fiscal-year rows (oldest first), reused for sector-level Growth Score
+    run_id = start_run("scoring")
+    skipped = []
 
     for i, a in enumerate(assets, 1):
         asset_id = a["asset_id"]
@@ -444,6 +447,7 @@ def main():
         prices = fetch_price_history(supabase, asset_id)
         if prices.empty or len(prices) < 200:
             print("  -> skipped (not enough price history)")
+            skipped.append(f"{ticker} (not enough price history)")
             continue
         latest_tech = compute_latest_indicators(prices)
         latest_date = latest_tech.name  # the date of the latest usable price row
@@ -452,6 +456,7 @@ def main():
         latest_fund, prior_fund = latest_usable_fundamentals(fundamentals, today_ts)
         if latest_fund is None:
             print("  -> skipped (no usable point-in-time fundamentals yet)")
+            skipped.append(f"{ticker} (no usable point-in-time fundamentals yet)")
             continue
 
         # Relative_Strength_3M: this stock's 3-month return minus the
@@ -563,6 +568,7 @@ def main():
     for i in range(0, len(component_rows), CHUNK):
         supabase.table("score_components").insert(component_rows[i:i + CHUNK]).execute()
 
+    finish_run(run_id, ok_count=len(features_df), failed_symbols=skipped)
     print(f"\nDone. Scored {len(features_df)} stocks and saved to the database (run_date={run_date}, formula_version={FORMULA_VERSION}).")
     n_distressed = int(features_df["is_distressed"].sum())
     print(f"Distress guardrail: {n_distressed} stock(s) flagged (negative equity or ROE < {DISTRESS_ROE_THRESHOLD:.0%}), score capped at {DISTRESS_SCORE_CAP}.")

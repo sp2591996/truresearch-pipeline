@@ -53,6 +53,7 @@ from datetime import datetime, timezone
 import pandas as pd
 
 from db_client import get_client
+from ingestion_log import start_run, finish_run
 
 FORMULA_VERSION = "marketmood_v1"
 MOMENTUM_WINDOW = 50
@@ -262,8 +263,16 @@ def main():
                   f"average: {sum(overall_values)/len(overall_values):.0f}. "
                   f"(If every day shows nearly the same number, or None, that's a sign the formula or the data needs a closer look before this goes live.)")
 
+    # Only log to ingestion_runs for the real scheduled (non-backtest)
+    # run -- a --backtest invocation is a manual diagnostic, not the
+    # daily job, and shouldn't clutter the admin page's run history.
+    run_id = None if backtest_days else start_run("market_mood")
+
     supabase.table("market_mood").upsert(results, on_conflict="run_date,formula_version").execute()
     print(f"\nUpserted {len(results)} row(s) into market_mood.")
+
+    if run_id is not None:
+        finish_run(run_id, ok_count=len(results), failed_symbols=[])
 
 
 if __name__ == "__main__":

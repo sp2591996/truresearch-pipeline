@@ -22,6 +22,7 @@ from datetime import datetime, timezone, timedelta
 
 from db_client import get_client
 from market_data_provider import get_live_price, get_price_history
+from ingestion_log import start_run, finish_run
 
 IST = timezone(timedelta(hours=5, minutes=30))
 
@@ -52,6 +53,7 @@ def main():
         print("No gold asset found -- run 47_add_gold_asset.py first.")
         return
 
+    run_id = start_run("gold_refresh")
     ok_count = 0
     failed = []
     for a in gold_assets:
@@ -97,6 +99,7 @@ def main():
 
         ok_count += 1
 
+    finish_run(run_id, ok_count, failed)
     print(f"Done. {ok_count}/{len(gold_assets)} gold assets refreshed. Failed: {failed if failed else 'none'}")
 
 
