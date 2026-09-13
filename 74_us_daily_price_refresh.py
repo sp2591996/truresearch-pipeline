@@ -102,7 +102,7 @@ def main():
     assets = assets_res.data
     print(f"Refreshing prices for {len(assets)} US equities/indices...")
 
-    run_id = start_run("daily_prices")
+    run_id = start_run("us_daily_prices")
     ok_count = 0
     failed_symbols = []
 

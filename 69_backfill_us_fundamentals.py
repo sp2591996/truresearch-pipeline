@@ -169,12 +169,11 @@ def main():
     today = date.today().isoformat()
     print(f"Refreshing fundamentals + ratios for {len(assets)} US equities. This is the slow job -- it'll take a while.")
 
-    # Note: "weekly_fundamentals" is reused here (rather than a new
-    # "us_fundamentals_backfill" label) because the `ingestion_runs`
-    # table only accepts a fixed, pre-approved list of run_type values
-    # (a database check constraint) -- reusing this existing, already-
-    # allowed value avoids needing a schema change just for a log label.
-    run_id = start_run("weekly_fundamentals")
+    # Session 32 fix: this used to reuse India's "weekly_fundamentals"
+    # label, which meant the two markets' runs couldn't be told apart
+    # on the admin Pipeline Runs page. Now logs under its own value
+    # (added by 83_split_us_run_types.sql).
+    run_id = start_run("us_weekly_fundamentals")
     ok_count = 0
     failed_symbols = []
 
