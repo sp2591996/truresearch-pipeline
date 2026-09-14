@@ -8,6 +8,14 @@ name: Daily Price Refresh
 # the pipeline one more chance to pick up the real closing print
 # instead of whatever mid-auction price it caught at exactly 3:30.
 
+# Session 33: India grew from ~500 to 2,568 stocks (Stage 2 universe
+# expansion), so this job now runs as 3 parallel batches (matrix
+# strategy below) instead of one job working through everyone in
+# sequence -- keeps each run comfortably inside the 10-15 minute
+# market-hours window instead of risking falling behind. The cron
+# schedule itself is unchanged; GitHub Actions fires all 3 matrix
+# jobs at once for each scheduled trigger.
+
 on:
   schedule:
     - cron: '45 3 * * 1-5'
@@ -19,13 +27,16 @@ on:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        batch: [0, 1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: python 05_daily_price_refresh.py --force
+      - run: python 05_daily_price_refresh.py --force --batch-index=${{ matrix.batch }} --batch-count=3
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

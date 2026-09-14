@@ -38,9 +38,21 @@ The two `.upsert().execute()` calls are now wrapped in their own
 try/except too, so a database hiccup on one stock is treated exactly
 like a yfinance hiccup on one stock: skip it, record it, keep going.
 
+Session 33 (Stage 2 fast-follow): with the India universe now at
+2,568 stocks (up from ~500), a single run through all of them during
+a 15-minute market-hours window risks falling behind. Added optional
+--batch-index=N --batch-count=M args so GitHub Actions can run this
+as several parallel jobs, each handling roughly 1/M of the stocks
+(split in the same fetched order, in even-sized chunks) -- see
+.github/workflows/daily-prices.yml, which now runs 3 batches in
+parallel via a matrix strategy. Manual/local runs are unaffected --
+omit both args (or leave batch-count at 1) to process every stock,
+exactly as before.
+
 Run manually:
     python 05_daily_price_refresh.py
     python 05_daily_price_refresh.py --force   (ignore market hours)
+    python 05_daily_price_refresh.py --batch-index=0 --batch-count=3   (process only batch 1 of 3)
 -------------------------------------------------------------------
 """
 import sys
@@ -51,6 +63,14 @@ from market_data_provider import get_live_price, get_price_history
 from ingestion_log import start_run, finish_run
 
 IST = timezone(timedelta(hours=5, minutes=30))
+
+
+def _get_arg(name: str, default: str) -> str:
+    prefix = f"--{name}="
+    for arg in sys.argv:
+        if arg.startswith(prefix):
+            return arg[len(prefix):]
+    return default
 
 
 def _within_nse_hours(now_ist: datetime) -> bool:
@@ -95,7 +115,18 @@ def main():
         if len(batch) < page_size:
             break
         offset += page_size
-    print(f"Refreshing prices for {len(assets)} equities...")
+
+    batch_index = int(_get_arg("batch-index", "0"))
+    batch_count = int(_get_arg("batch-count", "1"))
+    if batch_count > 1:
+        total = len(assets)
+        chunk_size = -(-total // batch_count)  # ceil division, so every batch is used
+        start = batch_index * chunk_size
+        end = start + chunk_size
+        assets = assets[start:end]
+        print(f"Batch {batch_index + 1}/{batch_count}: refreshing prices for {len(assets)} of {total} equities...")
+    else:
+        print(f"Refreshing prices for {len(assets)} equities...")
 
     run_id = start_run("daily_prices")
     ok_count = 0

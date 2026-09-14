@@ -1,5 +1,11 @@
 name: Weekly Fundamentals Refresh
 
+# Session 33: India grew from ~500 to 2,568 stocks (Stage 2 universe
+# expansion), so this job now runs as 3 parallel batches (matrix
+# strategy below) instead of one job working through everyone in
+# sequence -- cuts the run time roughly 3x, so it still finishes well
+# within GitHub Actions' time limits even as the universe grows.
+
 on:
   schedule:
     - cron: '0 2 * * 0'
@@ -8,13 +14,16 @@ on:
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        batch: [0, 1, 2]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: python 06_weekly_fundamentals_refresh.py
+      - run: python 06_weekly_fundamentals_refresh.py --batch-index=${{ matrix.batch }} --batch-count=3
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

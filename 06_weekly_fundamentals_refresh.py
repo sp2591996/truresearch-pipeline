@@ -49,10 +49,22 @@ only ever touches India's stocks (`.eq("market", "india")`). The new
 US stocks get their own separate backfill/refresh scripts, run on
 their own schedule, once the US ML model work is far enough along.
 
+Session 33 (Stage 2 fast-follow): with the India universe now at
+2,568 stocks (up from ~500), added optional --batch-index=N
+--batch-count=M args so GitHub Actions can split this into several
+parallel jobs, each handling roughly 1/M of the stocks (same idea as
+05_daily_price_refresh.py) -- see
+.github/workflows/weekly-fundamentals.yml, which now runs 3 batches
+in parallel via a matrix strategy. Manual/local runs are unaffected
+-- omit both args (or leave batch-count at 1) to process every
+stock, exactly as before.
+
 Run manually:
     python 06_weekly_fundamentals_refresh.py
+    python 06_weekly_fundamentals_refresh.py --batch-index=0 --batch-count=3   (process only batch 1 of 3)
 -------------------------------------------------------------------
 """
+import sys
 import time
 from datetime import date
 
@@ -61,6 +73,14 @@ import pandas as pd
 from db_client import get_client
 from market_data_provider import get_financial_statements, get_fundamentals
 from ingestion_log import start_run, finish_run
+
+
+def _get_arg(name: str, default: str) -> str:
+    prefix = f"--{name}="
+    for arg in sys.argv:
+        if arg.startswith(prefix):
+            return arg[len(prefix):]
+    return default
 
 INCOME_ROWS = ["Total Revenue", "Net Income", "EBIT", "EBITDA"]
 BALANCE_ROWS = ["Total Debt", "Stockholders Equity", "Cash And Cash Equivalents", "Total Assets"]
@@ -208,9 +228,20 @@ def main():
         if len(batch) < page_size:
             break
         offset += page_size
-    today = date.today().isoformat()
-    print(f"Refreshing fundamentals + ratios for {len(assets)} equities. This is the slow job -- it'll take a while.")
 
+    batch_index = int(_get_arg("batch-index", "0"))
+    batch_count = int(_get_arg("batch-count", "1"))
+    if batch_count > 1:
+        total = len(assets)
+        chunk_size = -(-total // batch_count)  # ceil division, so every batch is used
+        start = batch_index * chunk_size
+        end = start + chunk_size
+        assets = assets[start:end]
+        print(f"Batch {batch_index + 1}/{batch_count}: refreshing fundamentals + ratios for {len(assets)} of {total} equities...")
+    else:
+        print(f"Refreshing fundamentals + ratios for {len(assets)} equities. This is the slow job -- it'll take a while.")
+
+    today = date.today().isoformat()
     run_id = start_run("weekly_fundamentals")
     ok_count = 0
     failed_symbols = []
