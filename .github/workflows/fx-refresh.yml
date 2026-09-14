@@ -6,20 +6,23 @@ name: FX Refresh
 # Session 30: added the same extra 3:45 PM IST run the other NSE-hours
 # refresh jobs got, to better catch NSE's official closing rate.
 
-# Session 33 (scheduling fix): this job had NEVER fired on its
-# schedule, ever -- GitHub Actions silently drops scheduled triggers
-# when too many workflows in the same repo share the exact same
-# minute mark (this one shared '45 3', '*/15 4-9', '0 10', '15 10'
-# with daily-prices.yml, gold-refresh.yml, silver-refresh.yml, and
-# crude-refresh.yml). Fixed by staggering this job 6 minutes later
-# than daily-prices.yml.
+# Session 33 (scheduling fix, round 2): this job had NEVER fired on
+# its schedule, ever. GitHub's own docs explain why: scheduled runs
+# get delayed hardest -- and can be dropped outright -- right at
+# minute :00 of each hour, since that's the most popular minute mark
+# across EVERY repo on GitHub, not just this one; this job used to sit
+# on exactly those marks. Fixed properly this time: this job now runs
+# on minute :08/:23/:38/:53 -- not a multiple of 5, and not shared
+# with any other job in this repo (see each workflow's own comment
+# for its assigned minutes; benchmark-indices.yml runs every 5 minutes
+# on a completely different minute-mod-5 lane).
 
 on:
   schedule:
-    - cron: '51 3 * * 1-5'
-    - cron: '6,21,36,51 4-9 * * 1-5'
-    - cron: '6 10 * * 1-5'
-    - cron: '21 10 * * 1-5'
+    - cron: '8 3 * * 1-5'
+    - cron: '8,23,38,53 4-9 * * 1-5'
+    - cron: '8 10 * * 1-5'
+    - cron: '23 10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:

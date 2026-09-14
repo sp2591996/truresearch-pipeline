@@ -12,16 +12,25 @@ name: Daily Price Refresh
 # expansion), so this job now runs as 3 parallel batches (matrix
 # strategy below) instead of one job working through everyone in
 # sequence -- keeps each run comfortably inside the 10-15 minute
-# market-hours window instead of risking falling behind. The cron
-# schedule itself is unchanged; GitHub Actions fires all 3 matrix
-# jobs at once for each scheduled trigger.
+# market-hours window instead of risking falling behind.
+
+# Session 33 (scheduling fix, round 2): this job used to fire reliably,
+# but stopped firing on schedule entirely after Sept 11 -- confirmed
+# via Actions run history (only manual runs since then). GitHub's own
+# docs explain why: scheduled runs get delayed hardest -- and can be
+# dropped outright -- right at minute :00 of each hour, since that's
+# the most popular minute mark across EVERY repo on GitHub, not just
+# this one, and this job was sitting on exactly :00/:15/:30/:45.
+# Fixed by moving this job to minute :02/:17/:32/:47 -- not a multiple
+# of 5, and not shared with any other job in this repo (see each
+# workflow's own comment for its assigned minutes).
 
 on:
   schedule:
-    - cron: '45 3 * * 1-5'
-    - cron: '*/15 4-9 * * 1-5'
-    - cron: '0 10 * * 1-5'
-    - cron: '15 10 * * 1-5'
+    - cron: '2 3 * * 1-5'
+    - cron: '2,17,32,47 4-9 * * 1-5'
+    - cron: '2 10 * * 1-5'
+    - cron: '17 10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:

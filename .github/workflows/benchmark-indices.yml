@@ -7,16 +7,22 @@ name: Benchmark Index Refresh
 # not 15) since this job only touches 3 index rows -- much cheaper per
 # run than looping over all 500 equities.
 
-# Session 33 (scheduling fix): confirmed via Actions run history that
-# this job had NEVER fired on its schedule, ever. GitHub Actions
-# silently drops scheduled triggers when too many workflows in the
-# repo share the exact same minute marks -- this job's every-5-minute
-# schedule landed on the same :00/:05/:10... marks as everything else.
-# Fixed by offsetting 2 minutes so it lands on :02/:07/:12... instead.
+# Session 33 (scheduling fix, round 2): confirmed via Actions run
+# history that this job had NEVER fired on its schedule, ever. GitHub's
+# own docs explain why: scheduled runs get delayed hardest -- and can
+# be dropped outright -- right at minute :00 of each hour, since
+# that's the most popular minute mark across EVERY repo on GitHub, not
+# just this one; every-5-minutes landed right on those marks. Fixed by
+# offsetting the whole every-5-minute cycle onto minute :01/:06/:11/...
+# -- a lane no other job in this repo uses (see each workflow's own
+# comment for its assigned minutes: daily-prices.yml uses :02/:17/:32/
+# :47, gold-refresh.yml :07/:22/:37/:52, silver-refresh.yml :03/:18/
+# :33/:48, fx-refresh.yml :08/:23/:38/:53, crude-refresh.yml :04/:19/
+# :34/:49 -- none of those fall on this job's :01/:06/:11/... lane).
 
 on:
   schedule:
-    - cron: '2-57/5 3-10 * * 1-5'
+    - cron: '1-56/5 3-10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:

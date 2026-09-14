@@ -10,19 +10,22 @@ name: Crude Oil Refresh
 # --force just skips the script's own internal check, which would
 # otherwise agree anyway on a weekday.)
 
-# Session 33 (scheduling fix): this job had NEVER fired on its
-# schedule, ever -- GitHub Actions silently drops scheduled triggers
-# when too many workflows in the same repo share the exact same
-# minute mark (this one shared '45 3', '*/15 4-9', '0 10' with
-# daily-prices.yml, gold-refresh.yml, silver-refresh.yml, and
-# fx-refresh.yml). Fixed by staggering this job 8 minutes later than
-# daily-prices.yml.
+# Session 33 (scheduling fix, round 2): this job had NEVER fired on
+# its schedule, ever. GitHub's own docs explain why: scheduled runs
+# get delayed hardest -- and can be dropped outright -- right at
+# minute :00 of each hour, since that's the most popular minute mark
+# across EVERY repo on GitHub, not just this one; this job used to sit
+# on exactly those marks. Fixed properly this time: this job now runs
+# on minute :04/:19/:34/:49 -- not a multiple of 5, and not shared
+# with any other job in this repo (see each workflow's own comment
+# for its assigned minutes; benchmark-indices.yml runs every 5 minutes
+# on a completely different minute-mod-5 lane).
 
 on:
   schedule:
-    - cron: '53 3 * * 1-5'
-    - cron: '8,23,38,53 4-9 * * 1-5'
-    - cron: '8 10 * * 1-5'
+    - cron: '4 3 * * 1-5'
+    - cron: '4,19,34,49 4-9 * * 1-5'
+    - cron: '4 10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:

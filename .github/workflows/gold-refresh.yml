@@ -10,24 +10,30 @@ name: Gold Refresh
 # after 3:30 PM by the closing auction) instead of just whatever the
 # free data source had at exactly 3:30.
 
-# Session 33 (scheduling fix): this job (and every other Other Assets
-# refresh job) had NEVER fired on its schedule, ever -- confirmed via
-# each workflow's Actions run history showing 0 scheduled runs.
-# GitHub Actions silently drops scheduled triggers when too many
-# workflows in the same repo are all set to fire at the exact same
-# minute mark, which is what was happening here: this job shared the
-# identical '45 3', '*/15 4-9', '0 10', '15 10' schedule with
-# daily-prices.yml, silver-refresh.yml, fx-refresh.yml, and
-# crude-refresh.yml. Fixed by staggering this job 2 minutes later than
-# daily-prices.yml (which has historical evidence of actually firing),
-# so it no longer competes for the same instant.
+# Session 33 (scheduling fix, round 2): every Other Assets refresh job
+# had NEVER fired on its schedule, ever -- confirmed via each
+# workflow's Actions run history showing 0 scheduled runs, and even
+# daily-prices.yml (which used to fire reliably) had stopped firing
+# since Sept 11. GitHub's own docs explain why: scheduled workflows
+# get delayed hardest -- and can be dropped outright -- right at
+# minute :00 of each hour, because that's the most popular minute
+# mark across EVERY repo on GitHub, not just this one. All these jobs
+# were sitting on '45 3', '*/15 4-9' (i.e. :00/:15/:30/:45), '0 10',
+# '15 10' -- exactly the most congested marks possible.
+#
+# Fixed properly this time: every job below now runs on minutes that
+# are NOT multiples of 5, and no two jobs in this repo share an exact
+# minute (benchmark-indices.yml fires every 5 minutes on its own
+# minute-mod-5 lane; this job and the other 4 each use their own
+# distinct minutes within a different lane). See each file's own
+# comment for its exact assigned minutes.
 
 on:
   schedule:
-    - cron: '47 3 * * 1-5'
-    - cron: '2,17,32,47 4-9 * * 1-5'
-    - cron: '2 10 * * 1-5'
-    - cron: '17 10 * * 1-5'
+    - cron: '7 3 * * 1-5'
+    - cron: '7,22,37,52 4-9 * * 1-5'
+    - cron: '7 10 * * 1-5'
+    - cron: '22 10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:
