@@ -1,0 +1,32 @@
+name: Weekly Universe Sync - USA
+
+# Session 34: adds/deactivates US (S&P 500) stocks automatically each
+# week (see 105_weekly_universe_sync_usa.py's own header). Runs a day
+# before the existing weekly US fundamentals/TrueScore jobs so any
+# newly added stock has time to be scored before the site would
+# otherwise show it as incomplete. GitHub's own cron trigger below is
+# kept as a backup only -- cron-job.org is this project's primary
+# scheduler (see PROJECT_STATE.md for why).
+
+on:
+  schedule:
+    - cron: '15 1 * * 6'
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 105_weekly_universe_sync_usa.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      - run: python 20_backfill_new_stocks_price_history.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

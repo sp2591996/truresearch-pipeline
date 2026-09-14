@@ -95,6 +95,12 @@ CONTEXT_TO_COLUMN = {
 }
 PCT_TAG_LOCALNAME = "ShareholdingAsAPercentageOfTotalNumberOfShares"
 
+# Session 34 fix: pause between every stock's filing-list request (not
+# just between downloading individual filings, which already had a
+# pause) -- see fetch_quarterly_filings for why.
+REQUEST_DELAY_SECONDS = 0.5
+RETRY_DELAY_SECONDS = 5.0
+
 REQUEST_HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -181,8 +187,21 @@ def parse_shareholding_xbrl(xml_bytes: bytes) -> dict:
 def fetch_quarterly_filings(nse, symbol: str, max_quarters: int) -> list:
     """Returns up to `max_quarters` filing records
     [{'date': 'YYYY-MM-DD', 'xbrl': url}, ...], newest first, as
-    reported by NSE's own filing-list API for this symbol."""
-    records = nse.shareholding(symbol)
+    reported by NSE's own filing-list API for this symbol.
+
+    Session 34 fix: NSE's site throttles/blocks a connection that makes
+    requests too quickly with no pause between them -- after enough
+    stocks in a row with zero delay, every request started failing with
+    "The request timed out", one after another (same class of problem
+    already hit and fixed for Yahoo Finance in
+    74_us_daily_price_refresh.py). Retrying once after a longer pause
+    fixes almost all of these, since it's NSE saying "slow down," not a
+    real, permanent failure for that stock."""
+    try:
+        records = nse.shareholding(symbol)
+    except Exception:
+        time.sleep(RETRY_DELAY_SECONDS)
+        records = nse.shareholding(symbol)  # let a second failure raise normally
     out = []
     for r in records[:max_quarters]:
         xbrl_url = r.get("xbrl")
@@ -205,9 +224,47 @@ def normalise_date(date_str: str) -> str:
     return date_str
 
 
+def asset_ids_with_shareholding(supabase) -> set:
+    """Returns the set of every asset_id that already has at least one row
+    in shareholding_pattern -- fetched as ONE paginated query (same
+    .range() pattern as the assets query below), not one query per stock.
+    Session 34 second fix: the first version of this function asked the
+    database one stock at a time (3,000+ separate round-trips), which
+    made the "skip already-done stocks" step alone take 5-10+ minutes
+    with no output, looking like the script had frozen."""
+    ids = set()
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("shareholding_pattern")
+            .select("asset_id")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        for row in batch:
+            ids.add(row["asset_id"])
+        if len(batch) < page_size:
+            break
+        offset += page_size
+    return ids
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--quarters", type=int, default=4, help="How many recent quarters to fetch per stock (default 4).")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help=(
+            "Re-fetch every active equity, including ones that already have "
+            "shareholding data saved. Without this flag, stocks that already "
+            "have at least one row in shareholding_pattern are skipped, so "
+            "re-running this script only does real work for stocks that have "
+            "never been fetched yet (e.g. newly added ones)."
+        ),
+    )
     args = parser.parse_args()
 
     try:
@@ -218,14 +275,53 @@ def main():
         sys.exit(1)
 
     supabase = get_client()
-    assets_res = (
-        supabase.table("assets")
-        .select("asset_id, ticker")
-        .eq("asset_type", "equity")
-        .eq("is_active", True)
-        .execute()
-    )
-    assets = assets_res.data
+
+    # Session 34 fix: Supabase/PostgREST silently caps any .select() at
+    # 1000 rows unless you page through it with .range() -- the same
+    # gotcha already hit and fixed in 05_daily_price_refresh.py,
+    # 06_weekly_fundamentals_refresh.py, 14_score_current_stocks.py,
+    # 20_backfill_new_stocks_price_history.py, and
+    # 87_assign_sectors_from_yfinance.py. With India's active-equity
+    # universe now at 2,500+ stocks (Stage 2 expansion), the old
+    # un-paginated query here only ever saw the first ~1,000 -- which is
+    # almost certainly why the newly added stocks never got any
+    # shareholding data, even before accounting for whether this script
+    # had been re-run since the expansion.
+    # Session 34 THIRD fix: this query was missing the .eq("market",
+    # "india") filter that every other market-aware script (e.g.
+    # 74_us_daily_price_refresh.py) uses -- without it, this pulled in
+    # every US stock too (market="usa"), and since NSE obviously has no
+    # shareholding filings for tickers like AAPL/GOOGL, the run just
+    # burned through ~2,000 US stocks one by one printing "no filings
+    # found" for each, before eventually crashing on a save error that
+    # wasn't handled below either.
+    assets = []
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("assets")
+            .select("asset_id, ticker")
+            .eq("asset_type", "equity")
+            .eq("is_active", True)
+            .eq("market", "india")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        assets.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
+    print(f"Found {len(assets)} active India equities.")
+
+    if not args.all:
+        before = len(assets)
+        done_ids = asset_ids_with_shareholding(supabase)
+        assets = [a for a in assets if a["asset_id"] not in done_ids]
+        print(f"{before - len(assets)} already have shareholding data (skipping). "
+              f"{len(assets)} need a fresh fetch. (Use --all to re-fetch everyone.)")
+
     print(f"Fetching shareholding pattern for {len(assets)} equities (last {args.quarters} quarters each)...\n")
 
     run_id = start_run("shareholding_refresh")
@@ -244,7 +340,9 @@ def main():
             except Exception as e:
                 print(f"skipped (couldn't fetch filing list: {e})")
                 failed_symbols.append(ticker)
+                time.sleep(REQUEST_DELAY_SECONDS)
                 continue
+            time.sleep(REQUEST_DELAY_SECONDS)
 
             if not filings:
                 print("skipped (no filings found)")
@@ -273,11 +371,20 @@ def main():
                 if not (95 <= total <= 105):
                     continue
 
-                supabase.table("shareholding_pattern").upsert({
-                    "asset_id": asset_id,
-                    "quarter_end_date": normalise_date(filing["date"]),
-                    **categories,
-                }, on_conflict="asset_id,quarter_end_date").execute()
+                try:
+                    supabase.table("shareholding_pattern").upsert({
+                        "asset_id": asset_id,
+                        "quarter_end_date": normalise_date(filing["date"]),
+                        **categories,
+                    }, on_conflict="asset_id,quarter_end_date").execute()
+                except Exception as e:
+                    # Session 34 fix: this save call had no error handling,
+                    # so one bad row (e.g. a database hiccup) crashed the
+                    # ENTIRE run, losing progress on every stock after it.
+                    # Now it's treated like any other single-quarter
+                    # failure: skip this quarter, keep going.
+                    print(f"(couldn't save one quarter: {e}) ", end="")
+                    continue
                 saved_this_stock += 1
                 time.sleep(0.2)  # be polite to NSE's static file host
 

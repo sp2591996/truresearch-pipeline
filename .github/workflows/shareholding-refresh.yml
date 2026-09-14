@@ -1,0 +1,28 @@
+name: Shareholding Pattern Refresh - India
+
+# Session 34: was manual-only until now (Avdhoot: "have it run once a
+# week"). Runs 25_shareholding_refresh.py, which already skips stocks
+# that already have data saved, so a weekly run only does real work
+# for stocks that are missing it (newly added stocks, or ones that
+# failed on a prior run) -- see that script's own header for details.
+# GitHub's own cron trigger below is kept as a backup only --
+# cron-job.org is this project's primary scheduler.
+
+on:
+  schedule:
+    - cron: '0 5 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 25_shareholding_refresh.py --quarters 8
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
