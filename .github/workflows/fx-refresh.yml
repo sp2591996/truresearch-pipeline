@@ -6,12 +6,20 @@ name: FX Refresh
 # Session 30: added the same extra 3:45 PM IST run the other NSE-hours
 # refresh jobs got, to better catch NSE's official closing rate.
 
+# Session 33 (scheduling fix): this job had NEVER fired on its
+# schedule, ever -- GitHub Actions silently drops scheduled triggers
+# when too many workflows in the same repo share the exact same
+# minute mark (this one shared '45 3', '*/15 4-9', '0 10', '15 10'
+# with daily-prices.yml, gold-refresh.yml, silver-refresh.yml, and
+# crude-refresh.yml). Fixed by staggering this job 6 minutes later
+# than daily-prices.yml.
+
 on:
   schedule:
-    - cron: '45 3 * * 1-5'
-    - cron: '*/15 4-9 * * 1-5'
-    - cron: '0 10 * * 1-5'
-    - cron: '15 10 * * 1-5'
+    - cron: '51 3 * * 1-5'
+    - cron: '6,21,36,51 4-9 * * 1-5'
+    - cron: '6 10 * * 1-5'
+    - cron: '21 10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:

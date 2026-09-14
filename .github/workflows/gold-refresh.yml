@@ -10,12 +10,24 @@ name: Gold Refresh
 # after 3:30 PM by the closing auction) instead of just whatever the
 # free data source had at exactly 3:30.
 
+# Session 33 (scheduling fix): this job (and every other Other Assets
+# refresh job) had NEVER fired on its schedule, ever -- confirmed via
+# each workflow's Actions run history showing 0 scheduled runs.
+# GitHub Actions silently drops scheduled triggers when too many
+# workflows in the same repo are all set to fire at the exact same
+# minute mark, which is what was happening here: this job shared the
+# identical '45 3', '*/15 4-9', '0 10', '15 10' schedule with
+# daily-prices.yml, silver-refresh.yml, fx-refresh.yml, and
+# crude-refresh.yml. Fixed by staggering this job 2 minutes later than
+# daily-prices.yml (which has historical evidence of actually firing),
+# so it no longer competes for the same instant.
+
 on:
   schedule:
-    - cron: '45 3 * * 1-5'
-    - cron: '*/15 4-9 * * 1-5'
-    - cron: '0 10 * * 1-5'
-    - cron: '15 10 * * 1-5'
+    - cron: '47 3 * * 1-5'
+    - cron: '2,17,32,47 4-9 * * 1-5'
+    - cron: '2 10 * * 1-5'
+    - cron: '17 10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:

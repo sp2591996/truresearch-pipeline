@@ -7,9 +7,16 @@ name: Benchmark Index Refresh
 # not 15) since this job only touches 3 index rows -- much cheaper per
 # run than looping over all 500 equities.
 
+# Session 33 (scheduling fix): confirmed via Actions run history that
+# this job had NEVER fired on its schedule, ever. GitHub Actions
+# silently drops scheduled triggers when too many workflows in the
+# repo share the exact same minute marks -- this job's every-5-minute
+# schedule landed on the same :00/:05/:10... marks as everything else.
+# Fixed by offsetting 2 minutes so it lands on :02/:07/:12... instead.
+
 on:
   schedule:
-    - cron: '*/5 3-10 * * 1-5'
+    - cron: '2-57/5 3-10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:
