@@ -73,14 +73,29 @@ def backfill_one_asset(supabase, asset_id: int, yf_symbol: str) -> int:
 def main():
     supabase = get_client()
 
-    assets_res = (
-        supabase.table("assets")
-        .select("asset_id, ticker, yfinance_symbol")
-        .eq("asset_type", "equity")
-        .eq("is_active", True)
-        .execute()
-    )
-    assets = assets_res.data
+    # Supabase/PostgREST silently caps any .select() at 1000 rows unless
+    # you page through it with .range() -- the same gotcha this project
+    # already hit and fixed for the Gold chart (Session 28) and the
+    # sector-assignment script (87_). With 2,000+ active equities now,
+    # a single un-paginated query here would only ever check the first
+    # 1,000.
+    assets = []
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("assets")
+            .select("asset_id, ticker, yfinance_symbol")
+            .eq("asset_type", "equity")
+            .eq("is_active", True)
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        assets.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
     print(f"Checking {len(assets)} active equities for existing price history...")
 
     to_backfill = []

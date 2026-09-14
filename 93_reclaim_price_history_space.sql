@@ -1,0 +1,23 @@
+-- 93_reclaim_price_history_space.sql
+-------------------------------------------------------------------
+-- STEP 3 of the prices_daily trim (see 91_trim_price_history.sql
+-- and 92_trim_price_history_delete.sql for the full story).
+--
+-- The delete in 92 removed ~2.47 million old rows, but Postgres
+-- does NOT shrink a table's on-disk size just from a DELETE -- it
+-- keeps the freed space allocated for reuse. That's why Supabase's
+-- "Database size" figure hadn't moved yet after running 92. VACUUM
+-- FULL rewrites the table compactly and actually returns the freed
+-- space, which is what the dashboard's number is based on.
+--
+-- This takes a brief exclusive lock on prices_daily while it runs
+-- (fine here -- nothing else needs to write to this table at the
+-- same time). With ~2.4 million rows removed out of ~6.3 million,
+-- expect this to take anywhere from under a minute to a few
+-- minutes depending on Supabase's current load.
+--
+-- Run in Supabase's SQL Editor (Dashboard -> SQL Editor -> New
+-- query -> paste this -> Run).
+-------------------------------------------------------------------
+
+vacuum full prices_daily;

@@ -74,6 +74,7 @@ report has been reviewed):
 -------------------------------------------------------------------
 """
 import json
+import time
 from datetime import date
 
 import pandas as pd
@@ -87,6 +88,22 @@ ML_SUBMODEL_VERSION = "truescore_ml_v2"
 MODEL_FILE = "trueresearch_model.json"
 FEATURE_COLUMNS_FILE = "model_feature_columns.json"
 FISCAL_LAG_DAYS = 120
+
+
+def execute_with_retry(query_builder, max_retries=3, delay_sec=3):
+    """Retries a Supabase call on a transient network error (e.g. the
+    connection getting dropped mid-request) before giving up. With
+    2,500+ stocks now, the scoring save step makes thousands of
+    sequential requests -- a one-off network blip somewhere in that
+    run shouldn't kill the whole thing after 30-60 minutes of work."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            return query_builder.execute()
+        except Exception as e:
+            if attempt == max_retries:
+                raise
+            print(f"    ! network hiccup, retrying ({attempt}/{max_retries}): {e}")
+            time.sleep(delay_sec)
 
 # Matches the original StockApp experiment's validated "Case C" feature
 # list exactly -- must always match the list 11_train_model.py trained on.
@@ -409,19 +426,51 @@ def main():
     print("Registering formula version + default component weights...")
     register_formula_and_weights(supabase)
 
-    assets_res = (
-        supabase.table("assets")
-        .select("asset_id, ticker, sector_id, sectors(name)")
-        .eq("asset_type", "equity")
-        .eq("is_active", True)
-        .eq("market", "india")
-        .execute()
-    )
-    assets = assets_res.data
+    # Supabase/PostgREST silently caps any .select() at 1000 rows unless
+    # you page through it with .range() -- the same gotcha this project
+    # already hit and fixed elsewhere (Gold chart, sector assignment,
+    # price/fundamentals refresh). With 2,000+ India equities now, a
+    # single un-paginated query here would only ever score the first
+    # 1,000.
+    assets = []
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("assets")
+            .select("asset_id, ticker, sector_id, sectors(name)")
+            .eq("asset_type", "equity")
+            .eq("is_active", True)
+            .eq("market", "india")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        assets.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
     print(f"Scoring {len(assets)} stocks...\n")
 
-    ratios_res = supabase.table("ratios_snapshot").select("asset_id, pe_ratio, market_cap, as_of_date").execute()
-    ratios_df = pd.DataFrame(ratios_res.data)
+    # Same 1000-row cap applies here -- ratios_snapshot accumulates one
+    # row per stock per week, so this table has many more than 1,000
+    # rows total. Page through all of them so no stock's latest ratio
+    # snapshot is silently missed.
+    ratios_rows = []
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("ratios_snapshot")
+            .select("asset_id, pe_ratio, market_cap, as_of_date")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        ratios_rows.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
+    ratios_df = pd.DataFrame(ratios_rows)
     if not ratios_df.empty:
         ratios_df = ratios_df.sort_values("as_of_date").drop_duplicates("asset_id", keep="last")
     pe_by_asset = dict(zip(ratios_df.get("asset_id", []), ratios_df.get("pe_ratio", [])))
@@ -506,7 +555,13 @@ def main():
     features_df["ml_rank_score"] = percentile_rank(features_df["predicted_excess_return"])
 
     features_df["pe_ratio"] = features_df["asset_id"].map(pe_by_asset)
-    features_df["inv_pe"] = features_df["pe_ratio"].apply(lambda x: -x if pd.notna(x) and x and x > 0 else None)
+    # Coerce to numeric first -- with 2,000+ new stocks now flowing
+    # through here, an occasional odd/non-numeric pe_ratio value (e.g.
+    # a stray string) would otherwise crash the whole run on the ">"
+    # comparison below. Anything that isn't a real number becomes NaN,
+    # same as if it were missing.
+    features_df["pe_ratio"] = pd.to_numeric(features_df["pe_ratio"], errors="coerce")
+    features_df["inv_pe"] = features_df["pe_ratio"].apply(lambda x: -x if pd.notna(x) and x > 0 else None)
     features_df["relative_valuation_score"] = features_df.groupby("sector_id")["inv_pe"].transform(percentile_rank)
 
     # Growth Score (NEW, truescore_v3): each stock's raw growth_rate,
@@ -537,7 +592,7 @@ def main():
     for _, row in features_df.iterrows():
         asset_id = int(row["asset_id"])
 
-        supabase.table("scores").upsert({
+        execute_with_retry(supabase.table("scores").upsert({
             "asset_id": asset_id,
             "run_date": run_date,
             "formula_version": FORMULA_VERSION,
@@ -546,7 +601,7 @@ def main():
             "growth_score": row["growth_score"],
             "overall_score": row["overall_score"],
             "truescore_rating": row["truescore_rating"],
-        }, on_conflict="asset_id,run_date,formula_version").execute()
+        }, on_conflict="asset_id,run_date,formula_version"))
 
         component_rows.append({
             "asset_id": asset_id, "run_date": run_date, "formula_version": FORMULA_VERSION,
@@ -566,7 +621,7 @@ def main():
 
     CHUNK = 500
     for i in range(0, len(component_rows), CHUNK):
-        supabase.table("score_components").insert(component_rows[i:i + CHUNK]).execute()
+        execute_with_retry(supabase.table("score_components").insert(component_rows[i:i + CHUNK]))
 
     finish_run(run_id, ok_count=len(features_df), failed_symbols=skipped)
     print(f"\nDone. Scored {len(features_df)} stocks and saved to the database (run_date={run_date}, formula_version={FORMULA_VERSION}).")

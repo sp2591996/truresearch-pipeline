@@ -184,15 +184,30 @@ def refresh_one_stock_ratios(supabase, asset_id, yf_symbol, today, roce=None):
 
 def main():
     supabase = get_client()
-    assets_res = (
-        supabase.table("assets")
-        .select("asset_id, ticker, yfinance_symbol")
-        .eq("asset_type", "equity")
-        .eq("is_active", True)
-        .eq("market", "india")
-        .execute()
-    )
-    assets = assets_res.data
+
+    # Supabase/PostgREST silently caps any .select() at 1000 rows unless
+    # you page through it with .range() -- the same gotcha this project
+    # already hit and fixed elsewhere (Gold chart, sector assignment,
+    # price-history backfill). With 2,000+ India equities now, a single
+    # un-paginated query here would only ever refresh the first 1,000.
+    assets = []
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("assets")
+            .select("asset_id, ticker, yfinance_symbol")
+            .eq("asset_type", "equity")
+            .eq("is_active", True)
+            .eq("market", "india")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        assets.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
     today = date.today().isoformat()
     print(f"Refreshing fundamentals + ratios for {len(assets)} equities. This is the slow job -- it'll take a while.")
 
@@ -225,8 +240,8 @@ def main():
         else:
             failed_symbols.append(ticker)
 
-        if i % 20 == 0:
-            print(f"  [{i}/{len(assets)}] processed...")
+        if i % 5 == 0:
+            print(f"  [{i}/{len(assets)}] processed... (ok so far: {ok_count}, failed so far: {len(failed_symbols)})")
         time.sleep(0.3)  # be polite to Yahoo Finance, same pacing as the old script
 
     finish_run(run_id, ok_count, failed_symbols)
