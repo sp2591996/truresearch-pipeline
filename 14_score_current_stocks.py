@@ -63,10 +63,22 @@ Writes to:
   - score_components (3 rows per stock: relative_valuation, ml_rank, growth)
   - scores (1 row per stock: the combined overall_score + rating + growth_score)
   - sector_scores (1 row per sector: avg_truescore + sector_rank_score)
+  - (also writes a parallel truescore_v4 row + component-set per stock,
+    under its own formula_version -- see V4_FORMULA_VERSION note above)
 
 Safe to re-run (upserts + a fresh run_date each time you run it). Run
 this yourself in your own terminal -- see PROJECT_STATE.md for why
 Claude can't run it for you directly right now (`device_bash` outage).
+
+NEW (in progress, not live anywhere on the frontend yet): a parallel
+formula_version, truescore_v4, is also computed and saved every run
+-- see V4_FORMULA_VERSION below. It adds two new components
+(Volatility Score, Legacy Score) to the existing three, with weights
+ML Rank 30% / Growth 20% / Relative Valuation 20% / Volatility 15% /
+Legacy 15%. truescore_v3 stays exactly as before, completely
+untouched -- v4 rows are written alongside it under their own
+formula_version so Avdhoot can review/back-test before promoting it
+to live anywhere on the frontend.
 
 Run with (after 11_train_model.py has been retrained and the validation
 report has been reviewed):
@@ -84,6 +96,8 @@ from db_client import get_client
 from ingestion_log import start_run, finish_run
 
 FORMULA_VERSION = "truescore_v3"
+V4_FORMULA_VERSION = "truescore_v4"
+V4_WEIGHTS = {"ml_rank": 30, "growth": 20, "relative_valuation": 20, "volatility": 15, "legacy": 15}
 ML_SUBMODEL_VERSION = "truescore_ml_v2"
 MODEL_FILE = "trueresearch_model.json"
 FEATURE_COLUMNS_FILE = "model_feature_columns.json"
@@ -395,6 +409,33 @@ def register_formula_and_weights(supabase):
     ]).execute()
 
 
+def register_formula_and_weights_v4(supabase):
+    supabase.table("score_formula_versions").upsert({
+        "formula_version": V4_FORMULA_VERSION,
+        "description": (
+            "TrueScore v4 (in review, not yet live on any frontend surface): "
+            "FIVE components instead of three -- ML Rank Score 30%, Growth Score "
+            "20%, Relative Valuation (Undervalued/P-E) Score 20%, Volatility "
+            "Score 15% (30-day annualized volatility, inverted, sector-relative "
+            "percentile -- lower volatility scores higher), and Legacy Score 15% "
+            "(listing tenure in days, ranked market-wide, not sector-relative -- "
+            "longer-listed scores higher). Computed and saved alongside the live "
+            "truescore_v3 every run so Avdhoot can back-test and review before "
+            "this replaces v3 anywhere. See this file's header comment."
+        ),
+        "changed_by_note": "TrueScore v2 redesign (Avdhoot's request): added Volatility Score and Legacy Score, rebalanced weights to 30/20/20/15/15.",
+    }, on_conflict="formula_version").execute()
+
+    supabase.table("score_component_weights").delete().eq("formula_version", V4_FORMULA_VERSION).is_("sector_id", "null").is_("asset_id", "null").execute()
+    supabase.table("score_component_weights").insert([
+        {"formula_version": V4_FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "ml_rank", "weight_pct": V4_WEIGHTS["ml_rank"]},
+        {"formula_version": V4_FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "growth", "weight_pct": V4_WEIGHTS["growth"]},
+        {"formula_version": V4_FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "relative_valuation", "weight_pct": V4_WEIGHTS["relative_valuation"]},
+        {"formula_version": V4_FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "volatility", "weight_pct": V4_WEIGHTS["volatility"]},
+        {"formula_version": V4_FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "legacy", "weight_pct": V4_WEIGHTS["legacy"]},
+    ]).execute()
+
+
 def main():
     supabase = get_client()
     run_date = date.today().isoformat()
@@ -425,6 +466,7 @@ def main():
 
     print("Registering formula version + default component weights...")
     register_formula_and_weights(supabase)
+    register_formula_and_weights_v4(supabase)
 
     # Supabase/PostgREST silently caps any .select() at 1000 rows unless
     # you page through it with .range() -- the same gotcha this project
@@ -438,7 +480,7 @@ def main():
     while True:
         resp = (
             supabase.table("assets")
-            .select("asset_id, ticker, sector_id, sectors(name)")
+            .select("asset_id, ticker, sector_id, listed_date, sectors(name)")
             .eq("asset_type", "equity")
             .eq("is_active", True)
             .eq("market", "india")
@@ -542,7 +584,8 @@ def main():
         growth_rate = growth_rate_from_years(years_by_asset[asset_id])
         rows.append({
             "asset_id": asset_id, "ticker": ticker, "sector_id": a.get("sector_id"),
-            "is_distressed": distressed, "growth_rate": growth_rate, **feature_row,
+            "is_distressed": distressed, "growth_rate": growth_rate,
+            "listed_date": a.get("listed_date"), **feature_row,
         })
 
     features_df = pd.DataFrame(rows)
@@ -585,6 +628,38 @@ def main():
     features_df.loc[distressed_mask, "overall_score"] = features_df.loc[distressed_mask, "overall_score"].clip(upper=DISTRESS_SCORE_CAP)
     features_df["truescore_rating"] = features_df["overall_score"].apply(rating_band)
 
+    # ---- TrueScore v4 (NEW, in review): two new components on top of
+    # the three above -- Volatility Score and Legacy Score. Reuses
+    # relative_valuation_score, ml_rank_score and growth_score exactly
+    # as already computed for v3; only these two are new.
+    features_df["listed_date"] = features_df["listed_date"].apply(
+        lambda d: pd.to_datetime(d) if d else pd.NaT
+    )
+    features_df["tenure_days"] = (today_ts - features_df["listed_date"]).dt.days
+    # Legacy Score: ranked MARKET-WIDE (not sector-relative), per spec --
+    # longer-listed = higher score. This script only ever scores India,
+    # so a plain (non-grouped) percentile_rank is market-wide already.
+    features_df["legacy_score"] = percentile_rank(features_df["tenure_days"])
+
+    # Volatility Score: invert Volatility_30D (lower volatility = higher
+    # score), then rank sector-relative -- same pattern as
+    # relative_valuation_score above (invert + groupby(sector_id) +
+    # percentile_rank).
+    features_df["inv_volatility"] = features_df["Volatility_30D"].apply(
+        lambda v: -v if pd.notna(v) else None
+    )
+    features_df["volatility_score"] = features_df.groupby("sector_id")["inv_volatility"].transform(percentile_rank)
+
+    features_df["overall_score_v4"] = (
+        features_df["ml_rank_score"] * (V4_WEIGHTS["ml_rank"] / 100)
+        + features_df["growth_score"] * (V4_WEIGHTS["growth"] / 100)
+        + features_df["relative_valuation_score"] * (V4_WEIGHTS["relative_valuation"] / 100)
+        + features_df["volatility_score"] * (V4_WEIGHTS["volatility"] / 100)
+        + features_df["legacy_score"] * (V4_WEIGHTS["legacy"] / 100)
+    )
+    features_df.loc[distressed_mask, "overall_score_v4"] = features_df.loc[distressed_mask, "overall_score_v4"].clip(upper=DISTRESS_SCORE_CAP)
+    features_df["truescore_rating_v4"] = features_df["overall_score_v4"].apply(rating_band)
+
     print("Saving scores to the database...")
     supabase.table("score_components").delete().eq("formula_version", FORMULA_VERSION).eq("run_date", run_date).execute()
 
@@ -623,6 +698,44 @@ def main():
     for i in range(0, len(component_rows), CHUNK):
         execute_with_retry(supabase.table("score_components").insert(component_rows[i:i + CHUNK]))
 
+    print("Saving truescore_v4 (in review) scores to the database...")
+    supabase.table("score_components").delete().eq("formula_version", V4_FORMULA_VERSION).eq("run_date", run_date).execute()
+
+    v4_component_rows = []
+    for _, row in features_df.iterrows():
+        asset_id = int(row["asset_id"])
+
+        execute_with_retry(supabase.table("scores").upsert({
+            "asset_id": asset_id,
+            "run_date": run_date,
+            "formula_version": V4_FORMULA_VERSION,
+            "relative_valuation_score": row["relative_valuation_score"],
+            "ml_rank_score": row["ml_rank_score"],
+            "growth_score": row["growth_score"],
+            "volatility_score": row["volatility_score"],
+            "legacy_score": row["legacy_score"],
+            "overall_score": row["overall_score_v4"],
+            "truescore_rating": row["truescore_rating_v4"],
+        }, on_conflict="asset_id,run_date,formula_version"))
+
+        for comp_name, comp_value in [
+            ("relative_valuation", row["relative_valuation_score"]),
+            ("ml_rank", row["ml_rank_score"]),
+            ("growth", row["growth_score"]),
+            ("volatility", row["volatility_score"]),
+            ("legacy", row["legacy_score"]),
+        ]:
+            v4_component_rows.append({
+                "asset_id": asset_id, "run_date": run_date, "formula_version": V4_FORMULA_VERSION,
+                "component_name": comp_name, "component_value": comp_value,
+                "component_weight_used": V4_WEIGHTS[comp_name],
+            })
+
+    for i in range(0, len(v4_component_rows), CHUNK):
+        execute_with_retry(supabase.table("score_components").insert(v4_component_rows[i:i + CHUNK]))
+
+    print(f"Saved truescore_v4 for {len(features_df)} stocks (run_date={run_date}) -- NOT live on the frontend, for review/back-test only.")
+
     finish_run(run_id, ok_count=len(features_df), failed_symbols=skipped)
     print(f"\nDone. Scored {len(features_df)} stocks and saved to the database (run_date={run_date}, formula_version={FORMULA_VERSION}).")
     n_distressed = int(features_df["is_distressed"].sum())
@@ -638,6 +751,15 @@ def main():
             f"  {r['ticker']}: overall={r['overall_score']:.1f} "
             f"(valuation={r['relative_valuation_score']:.1f}, ml_rank={r['ml_rank_score']:.1f}, growth={r['growth_score']:.1f}) "
             f"-> {r['truescore_rating']}"
+        )
+
+    print("\nTop 10 by truescore_v4 overall score (in review, not live):")
+    top10_v4 = features_df.sort_values("overall_score_v4", ascending=False).head(10)
+    for _, r in top10_v4.iterrows():
+        print(
+            f"  {r['ticker']}: v4_overall={r['overall_score_v4']:.1f} "
+            f"(ml={r['ml_rank_score']:.1f}, growth={r['growth_score']:.1f}, valuation={r['relative_valuation_score']:.1f}, "
+            f"volatility={r['volatility_score']:.1f}, legacy={r['legacy_score']:.1f}) -> {r['truescore_rating_v4']}"
         )
 
     # ---- Sectoral Score (NEW, truescore_v3, redefined per Avdhoot's

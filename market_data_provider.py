@@ -101,3 +101,53 @@ def get_financial_statements(yf_symbol: str) -> dict:
     except Exception as e:
         print(f"  ! get_financial_statements failed for {yf_symbol}: {e}")
         return {"income_stmt": pd.DataFrame(), "balance_sheet": pd.DataFrame(), "cashflow": pd.DataFrame()}
+
+
+def get_listing_date(yf_symbol: str):
+    """The date a stock first started trading, per Yahoo Finance's own
+    record (`firstTradeDateEpochUtc`, inside the same `.info` call
+    get_fundamentals() already uses). Added for TrueScore v2 (PRD.md M3)
+    -- Legacy Score's interim definition is listing tenure, and this is
+    the one place that's allowed to know HOW that date gets sourced.
+    Returns a `datetime.date`, or None if Yahoo doesn't have it for this
+    symbol (a handful of thinly-covered small-caps won't).
+    """
+    try:
+        ticker = yf.Ticker(yf_symbol)
+        info = ticker.info or {}
+        epoch = info.get("firstTradeDateEpochUtc") or info.get("firstTradeDateMilliseconds")
+        if epoch is None:
+            return None
+        # Yahoo has returned this in seconds in some SDK versions and
+        # milliseconds in others -- a value bigger than ~year-3000-in-
+        # seconds is almost certainly milliseconds, so this covers both
+        # without needing to know which one this yfinance version gives.
+        # BUG FIX: the ms-vs-seconds check below used to only look at
+        # epoch > 10_000_000_000, which only ever catches LARGE POSITIVE
+        # numbers. A stock listed well before 1970 (Coca-Cola, Chevron,
+        # every other long-established US blue chip Yahoo flagged with
+        # "date value out of range") comes back as a large NEGATIVE
+        # milliseconds value instead -- abs() catches both directions.
+        if abs(epoch) > 10_000_000_000:
+            epoch = epoch / 1000
+        # Windows-safe conversion: datetime.fromtimestamp() calls into the
+        # OS's own C library on the backend, and Windows' version can't
+        # handle dates before 1970 (or, on some builds, before 1980) --
+        # exactly what a long-established company like Coca-Cola or
+        # Chevron has (they started trading decades before that). Doing
+        # the arithmetic in pure Python instead of asking the OS to do it
+        # sidesteps that platform limit entirely, for any date, on any OS.
+        from datetime import datetime, timedelta, timezone
+        result = (datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=epoch)).date()
+        # Sanity clamp: no real stock exchange listing predates 1790 (the
+        # NYSE's own founding) or lies in the future -- if either of
+        # those happens, the source data itself is bad/garbled rather
+        # than this conversion being wrong, so treat it as "unknown"
+        # instead of writing a nonsense date into the database.
+        if result.year < 1790 or result.year > datetime.now(timezone.utc).year:
+            print(f"  ! get_listing_date got an implausible date ({result}) for {yf_symbol}, treating as unknown")
+            return None
+        return result
+    except Exception as e:
+        print(f"  ! get_listing_date failed for {yf_symbol}: {e}")
+        return None
