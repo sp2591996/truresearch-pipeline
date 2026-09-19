@@ -170,6 +170,17 @@ def compute_latest_indicators(prices: pd.DataFrame):
     df["Return_6M"] = df["close"].pct_change(126)
     daily_returns = df["close"].pct_change()
     df["Volatility_30D"] = daily_returns.rolling(window=30).std() * (252 ** 0.5)
+    # Volatility_30D_Scoring (NEW, truescore_v4 only): same 30-day
+    # window, but only needs 20 good days out of the 30 (min_periods),
+    # not all 30. A small number of stocks (mostly newer, recently
+    # added small-caps) have the occasional blank close price in their
+    # history -- with the strict all-30-required version, ONE blank
+    # day anywhere in the trailing window wipes out the whole number,
+    # which is why ~90% of stocks were getting no Volatility Score at
+    # all when this was first tried. Volatility_30D itself (used as
+    # the ML model's input feature) is left completely untouched --
+    # this new column is only for the new Volatility Score component.
+    df["Volatility_30D_Scoring"] = daily_returns.rolling(window=30, min_periods=20).std() * (252 ** 0.5)
     if df.empty:
         return None
     return df.iloc[-1]
@@ -570,6 +581,7 @@ def main():
             "Return_3M": latest_tech["Return_3M"],
             "Return_6M": latest_tech["Return_6M"],
             "Volatility_30D": latest_tech["Volatility_30D"],
+            "Volatility_30D_Scoring": latest_tech["Volatility_30D_Scoring"],
             "Relative_Strength_3M": relative_strength_3M,
             "ROE": latest_fund.get("roe"),
             "Total_Debt": latest_fund.get("total_debt"),
@@ -645,10 +657,12 @@ def main():
     # score), then rank sector-relative -- same pattern as
     # relative_valuation_score above (invert + groupby(sector_id) +
     # percentile_rank).
-    features_df["inv_volatility"] = features_df["Volatility_30D"].apply(
+    features_df["inv_volatility"] = features_df["Volatility_30D_Scoring"].apply(
         lambda v: -v if pd.notna(v) else None
     )
     features_df["volatility_score"] = features_df.groupby("sector_id")["inv_volatility"].transform(percentile_rank)
+    n_no_volatility = int(features_df["Volatility_30D_Scoring"].isna().sum())
+    print(f"Volatility Score: {n_no_volatility} stock(s) had no usable recent price data and got the neutral midpoint (50) instead of a real ranked volatility score.")
 
     features_df["overall_score_v4"] = (
         features_df["ml_rank_score"] * (V4_WEIGHTS["ml_rank"] / 100)
