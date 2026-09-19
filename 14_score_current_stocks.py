@@ -907,70 +907,125 @@ def main():
             return group[value_col].mean()  # fall back to plain average rather than dropping the sector
         return (weighted[value_col] * weighted[weight_col]).sum() / weighted[weight_col].sum()
 
-    sector_ids = sorted(features_df["sector_id"].dropna().unique().tolist())
-    sector_rows = []
-    for sector_id in sector_ids:
-        group = features_df[features_df["sector_id"] == sector_id]
-        asset_ids_in_sector = group["asset_id"].tolist()
+    # ---- M3 (Avdhoot's methodology discussion, sector-level rebuild):
+    # this computation ITSELF was already correct and already matched
+    # what was asked for -- sector_ml_score is a market-cap-weighted
+    # average of member stocks' ml_rank_score (not a sector-vs-sector
+    # rank), while sector_growth_score/sector_valuation_score ARE
+    # computed sector-vs-sector (this sector's growth/P/E ranked 10-100
+    # against every OTHER sector, never an average of per-stock
+    # component scores). The actual bug was one level up: this whole
+    # block only ever ran ONCE, saved under FORMULA_VERSION
+    # ("truescore_v3"), and was never re-run for V4_FORMULA_VERSION or
+    # V5_FORMULA_VERSION -- while the FRONTEND (formulaVersionForCountry
+    # in components/MarketSelector.tsx) queries `sector_scores` filtered
+    # to "truescore_v5" for India. Since `sector_scores` only ever had
+    # "truescore_v3" rows, that query matches ZERO rows -- the Sector
+    # Rank Score on /sectors and /sectors/[sectorId] has been silently
+    # empty for India this whole time, not just "stale v3 data" as
+    # first assumed. (USA is unaffected: 73_score_us_stocks.py writes
+    # and the frontend queries the same single "truescore_us_v1" tag,
+    # so there's no version mismatch there.)
+    #
+    # Fixed by extracting this into a reusable function and calling it
+    # once per formula_version that needs a live sector_scores row,
+    # exactly mirroring the stock-level v3/v4/v5 parallel-write pattern
+    # already used above for `scores`/`score_components`. v3's own rows
+    # are written by the FIRST call below with THE EXACT SAME numbers
+    # as before this change (nothing about v3's methodology or output
+    # changed) -- v4 and v5 are NEW rows, added under their own
+    # formula_version, never overwriting v3.
+    #
+    # Scoping note (flagged honestly, not hidden): the 3 sector-level
+    # components (ml/growth/valuation) are unchanged and are NOT
+    # reweighted to match V4_WEIGHTS/V5_WEIGHTS' stock-level ml/growth/
+    # valuation ratios, and there is deliberately no sector-level
+    # analogue added for Volatility/Legacy/Market Cap Score (v4/v5's 2
+    # newest stock-level components) -- Avdhoot's spec for this pass was
+    # "ML Score = weighted average within sector; other components =
+    # sector-vs-sector", which this already does, without asking for a
+    # broader 5-or-6-component sectoral redesign. avg_truescore is the
+    # one number that DOES change per version, since it uses that
+    # version's own overall_score blend (overall_score / overall_score_v4
+    # / overall_score_v5) rather than always the v3 number.
+    def compute_and_save_sector_scores(formula_version: str, overall_score_col: str):
+        sector_ids = sorted(features_df["sector_id"].dropna().unique().tolist())
+        sector_rows = []
+        for sector_id in sector_ids:
+            group = features_df[features_df["sector_id"] == sector_id]
+            asset_ids_in_sector = group["asset_id"].tolist()
 
-        # 1. sector_ml_score: market-cap-weighted average of ml_rank_score.
-        sector_ml_score = weighted_avg(group, "ml_rank_score")
+            # 1. sector_ml_score: market-cap-weighted average of ml_rank_score.
+            sector_ml_score = weighted_avg(group, "ml_rank_score")
 
-        # 2. sector growth rate (raw, ranked into a score further below).
-        sector_growth_raw = sector_growth_rate(asset_ids_in_sector, years_by_asset)
+            # 2. sector growth rate (raw, ranked into a score further below).
+            sector_growth_raw = sector_growth_rate(asset_ids_in_sector, years_by_asset)
 
-        # 3. sector aggregate P/E (raw, ranked into a score further below).
-        # Only stocks with both a positive market cap AND usable net
-        # income go into the sums -- a sector with net losses overall
-        # (sum of net income <= 0) has no meaningful P/E, left as None.
-        valid = group.dropna(subset=["market_cap", "Net_Income"])
-        valid = valid[(valid["market_cap"] > 0)]
-        total_cap = valid["market_cap"].sum()
-        total_net_income = valid["Net_Income"].sum()
-        sector_pe = (total_cap / total_net_income) if (len(valid) > 0 and total_net_income and total_net_income > 0) else None
+            # 3. sector aggregate P/E (raw, ranked into a score further below).
+            # Only stocks with both a positive market cap AND usable net
+            # income go into the sums -- a sector with net losses overall
+            # (sum of net income <= 0) has no meaningful P/E, left as None.
+            valid = group.dropna(subset=["market_cap", "Net_Income"])
+            valid = valid[(valid["market_cap"] > 0)]
+            total_cap = valid["market_cap"].sum()
+            total_net_income = valid["Net_Income"].sum()
+            sector_pe = (total_cap / total_net_income) if (len(valid) > 0 and total_net_income and total_net_income > 0) else None
 
-        sector_rows.append({
-            "sector_id": int(sector_id),
-            "avg_truescore": weighted_avg(group, "overall_score"),
-            "stock_count": int(group["overall_score"].count()),
-            "sector_ml_score": sector_ml_score,
-            "sector_growth_raw": sector_growth_raw,
-            "sector_pe": sector_pe,
-        })
+            sector_rows.append({
+                "sector_id": int(sector_id),
+                "avg_truescore": weighted_avg(group, overall_score_col),
+                "stock_count": int(group[overall_score_col].count()),
+                "sector_ml_score": sector_ml_score,
+                "sector_growth_raw": sector_growth_raw,
+                "sector_pe": sector_pe,
+            })
 
-    sector_agg = pd.DataFrame(sector_rows)
-    sector_agg["sector_growth_score"] = linear_rank_score(sector_agg["sector_growth_raw"])
-    # Invert P/E before ranking -- same trick stock-level Relative
-    # Valuation uses (inv_pe): lower P/E must produce a HIGHER score.
-    sector_agg["inv_sector_pe"] = sector_agg["sector_pe"].apply(lambda x: -x if pd.notna(x) and x else None)
-    sector_agg["sector_valuation_score"] = linear_rank_score(sector_agg["inv_sector_pe"])
-    sector_agg["sector_rank_score"] = (
-        sector_agg["sector_ml_score"] + sector_agg["sector_growth_score"] + sector_agg["sector_valuation_score"]
-    ) / 3
+        sector_agg = pd.DataFrame(sector_rows)
+        sector_agg["sector_growth_score"] = linear_rank_score(sector_agg["sector_growth_raw"])
+        # Invert P/E before ranking -- same trick stock-level Relative
+        # Valuation uses (inv_pe): lower P/E must produce a HIGHER score.
+        sector_agg["inv_sector_pe"] = sector_agg["sector_pe"].apply(lambda x: -x if pd.notna(x) and x else None)
+        sector_agg["sector_valuation_score"] = linear_rank_score(sector_agg["inv_sector_pe"])
+        sector_agg["sector_rank_score"] = (
+            sector_agg["sector_ml_score"] + sector_agg["sector_growth_score"] + sector_agg["sector_valuation_score"]
+        ) / 3
 
-    for _, srow in sector_agg.iterrows():
-        supabase.table("sector_scores").upsert({
-            "sector_id": int(srow["sector_id"]),
-            "run_date": run_date,
-            "formula_version": FORMULA_VERSION,
-            "avg_truescore": srow["avg_truescore"],
-            "stock_count": int(srow["stock_count"]),
-            "sector_ml_score": srow["sector_ml_score"],
-            "sector_growth_score": srow["sector_growth_score"],
-            "sector_valuation_score": srow["sector_valuation_score"],
-            "sector_rank_score": srow["sector_rank_score"],
-        }, on_conflict="sector_id,run_date,formula_version").execute()
+        for _, srow in sector_agg.iterrows():
+            supabase.table("sector_scores").upsert({
+                "sector_id": int(srow["sector_id"]),
+                "run_date": run_date,
+                "formula_version": formula_version,
+                "avg_truescore": srow["avg_truescore"],
+                "stock_count": int(srow["stock_count"]),
+                "sector_ml_score": srow["sector_ml_score"],
+                "sector_growth_score": srow["sector_growth_score"],
+                "sector_valuation_score": srow["sector_valuation_score"],
+                "sector_rank_score": srow["sector_rank_score"],
+            }, on_conflict="sector_id,run_date,formula_version").execute()
 
-    print(f"Saved sector_scores for {len(sector_agg)} sectors.")
-    print("\nSectors ranked highest to lowest (Sectoral Score):")
-    for _, srow in sector_agg.sort_values("sector_rank_score", ascending=False).iterrows():
-        pe_str = f"{srow['sector_pe']:.1f}" if pd.notna(srow["sector_pe"]) else "—"
-        growth_str = f"{srow['sector_growth_raw']:.1%}" if pd.notna(srow["sector_growth_raw"]) else "—"
-        print(
-            f"  sector_id={int(srow['sector_id'])}: overall={srow['sector_rank_score']:.1f} "
-            f"(ml={srow['sector_ml_score']:.1f}, growth_score={srow['sector_growth_score']:.1f} [raw growth {growth_str}], "
-            f"valuation_score={srow['sector_valuation_score']:.1f} [sector P/E {pe_str}]) ({int(srow['stock_count'])} stocks)"
-        )
+        print(f"Saved sector_scores for {len(sector_agg)} sectors under formula_version={formula_version}.")
+        print(f"\nSectors ranked highest to lowest (Sectoral Score, {formula_version}):")
+        for _, srow in sector_agg.sort_values("sector_rank_score", ascending=False).iterrows():
+            pe_str = f"{srow['sector_pe']:.1f}" if pd.notna(srow["sector_pe"]) else "—"
+            growth_str = f"{srow['sector_growth_raw']:.1%}" if pd.notna(srow["sector_growth_raw"]) else "—"
+            print(
+                f"  sector_id={int(srow['sector_id'])}: overall={srow['sector_rank_score']:.1f} "
+                f"(ml={srow['sector_ml_score']:.1f}, growth_score={srow['sector_growth_score']:.1f} [raw growth {growth_str}], "
+                f"valuation_score={srow['sector_valuation_score']:.1f} [sector P/E {pe_str}]) ({int(srow['stock_count'])} stocks)"
+            )
+        return sector_agg
+
+    # v3: unchanged behavior/output, just now going through the shared
+    # function -- same formula_version, same overall_score column as
+    # always.
+    compute_and_save_sector_scores(FORMULA_VERSION, "overall_score")
+    # v4: NEW -- was never written before this fix.
+    compute_and_save_sector_scores(V4_FORMULA_VERSION, "overall_score_v4")
+    # v5: NEW -- this is the one the live frontend actually queries for
+    # India (components/MarketSelector.tsx's formulaVersionForCountry),
+    # so this call is what actually makes Sector Rank Score show up
+    # again on /sectors and /sectors/[sectorId].
+    compute_and_save_sector_scores(V5_FORMULA_VERSION, "overall_score_v5")
 
 
 if __name__ == "__main__":
