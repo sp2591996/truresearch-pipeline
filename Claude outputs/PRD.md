@@ -160,10 +160,24 @@
 - **New per your feedback:** show a **combined-bundle return summary** — "if you'd bought one of each stock on your watchlist, here's your 1M/1Y/5Y return" — computed from existing watchlist + price history data.
 - **Acceptance criteria:** watchlist persists across sessions/devices for a logged-in user; bundle-return summary recalculates whenever the watchlist changes.
 
-### D2. Manual Portfolio Entry + Tracking
+### D2. Manual Portfolio Entry + Tracking — **superseded by D2b, Gamified Virtual Investing (BUILT, Session 35)**
 - **What it does:** User manually enters ticker + quantity + buy price/date; app shows current value, gain/loss, portfolio-level TrueScore.
 - **New per your feedback:** support **incremental entry** — a user can add one holding, leave, and come back to add more, rather than a forced one-shot full-portfolio form.
 - **Acceptance criteria:** a user can add a single holding and see a valid (if partial) portfolio view immediately, without being forced to complete a multi-field form first.
+- **Status note:** in practice this shipped as the richer D2b game below instead of plain manual entry — trades execute at real live prices rather than the user typing in a buy price, which makes the whole thing more engaging and removes a data-entry error class. Manual "I already own this from before, at this price" logging isn't covered by D2b and could still be added later if Avdhoot wants it.
+
+### D2b. Gamified Virtual Investing ("My TrueResearch") — **BUILT, Session 35, beyond original PRD scope**
+- **What it does:** Every logged-in user gets a virtual ₹ wallet and can buy/sell any stock or other asset on the site at its real live price — a full paper-trading game, not a manual-entry log. This replaces D2's original "type in your buy price" concept with real, live-priced trade execution.
+- **Built this session:**
+  - Wallet + buy/sell + a reset-to-start option (`lib/virtualPortfolio.ts`, with `deriveTradeMarket()` deciding INR vs. USD pricing per asset — mirrored in the Python pipeline for the daily snapshot job, kept in sync by hand).
+  - A permanent, append-only **transaction statement** (every buy/sell, never edited/deleted — a sell is its own new row) at `/my-trueresearch/transactions`.
+  - **Portfolio summary** at the top of the holdings view: current value, gain/loss, and a comparison line vs. other asset classes.
+  - Holdings are clickable through to each asset's real page, where a **per-asset PositionSummary widget** shows the user's own units/avg cost/value/gain-loss inline.
+  - Stock holdings and other-asset holdings (gold, mutual funds, etc.) shown as two separate, sortable tables since their relevant columns differ.
+  - A **daily snapshot job** (backend pipeline: `108_add_virtual_portfolio_snapshot_run_type.sql` + `109_snapshot_virtual_portfolios.py`, scheduled via `.github/workflows/virtual-portfolio-snapshot.yml`, cron 10:30pm IST) records every user's total portfolio value once a day, laying the groundwork for a future performance-over-time chart.
+  - Fully mobile-responsive: holdings render as cards (not a horizontal table) on phone screens.
+- **Not yet built:** a performance-over-time chart using the daily snapshots (data is being collected, chart itself not built); D3's diversification/concentration flags and vs.-other-assets comparison have not yet been extended to virtual-portfolio holdings specifically; XIRR (still D4's placeholder, absolute return only).
+- **Acceptance criteria (met):** a logged-in user can buy and sell any asset on the site at its live price, see an accurate wallet balance and holdings value update immediately, and see a complete, permanent transaction history.
 
 ### D3. Diversification Score / Concentration Risk / Sector Overlap
 - **What it does:** Analyzes a manually-entered portfolio's sector/stock concentration, flags over-exposure.
@@ -305,8 +319,9 @@ All of these are pure-computation, no-new-data-dependency tools — genuinely ch
 
 ## K. Platform-Level
 
-### K1. Mobile-Responsive Web
+### K1. Mobile-Responsive Web — **partially built, real bug-fix pass done Session 35**
 - The site works well on phone browsers. Table stakes, no separate app needed for this.
+- **Status:** nav menu (hamburger + slide-out panel), Screener (cards + pagination), "My TrueResearch" portfolio holdings (cards), and the sector heatmap (tile-count capping to prevent visual overlap on narrow screens) are all fixed and confirmed working by Avdhoot on his phone. The transaction-statement page still uses a horizontal-scroll table with a "swipe sideways" hint rather than cards — revisit if it's reported as hard to use. No site-wide audit has been done; fixes so far are targeted at pages Avdhoot specifically flagged.
 
 ### K2. Public Read-Only API
 - A rate-limited, free-tier API for scores/fundamentals, layered on top of the API already being built for the frontend. **Acceptance criteria:** documented endpoints, sane rate limits, at minimum read access to asset fundamentals + current score.
@@ -314,9 +329,18 @@ All of these are pure-computation, no-new-data-dependency tools — genuinely ch
 ### K3. Progressive Web App (resolves the Native Mobile App decision item)
 - **Decision, recorded here as final for L1:** a fast, installable PWA — home-screen icon, app-like feel, zero app-store process — **not** a true native app. A native app is a separate codebase/skillset (iOS/Android-specific dev, app-store review, ongoing dual-platform maintenance) and directly conflicts with the free/solo/pre-revenue constraint your own original brief set. Revisit native only once there's a proven user base to justify the cost.
 - **Acceptance criteria:** the site is installable as a PWA (manifest + service worker), adds a home-screen icon, and feels app-like (fast transitions, no visible browser chrome) on a phone.
+- **Status:** not yet built (no manifest/service worker added yet) — the site is live and mobile-responsive, but not yet installable as a home-screen app.
 
-### K4. Login via Google or Email
+### K4. Login via Google or Email — **BUILT, Session 35**
 - Supabase Auth, both methods, out of the box.
+- **Status:** live in production. This also underpins D2b (Virtual Investing) and the new admin-page gating below.
+
+### K7. Admin Access Gating — **BUILT, Session 35, new item not in original scope**
+- **What it does:** now that the site is live and public on Vercel, the 3 admin pages (`/admin/research-upload`, `/admin/ipo-upload`, `/admin/pipeline-runs`) — previously reachable by anyone who knew/guessed the URL — are gated behind a logged-in-user email allowlist (`components/AdminGuard.tsx`, currently one admin email).
+- **Not yet built:** a proper roles/permissions table (the allowlist is a hardcoded array in code, not a database-managed list) — fine for a single admin today, worth revisiting if more admins are added.
+
+### K8. Live Deployment — **BUILT, Session 35**
+- The site is deployed and live at `trueresearch.vercel.app`, connected directly to the `trueresearch-frontend` GitHub repo so every `git push` to `main` auto-deploys. Environment variables (Supabase URL/anon key/secret key) are configured in Vercel's dashboard.
 
 ### Deferred in Section K (placeholder text required)
 - **K5. Multi-Language Support (L3)** — Placeholder only; substantial localization effort, waits for the English product to be fully proven.

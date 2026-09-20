@@ -120,9 +120,15 @@
 ## Watchlist / Portfolio ("My TrueResearch")
 1. Tabs: Watchlist / Portfolio / Saved Screens / Recently Viewed.
 2. **Watchlist tab:** table of saved stocks + combined-bundle return summary (1M/1Y/5Y) at the top.
-3. **Portfolio tab:** "add a holding" quick-entry (ticker, qty, buy price/date — one at a time, no forced full form), current value/gain-loss summary, diversification/concentration flags, vs.-other-assets comparison line, absolute-return figure (labeled, XIRR placeholder noted as coming).
+3. **Portfolio tab — BUILT as the Gamified Virtual Investing game (Session 35), not plain manual entry (see PRD.md D2b):**
+   - Top: wallet balance, portfolio current value, gain/loss, vs.-other-assets comparison line.
+   - Two separate holdings tables — Stocks and Other Assets (gold, mutual funds, etc.) — each row clickable through to that asset's real detail page (where a `PositionSummary` widget shows this user's own position inline), each with a `TradeWidget` button to buy/sell more.
+   - **Desktop:** the two tables render as normal `<table>`s (`hidden sm:block`). **Mobile (`sm:hidden`):** each holding renders as a card — ticker/name/price/1-day-change up top, then Units/Avg cost/Value/Gain-loss in a 2-column grid, with the trade button.
+   - A "Reset portfolio" option to start the game over.
+   - Sub-page: `/my-trueresearch/transactions` — permanent transaction statement (date, asset, buy/sell, units, price incl. FX rate for USD trades, amount, running wallet balance). Currently a horizontal-scroll table with a "↔ Swipe sideways" mobile hint, not yet converted to cards.
 4. **Saved Screens tab:** list of saved filter presets, each with a "Get notified" placeholder toggle.
 5. **Recently Viewed tab:** simple chronological list.
+6. **Login required for this whole page** — Supabase Auth (Google or email), built Session 35; logged-out visitors are redirected to `/login`.
 
 ---
 
@@ -137,6 +143,9 @@
 - Every wireframe above assumes the Disclaimer Bar and Learn Callout components from `Design_System.md` are available site-wide — build those two components first, before any individual page.
 - Every placeholder panel referenced in `PRD.md` (Section F alerts, B8–B11, etc.) uses the same **Placeholder Panel** component — one component, many instances, not one-off designs per feature.
 - Mobile layout: stacks these blocks vertically in the same order; the filter panel on Screener becomes a slide-up drawer rather than a sidebar.
+- **Established mobile-table pattern (Session 35, applied to Screener + Portfolio Holdings so far):** never a single sideways-scrolling table alone once a page has real user complaints — render two parallel blocks instead: a `sm:hidden` card-per-row layout for phones, and the original `<table>` wrapped in `hidden sm:block` for tablet/desktop. `MobileScrollHint` ("↔ Swipe sideways") is the interim fallback for tables not yet converted (currently just the Transaction Statement page).
+- **Nav on mobile (Session 35, built):** a hamburger button (`lg:hidden`) opens a full-width slide-out panel with search, login/account, theme toggle, and the full nav list — "Discover" is a tap-to-expand accordion rather than a hover dropdown.
+- **Admin pages** (Research Upload, IPO Upload, Pipeline Runs) are gated behind a logged-in-user email allowlist (`AdminGuard`, Session 35) — not part of any persona's normal navigation; wireframe them as an internal-only surface if ever revisited.
 
 ## Next step
 Once you've picked a naming/color direction from `Design_System.md`, the next deliverable in the Phase A sequence is the **user journey maps** (persona → entry point → path through the product → outcome, for all 5 personas) — say the word and I'll build those next, referencing these wireframes directly.
