@@ -2,44 +2,86 @@
 73_score_us_stocks.py
 -------------------------------------------------------------------
 Phase 3 (US expansion): score the S&P 500 with the validated US
-model, using the EXACT SAME 3-component TrueScore + Sectoral Score
-methodology already proven out for India in 14_score_current_stocks.py
--- just scoped to `market = "usa"`, using the US model
-(71_train_us_model.py's output) and the S&P 500 as the benchmark
-instead of the Nifty 100.
+model.
 
-TrueScore is a combination of THREE factors, same as India:
-  1. Relative valuation -- sector-relative P/E percentile.
-  2. ML rank score -- from the validated US model
-     (us_trueresearch_model.json, trained on a 1-YEAR rolling window --
-     see 71_train_us_model.py's header for why 1 year, not 2, was the
-     right choice for the US market specifically).
-  3. Growth score -- avg YoY growth of Revenue/EBIT/EBITDA/Net Income
-     over the last 2 fiscal years, ranked 10-100 within sector.
+UPDATED (Session 38, Avdhoot's explicit request: "On USA lets do it
+the same way we did for India, and everything we did for india") --
+this file now mirrors 14_score_current_stocks.py's TrueScore v5
+methodology exactly, just scoped to `market = "usa"`, using the US
+model (71_train_us_model.py's output) and the S&P 500 as the
+benchmark instead of the Nifty 100. Every India improvement this
+project has made is now here too:
 
-Uses its OWN formula_version ("truescore_us_v1") so US scores are
-completely separate rows from India's "truescore_v3" scores in the
-same `scores` / `score_components` tables -- no schema change needed,
-since `formula_version` is already part of every uniqueness key there.
-Sector-level rows in `sector_scores` are automatically kept separate
-too, because US sectors already have their OWN sector_id values
-(distinct from India's, even where the name matches -- e.g. "Energy"),
-from 67_add_sp500_stocks.py's `market`-aware sector creation.
+  1. Relative Valuation Score -- sector-relative P/E percentile.
+  2. ML Rank Score -- from the validated US model
+     (us_trueresearch_model.json).
+  3. Growth Score -- 3-year CAGR of Revenue/EBIT/EBITDA/Net Income
+     (falls back to 2-year YoY-average per metric when a real 3-year
+     CAGR isn't available or reads as an outlier) -- same
+     CAGR_OUTLIER_BOUNDS / growth_rate_from_years() logic as India,
+     copied verbatim from 14_score_current_stocks.py.
+  4. Volatility Score (NEW for USA) -- 30-day annualized volatility
+     (min_periods=20, same as India), inverted, ranked sector-relative.
+  5. Legacy Score (NEW for USA) -- listing tenure (`listed_date`),
+     ranked market-wide (not sector-relative).
+  6. Market Cap Score (NEW for USA) -- market cap, ranked market-wide.
+
+overall_score = ML Rank 25% + Growth 20% + Relative Valuation 20% +
+Volatility 10% + Legacy 15% + Market Cap 10% -- IDENTICAL weights to
+India's truescore_v5 (V5_WEIGHTS below).
+
+Sector-level scoring also now matches India's corrected methodology
+exactly (see compute_and_save_sector_scores()):
+  - sector_ml_score: market-cap-weighted average within the sector
+    (NOT ranked against other sectors).
+  - sector_growth_score / sector_valuation_score: this sector's
+    REAL aggregate growth-rate / P/E, ranked 10-100 against every
+    OTHER US sector (never an average of already-sector-relative
+    per-stock scores).
+  - sector_growth_raw / sector_pe: the real underlying numbers are
+    saved too (not just the 0-100 rank), so the sector page can show
+    an actual growth % / P/E instead of only a score -- same columns
+    added for India by migration 123_add_sector_raw_growth_and_pe.sql
+    (already exist on `sector_scores`, no new migration needed here).
+
+Distress guardrail: kept as this file's OWN US-specific version
+(is_financially_distressed below), NOT a blind copy of India's --
+see the existing, still-correct comment on why India's "negative
+equity = distress" rule doesn't transfer to the US market (share
+buybacks push perfectly healthy US mega-caps like McDonald's/
+AutoZone into negative book equity). A company is only ever flagged
+here if it is CURRENTLY LOSING MONEY.
+
+Only ONE formula_version is written now -- "truescore_us_v5" -- since
+this is a same-session full-parity upgrade, not an incremental
+v1->v4->v5 review process like India went through. The old 3-component
+"truescore_us_v1" rows already in the database are left alone (old
+history, harmless) but this script no longer writes them; the
+frontend's formulaVersionForCountry() (components/MarketSelector.tsx)
+is updated alongside this file to point USA at "truescore_us_v5" too,
+so the switch is instant and automatic on the next successful run --
+no other frontend changes needed, since every USA page already reads
+through that one shared function.
 
 Writes to:
-  - score_formula_versions (registers "truescore_us_v1")
-  - score_component_weights (33.34/33.33/33.33, same weighting as India)
-  - score_components (3 rows per stock)
-  - scores (1 row per stock)
-  - sector_scores (1 row per US sector)
+  - score_formula_versions (registers "truescore_us_v5")
+  - score_component_weights (25/20/20/10/15/10, identical to India)
+  - score_components (6 rows per stock)
+  - scores (1 row per stock, 6 component columns + overall_score)
+  - sector_scores (1 row per US sector, including sector_growth_raw/sector_pe)
 
 Safe to re-run (upserts + a fresh run_date each time you run it).
+Runs on the exact same schedule as before -- no changes needed to
+.github/workflows/us-weekly-truescore-refresh.yml, since that
+workflow just calls `python 73_score_us_stocks.py` and doesn't care
+which formula_version the script writes internally.
 
 Run with (after 71_train_us_model.py has completed):
     python 73_score_us_stocks.py
 -------------------------------------------------------------------
 """
 import json
+import time
 from datetime import date
 
 import pandas as pd
@@ -49,11 +91,28 @@ from db_client import get_client
 from ingestion_log import start_run, finish_run
 
 MARKET = "usa"
-FORMULA_VERSION = "truescore_us_v1"
+FORMULA_VERSION = "truescore_us_v5"
+V5_WEIGHTS = {"ml_rank": 25, "growth": 20, "relative_valuation": 20, "volatility": 10, "legacy": 15, "market_cap": 10}
 ML_SUBMODEL_VERSION = "truescore_ml_us_v1"
 MODEL_FILE = "us_trueresearch_model.json"
 FEATURE_COLUMNS_FILE = "us_model_feature_columns.json"
 FISCAL_LAG_DAYS = 120
+
+
+def execute_with_retry(query_builder, max_retries=3, delay_sec=3):
+    """Retries a Supabase call on a transient network error before
+    giving up -- same helper as 14_score_current_stocks.py's, copied
+    here because with 500 stocks x 6 components the save step also
+    makes thousands of sequential requests."""
+    for attempt in range(1, max_retries + 1):
+        try:
+            return query_builder.execute()
+        except Exception as e:
+            if attempt == max_retries:
+                raise
+            print(f"    ! network hiccup, retrying ({attempt}/{max_retries}): {e}")
+            time.sleep(delay_sec)
+
 
 NUMERIC_FEATURES = [
     "RSI", "MA50", "MA200", "Return_1M", "Return_3M", "Return_6M",
@@ -104,6 +163,12 @@ def compute_latest_indicators(prices: pd.DataFrame):
     df["Return_6M"] = df["close"].pct_change(126)
     daily_returns = df["close"].pct_change()
     df["Volatility_30D"] = daily_returns.rolling(window=30).std() * (252 ** 0.5)
+    # Volatility_30D_Scoring (for Volatility Score only -- the ML
+    # model's own Volatility_30D input feature above is left
+    # untouched): only needs 20 good days out of 30, same relaxed
+    # min_periods fix India needed for stocks with an occasional blank
+    # close price in their recent history.
+    df["Volatility_30D_Scoring"] = daily_returns.rolling(window=30, min_periods=20).std() * (252 ** 0.5)
     if df.empty:
         return None
     return df.iloc[-1]
@@ -155,8 +220,13 @@ def percentile_rank(series: pd.Series) -> pd.Series:
     return ranked.fillna(50)
 
 
+# --- Growth Score: 3-year CAGR with 2-year-YoY fallback -- identical
+# methodology and thresholds to 14_score_current_stocks.py, copied
+# verbatim so USA gets exactly the same growth math as India, not a
+# simplified version. ---------------------------------------------
 GROWTH_METRICS = ["total_revenue", "ebit", "ebitda", "net_income"]
-MIN_GROWTH_YEARS = 3
+MIN_GROWTH_YEARS = 4
+CAGR_OUTLIER_BOUNDS = (-0.60, 1.50)  # -60% to +150% annualized
 
 
 def usable_fundamentals_years(fundamentals: pd.DataFrame, as_of_date, n_years: int = MIN_GROWTH_YEARS):
@@ -174,25 +244,56 @@ def yoy_growth(curr, prev):
     return (curr - prev) / abs(prev)
 
 
+def cagr(latest, earliest, years: int):
+    if latest is None or earliest is None or pd.isna(latest) or pd.isna(earliest):
+        return None
+    if earliest <= 0 or latest <= 0:
+        return None
+    return (latest / earliest) ** (1 / years) - 1
+
+
 def growth_rate_from_years(years: list):
     if len(years) < 2:
         return None
 
+    has_4_years = len(years) >= 4
+    latest_year = years[-1]
+    year_3_back = years[-4] if has_4_years else None
+
     growth_readings = []
-    for i in range(1, len(years)):
-        prev_year, curr_year = years[i - 1], years[i]
-        for metric in GROWTH_METRICS:
-            g = yoy_growth(curr_year.get(metric), prev_year.get(metric))
-            if g is not None:
-                growth_readings.append(g)
+    for metric in GROWTH_METRICS:
+        reading = None
+        if has_4_years:
+            g = cagr(latest_year.get(metric), year_3_back.get(metric), 3)
+            if g is not None and CAGR_OUTLIER_BOUNDS[0] <= g <= CAGR_OUTLIER_BOUNDS[1]:
+                reading = g
+        if reading is None:
+            yoy_readings = []
+            for i in range(max(1, len(years) - 2), len(years)):
+                g = yoy_growth(years[i].get(metric), years[i - 1].get(metric))
+                if g is not None:
+                    yoy_readings.append(g)
+            if yoy_readings:
+                reading = sum(yoy_readings) / len(yoy_readings)
+        if reading is not None:
+            growth_readings.append(reading)
 
     if not growth_readings:
         return None
     return sum(growth_readings) / len(growth_readings)
 
 
+def compute_growth_rate(fundamentals: pd.DataFrame, as_of_date):
+    years = usable_fundamentals_years(fundamentals, as_of_date, MIN_GROWTH_YEARS)
+    return growth_rate_from_years(years)
+
+
 def sector_growth_rate(asset_ids: list, years_by_asset: dict):
-    sums = {1: {m: None for m in GROWTH_METRICS}, 2: {m: None for m in GROWTH_METRICS}, 3: {m: None for m in GROWTH_METRICS}}
+    """Sector-level Growth Score input: sums each of the 4 metrics
+    ACROSS every stock in the sector first (aligned by how-many-years-
+    back), then hands those sector-wide yearly totals to
+    growth_rate_from_years() -- identical to India's method."""
+    sums = {offset: {m: None for m in GROWTH_METRICS} for offset in (1, 2, 3, 4)}
     for asset_id in asset_ids:
         years = years_by_asset.get(asset_id, [])
         n = len(years)
@@ -203,11 +304,12 @@ def sector_growth_rate(asset_ids: list, years_by_asset: dict):
                 if v is not None and pd.notna(v):
                     sums[offset][metric] = (sums[offset][metric] or 0.0) + v
 
-    sector_years = [sums[3], sums[2], sums[1]]
+    sector_years = [sums[4], sums[3], sums[2], sums[1]]
     return growth_rate_from_years(sector_years)
 
 
 def linear_rank_score(series: pd.Series) -> pd.Series:
+    """10-100 scale by RANK -- identical to India's version."""
     valid = series.dropna()
     result = pd.Series(55.0, index=series.index)
     n = len(valid)
@@ -233,32 +335,12 @@ def rating_band(score: float) -> str:
     return "Weak"
 
 
-# Distress guardrail, adapted for the US market (PRD.md B2's original
-# intent: "a company in default or clearly distressed must not score
-# in the 80s+"). India's version (14_score_current_stocks.py) flags
-# negative shareholders' equity -- correct there, since it reliably
-# signals real distress (e.g. IDEA telecom). That signal does NOT
-# transfer to the US market: a long list of financially dominant,
-# healthy US mega-caps (McDonald's, Starbucks, AutoZone, O'Reilly, Yum
-# Brands, Domino's, and others) run NEGATIVE book equity for a
-# completely different, benign reason -- years of aggressive share
-# buybacks mechanically push accounting equity below zero even though
-# the underlying business is thriving and highly profitable.
-#
-# Round 1 fix (dropping the negative-equity check, keeping only the ROE
-# floor) was NOT enough: the same buyback companies still got flagged,
-# because dividing a strongly POSITIVE profit by a NEGATIVE equity
-# number produces a hugely NEGATIVE "ROE" -- the exact sign-flip
-# distortion this file's own India-inherited comment already warned
-# about, just triggering through the other ratio instead.
-#
-# The actual fix: a company can only ever be "distressed" if it is
-# currently LOSING money (negative net income). No profitable company
-# -- regardless of what buybacks did to its book equity -- should ever
-# be capped. Within that group (net_income < 0), negative equity or a
-# very poor ROE (computed off equity that's still positive, so the
-# sign is trustworthy) are both valid confirming signals of real
-# financial distress.
+# Distress guardrail, US-specific (kept exactly as this file already
+# had it -- see the long comment this replaces below for the full
+# McDonald's/AutoZone/O'Reilly/buyback reasoning). A company can only
+# ever be "distressed" here if it is CURRENTLY LOSING MONEY --
+# negative book equity or a very poor ROE only count as CONFIRMING
+# signals within that group, never on their own.
 DISTRESS_ROE_THRESHOLD = -0.50
 DISTRESS_SCORE_CAP = 15
 
@@ -268,21 +350,12 @@ def is_financially_distressed(latest_fund) -> bool:
     equity = latest_fund.get("stockholders_equity")
     roe = latest_fund.get("roe")
 
-    # A profitable company is never distressed, no matter what buybacks
-    # did to its book equity -- this is the check that actually excludes
-    # McDonald's/AutoZone/O'Reilly/Lowe's/etc.
     if net_income is None or pd.isna(net_income) or net_income >= 0:
         return False
 
-    # From here on, the company is genuinely losing money. Negative
-    # equity on top of that is textbook distress (e.g. IDEA telecom).
     if pd.notna(equity) and equity is not None and equity < 0:
         return True
 
-    # Or: losing money badly relative to a still-POSITIVE equity base
-    # (only trust the ROE sign when equity itself is positive -- when
-    # equity is negative, ROE's sign is unreliable, which is exactly
-    # why the equity check above exists as a separate, direct signal).
     if (
         pd.notna(roe) and roe is not None
         and pd.notna(equity) and equity is not None and equity > 0
@@ -297,23 +370,30 @@ def register_formula_and_weights(supabase):
     supabase.table("score_formula_versions").upsert({
         "formula_version": FORMULA_VERSION,
         "description": (
-            "TrueScore for the US market (S&P 500): equal-weighted average of THREE "
-            "components -- relative valuation (sector-relative P/E percentile), ML rank "
-            f"score (from the validated US model, formula_version {ML_SUBMODEL_VERSION}, "
+            "TrueScore v5 for the US market (S&P 500): SIX components, identical "
+            "weighting and methodology to India's truescore_v5 -- ML Rank Score 25% "
+            f"(from the validated US model, formula_version {ML_SUBMODEL_VERSION}, "
             "trained on a 1-year rolling window -- chosen from real US walk-forward "
-            "evidence, not copied from India's 2-year window), and Growth Score (avg YoY "
-            "growth of Revenue/EBIT/EBITDA/Net Income over the last 2 fiscal years, ranked "
-            "10-100 within sector). Same methodology as India's truescore_v3, kept as a "
-            "completely separate formula_version so the two markets' scores never mix."
+            "evidence, not copied from India's 2-year window), Growth Score 20% "
+            "(3-year CAGR of Revenue/EBIT/EBITDA/Net Income with a 2-year YoY-average "
+            "fallback, ranked 10-100 within sector), Relative Valuation Score 20% "
+            "(sector-relative P/E percentile), Volatility Score 10% (30-day annualized "
+            "volatility, inverted, sector-relative), Legacy Score 15% (listing tenure, "
+            "ranked market-wide), and Market Cap Score 10% (market cap, ranked "
+            "market-wide). Replaces the earlier 3-component truescore_us_v1 as the "
+            "live US formula, per the full USA/India parity pass."
         ),
-        "changed_by_note": "Phase 3 of US market expansion: scoring the S&P 500 with the validated US model.",
+        "changed_by_note": "Full parity upgrade with India's TrueScore v5 (Avdhoot's request): added Volatility, Legacy and Market Cap Score, moved Growth Score to 3-year CAGR with fallback, rebalanced weights to 25/20/20/10/15/10.",
     }, on_conflict="formula_version").execute()
 
     supabase.table("score_component_weights").delete().eq("formula_version", FORMULA_VERSION).is_("sector_id", "null").is_("asset_id", "null").execute()
     supabase.table("score_component_weights").insert([
-        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "relative_valuation", "weight_pct": 33.34},
-        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "ml_rank", "weight_pct": 33.33},
-        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "growth", "weight_pct": 33.33},
+        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "ml_rank", "weight_pct": V5_WEIGHTS["ml_rank"]},
+        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "growth", "weight_pct": V5_WEIGHTS["growth"]},
+        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "relative_valuation", "weight_pct": V5_WEIGHTS["relative_valuation"]},
+        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "volatility", "weight_pct": V5_WEIGHTS["volatility"]},
+        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "legacy", "weight_pct": V5_WEIGHTS["legacy"]},
+        {"formula_version": FORMULA_VERSION, "sector_id": None, "asset_id": None, "component_name": "market_cap", "weight_pct": V5_WEIGHTS["market_cap"]},
     ]).execute()
 
 
@@ -349,19 +429,45 @@ def main():
     print("Registering formula version + default component weights...")
     register_formula_and_weights(supabase)
 
-    assets_res = (
-        supabase.table("assets")
-        .select("asset_id, ticker, sector_id, sectors(name)")
-        .eq("asset_type", "equity")
-        .eq("is_active", True)
-        .eq("market", MARKET)
-        .execute()
-    )
-    assets = assets_res.data
+    # Page through in batches of 1000 -- same Supabase/PostgREST cap
+    # India's script already had to work around; the S&P 500 list
+    # itself is under 1000, but this keeps both scripts identical in
+    # shape and safety-proofs it if the US universe ever grows.
+    assets = []
+    page_size = 1000
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("assets")
+            .select("asset_id, ticker, sector_id, listed_date, sectors(name)")
+            .eq("asset_type", "equity")
+            .eq("is_active", True)
+            .eq("market", MARKET)
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        assets.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
     print(f"Scoring {len(assets)} US stocks...\n")
 
-    ratios_res = supabase.table("ratios_snapshot").select("asset_id, pe_ratio, market_cap, as_of_date").execute()
-    ratios_df = pd.DataFrame(ratios_res.data)
+    ratios_rows = []
+    offset = 0
+    while True:
+        resp = (
+            supabase.table("ratios_snapshot")
+            .select("asset_id, pe_ratio, market_cap, as_of_date")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        batch = resp.data or []
+        ratios_rows.extend(batch)
+        if len(batch) < page_size:
+            break
+        offset += page_size
+    ratios_df = pd.DataFrame(ratios_rows)
     if not ratios_df.empty:
         ratios_df = ratios_df.sort_values("as_of_date").drop_duplicates("asset_id", keep="last")
     pe_by_asset = dict(zip(ratios_df.get("asset_id", []), ratios_df.get("pe_ratio", [])))
@@ -411,6 +517,7 @@ def main():
             "Return_3M": latest_tech["Return_3M"],
             "Return_6M": latest_tech["Return_6M"],
             "Volatility_30D": latest_tech["Volatility_30D"],
+            "Volatility_30D_Scoring": latest_tech["Volatility_30D_Scoring"],
             "Relative_Strength_3M": relative_strength_3M,
             "ROE": latest_fund.get("roe"),
             "Total_Debt": latest_fund.get("total_debt"),
@@ -425,7 +532,8 @@ def main():
         growth_rate = growth_rate_from_years(years_by_asset[asset_id])
         rows.append({
             "asset_id": asset_id, "ticker": ticker, "sector_id": a.get("sector_id"),
-            "is_distressed": distressed, "growth_rate": growth_rate, **feature_row,
+            "is_distressed": distressed, "growth_rate": growth_rate,
+            "listed_date": a.get("listed_date"), **feature_row,
         })
 
     features_df = pd.DataFrame(rows)
@@ -437,15 +545,41 @@ def main():
     features_df["predicted_excess_return"] = model.predict(X)
     features_df["ml_rank_score"] = percentile_rank(features_df["predicted_excess_return"])
 
-    features_df["pe_ratio"] = features_df["asset_id"].map(pe_by_asset)
-    features_df["inv_pe"] = features_df["pe_ratio"].apply(lambda x: -x if pd.notna(x) and x and x > 0 else None)
+    features_df["pe_ratio"] = pd.to_numeric(features_df["asset_id"].map(pe_by_asset), errors="coerce")
+    features_df["inv_pe"] = features_df["pe_ratio"].apply(lambda x: -x if pd.notna(x) and x > 0 else None)
     features_df["relative_valuation_score"] = features_df.groupby("sector_id")["inv_pe"].transform(percentile_rank)
 
     features_df["growth_score"] = features_df.groupby("sector_id")["growth_rate"].transform(linear_rank_score)
 
+    # Legacy Score: ranked market-wide (this script only ever scores
+    # USA, so a plain, non-grouped percentile_rank is already market-wide).
+    features_df["listed_date"] = features_df["listed_date"].apply(
+        lambda d: pd.to_datetime(d) if d else pd.NaT
+    )
+    features_df["tenure_days"] = (today_ts - features_df["listed_date"]).dt.days
+    features_df["legacy_score"] = percentile_rank(features_df["tenure_days"])
+
+    # Volatility Score: invert + sector-relative percentile, identical
+    # pattern to Relative Valuation.
+    features_df["inv_volatility"] = features_df["Volatility_30D_Scoring"].apply(
+        lambda v: -v if pd.notna(v) else None
+    )
+    features_df["volatility_score"] = features_df.groupby("sector_id")["inv_volatility"].transform(percentile_rank)
+    n_no_volatility = int(features_df["Volatility_30D_Scoring"].isna().sum())
+    print(f"Volatility Score: {n_no_volatility} stock(s) had no usable recent price data and got the neutral midpoint (50) instead of a real ranked volatility score.")
+
+    # Market Cap Score: ranked market-wide.
+    features_df["market_cap"] = features_df["asset_id"].map(market_cap_by_asset)
+    features_df["market_cap_score"] = percentile_rank(features_df["market_cap"])
+
     features_df["overall_score"] = (
-        features_df["relative_valuation_score"] + features_df["ml_rank_score"] + features_df["growth_score"]
-    ) / 3
+        features_df["ml_rank_score"] * (V5_WEIGHTS["ml_rank"] / 100)
+        + features_df["growth_score"] * (V5_WEIGHTS["growth"] / 100)
+        + features_df["relative_valuation_score"] * (V5_WEIGHTS["relative_valuation"] / 100)
+        + features_df["volatility_score"] * (V5_WEIGHTS["volatility"] / 100)
+        + features_df["legacy_score"] * (V5_WEIGHTS["legacy"] / 100)
+        + features_df["market_cap_score"] * (V5_WEIGHTS["market_cap"] / 100)
+    )
 
     distressed_mask = features_df["is_distressed"]
     features_df.loc[distressed_mask, "overall_score"] = features_df.loc[distressed_mask, "overall_score"].clip(upper=DISTRESS_SCORE_CAP)
@@ -458,41 +592,42 @@ def main():
     for _, row in features_df.iterrows():
         asset_id = int(row["asset_id"])
 
-        supabase.table("scores").upsert({
+        execute_with_retry(supabase.table("scores").upsert({
             "asset_id": asset_id,
             "run_date": run_date,
             "formula_version": FORMULA_VERSION,
             "relative_valuation_score": row["relative_valuation_score"],
             "ml_rank_score": row["ml_rank_score"],
             "growth_score": row["growth_score"],
+            "volatility_score": row["volatility_score"],
+            "legacy_score": row["legacy_score"],
+            "market_cap_score": row["market_cap_score"],
             "overall_score": row["overall_score"],
             "truescore_rating": row["truescore_rating"],
-        }, on_conflict="asset_id,run_date,formula_version").execute()
+        }, on_conflict="asset_id,run_date,formula_version"))
 
-        component_rows.append({
-            "asset_id": asset_id, "run_date": run_date, "formula_version": FORMULA_VERSION,
-            "component_name": "relative_valuation", "component_value": row["relative_valuation_score"],
-            "component_weight_used": 33.34,
-        })
-        component_rows.append({
-            "asset_id": asset_id, "run_date": run_date, "formula_version": FORMULA_VERSION,
-            "component_name": "ml_rank", "component_value": row["ml_rank_score"],
-            "component_weight_used": 33.33,
-        })
-        component_rows.append({
-            "asset_id": asset_id, "run_date": run_date, "formula_version": FORMULA_VERSION,
-            "component_name": "growth", "component_value": row["growth_score"],
-            "component_weight_used": 33.33,
-        })
+        for comp_name, comp_value in [
+            ("relative_valuation", row["relative_valuation_score"]),
+            ("ml_rank", row["ml_rank_score"]),
+            ("growth", row["growth_score"]),
+            ("volatility", row["volatility_score"]),
+            ("legacy", row["legacy_score"]),
+            ("market_cap", row["market_cap_score"]),
+        ]:
+            component_rows.append({
+                "asset_id": asset_id, "run_date": run_date, "formula_version": FORMULA_VERSION,
+                "component_name": comp_name, "component_value": comp_value,
+                "component_weight_used": V5_WEIGHTS[comp_name],
+            })
 
     CHUNK = 500
     for i in range(0, len(component_rows), CHUNK):
-        supabase.table("score_components").insert(component_rows[i:i + CHUNK]).execute()
+        execute_with_retry(supabase.table("score_components").insert(component_rows[i:i + CHUNK]))
 
     finish_run(run_id, ok_count=len(features_df), failed_symbols=skipped)
     print(f"\nDone. Scored {len(features_df)} US stocks and saved to the database (run_date={run_date}, formula_version={FORMULA_VERSION}).")
     n_distressed = int(features_df["is_distressed"].sum())
-    print(f"Distress guardrail: {n_distressed} stock(s) flagged (negative equity or ROE < {DISTRESS_ROE_THRESHOLD:.0%}), score capped at {DISTRESS_SCORE_CAP}.")
+    print(f"Distress guardrail: {n_distressed} stock(s) flagged (currently loss-making AND negative equity or ROE < {DISTRESS_ROE_THRESHOLD:.0%}), score capped at {DISTRESS_SCORE_CAP}.")
     if n_distressed:
         print("  Flagged tickers: " + ", ".join(features_df.loc[features_df["is_distressed"], "ticker"].tolist()))
     n_no_growth = int(features_df["growth_rate"].isna().sum())
@@ -502,12 +637,18 @@ def main():
     for _, r in top10.iterrows():
         print(
             f"  {r['ticker']}: overall={r['overall_score']:.1f} "
-            f"(valuation={r['relative_valuation_score']:.1f}, ml_rank={r['ml_rank_score']:.1f}, growth={r['growth_score']:.1f}) "
+            f"(ml={r['ml_rank_score']:.1f}, growth={r['growth_score']:.1f}, valuation={r['relative_valuation_score']:.1f}, "
+            f"volatility={r['volatility_score']:.1f}, legacy={r['legacy_score']:.1f}, market_cap={r['market_cap_score']:.1f}) "
             f"-> {r['truescore_rating']}"
         )
 
+    # ---- Sectoral Score -- identical methodology to India's corrected
+    # compute_and_save_sector_scores(): sector_ml_score is a market-cap-
+    # weighted average within the sector; sector_growth_score/
+    # sector_valuation_score are this sector's REAL aggregate growth
+    # rate/P/E, ranked 10-100 against every OTHER US sector. The real
+    # underlying numbers (sector_growth_raw/sector_pe) are saved too.
     print("\nComputing Sectoral Scores (3 sector-level components)...")
-    features_df["market_cap"] = features_df["asset_id"].map(market_cap_by_asset)
 
     def weighted_avg(group: pd.DataFrame, value_col: str, weight_col: str = "market_cap"):
         weighted = group.dropna(subset=[value_col, weight_col])
@@ -559,9 +700,11 @@ def main():
             "sector_growth_score": srow["sector_growth_score"],
             "sector_valuation_score": srow["sector_valuation_score"],
             "sector_rank_score": srow["sector_rank_score"],
+            "sector_growth_raw": None if pd.isna(srow["sector_growth_raw"]) else float(srow["sector_growth_raw"]),
+            "sector_pe": None if pd.isna(srow["sector_pe"]) else float(srow["sector_pe"]),
         }, on_conflict="sector_id,run_date,formula_version").execute()
 
-    print(f"Saved sector_scores for {len(sector_agg)} US sectors.")
+    print(f"Saved sector_scores for {len(sector_agg)} US sectors under formula_version={FORMULA_VERSION}.")
     print("\nSectors ranked highest to lowest (Sectoral Score):")
     for _, srow in sector_agg.sort_values("sector_rank_score", ascending=False).iterrows():
         pe_str = f"{srow['sector_pe']:.1f}" if pd.notna(srow["sector_pe"]) else "—"
