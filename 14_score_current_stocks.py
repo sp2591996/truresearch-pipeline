@@ -234,11 +234,30 @@ def percentile_rank(series: pd.Series) -> pd.Series:
     return ranked.fillna(50)
 
 
-# --- Growth Score (NEW, truescore_v3) ---------------------------------
+# --- Growth Score (NEW, truescore_v3; UPDATED to 3-year CAGR per
+# Avdhoot's explicit call this session) ---------------------------------
 # GROWTH_METRICS: the 4 fundamentals Avdhoot specified -- Revenue, EBIT,
 # EBITDA, PAT (= net_income in this schema).
 GROWTH_METRICS = ["total_revenue", "ebit", "ebitda", "net_income"]
-MIN_GROWTH_YEARS = 3  # need 3 fiscal years on record to get 2 YoY growth rates
+# Bumped 3 -> 4: a real 3-year CAGR needs the LATEST fiscal year and the
+# year 3 years before it (4 data points spanning 3 year-over-year
+# steps), not 3. Stocks/sectors with fewer than 4 usable years still
+# work fine -- they just fall back to the original YoY-average method
+# below (unchanged behavior for anything with 2-3 years of history).
+MIN_GROWTH_YEARS = 4
+
+# Per Avdhoot's explicit call this session: Growth Score moves from an
+# average-of-up-to-2-YoY-readings to a real 3-year CAGR (matches how
+# growth is usually talked about, and smooths out one noisy single year
+# the old method could be swung by) -- WITH a fallback to the old
+# YoY-average method whenever the 3-year CAGR isn't available or reads
+# as an extreme outlier. "Exceptionally high or low" is defined here as
+# outside this annualized range; picked to comfortably cover normal
+# business growth/decline while catching the kind of distorted number a
+# tiny/negative starting base produces (the same failure mode already
+# flagged and guarded against on the frontend's GrowthDeepdive.tsx).
+# Adjust these two numbers directly if Avdhoot wants a different bar.
+CAGR_OUTLIER_BOUNDS = (-0.60, 1.50)  # -60% to +150% annualized
 
 
 def usable_fundamentals_years(fundamentals: pd.DataFrame, as_of_date, n_years: int = MIN_GROWTH_YEARS):
@@ -262,31 +281,71 @@ def yoy_growth(curr, prev):
     return (curr - prev) / abs(prev)
 
 
+def cagr(latest, earliest, years: int):
+    """Compound annual growth rate: (latest / earliest) ** (1/years) - 1.
+    None if either value is missing OR non-positive -- CAGR is
+    mathematically undefined (not just noisy) off a zero or negative/
+    loss-making base, same reasoning yoy_growth() already applies to
+    prev == 0, just stricter since CAGR also breaks on a NEGATIVE base
+    in a way plain YoY doesn't."""
+    if latest is None or earliest is None or pd.isna(latest) or pd.isna(earliest):
+        return None
+    if earliest <= 0 or latest <= 0:
+        return None
+    return (latest / earliest) ** (1 / years) - 1
+
+
 def growth_rate_from_years(years: list):
     """Shared by stock-level and sector-level Growth Score: given a list
-    of up to 3 fiscal-year rows (oldest first, each a dict-like with the
-    4 GROWTH_METRICS), compute the YoY growth rate for the most recent
-    fiscal year AND the year before that, then average ALL the YoY
-    growth rates available (up to 2 years x 4 metrics = 8 numbers) into
-    one growth_rate. Skips whichever individual (metric, year) pairs
-    are missing rather than failing entirely -- e.g. only 2 usable
-    fiscal years (1 YoY pair per metric, not 2) still gets a growth_rate
-    from whatever it has. Returns None only if NOTHING is computable."""
+    of up to 4 fiscal-year rows (oldest first, each a dict-like with the
+    4 GROWTH_METRICS), compute ONE growth reading PER METRIC, then
+    average whichever readings were actually obtainable into one
+    growth_rate. Per metric, in order:
+      1. If 4 usable years exist, try a real 3-year CAGR (latest vs. the
+         year 3 back). Used only if it's not an extreme outlier (see
+         CAGR_OUTLIER_BOUNDS) -- an outlier falls through to (2) instead
+         of being trusted as-is.
+      2. Otherwise (fewer than 4 years, no usable CAGR, or an outlier
+         CAGR), fall back to the ORIGINAL method: average of up to 2 YoY
+         growth rates from the most recent fiscal years available.
+    A stock/sector can end up with a mix -- e.g. Revenue on 3-year CAGR
+    while PAT falls back to YoY-average because PAT was loss-making 3
+    years ago -- exactly like the original method already tolerated a
+    mix of available/missing metrics. Returns None only if NOTHING is
+    computable for any metric."""
     if len(years) < 2:
         return None  # need at least 2 fiscal years for even 1 YoY reading
 
+    has_4_years = len(years) >= 4
+    latest_year = years[-1]
+    year_3_back = years[-4] if has_4_years else None
+
     growth_readings = []
-    # years is oldest-first; walk consecutive pairs (year[i-1] -> year[i])
-    # so with 3 years we get 2 YoY pairs, with 2 years we get 1.
-    for i in range(1, len(years)):
-        prev_year, curr_year = years[i - 1], years[i]
-        for metric in GROWTH_METRICS:
-            # .get() works the same way on a pandas Series (stock-level
-            # fiscal-year row) and a plain dict (sector-level summed
-            # totals) -- both callers pass one of these two shapes.
-            g = yoy_growth(curr_year.get(metric), prev_year.get(metric))
-            if g is not None:
-                growth_readings.append(g)
+    for metric in GROWTH_METRICS:
+        reading = None
+        if has_4_years:
+            g = cagr(latest_year.get(metric), year_3_back.get(metric), 3)
+            if g is not None and CAGR_OUTLIER_BOUNDS[0] <= g <= CAGR_OUTLIER_BOUNDS[1]:
+                reading = g
+        if reading is None:
+            # Fallback for THIS metric only -- average of up to 2 YoY
+            # growth rates from the most recent fiscal years available
+            # (identical math to the pre-CAGR method; only ever looks at
+            # the latest 2 YoY pairs even when 4 years were fetched, so
+            # this fallback behaves exactly as it did before the CAGR
+            # change on anything that needs it).
+            yoy_readings = []
+            for i in range(max(1, len(years) - 2), len(years)):
+                # .get() works the same way on a pandas Series (stock-level
+                # fiscal-year row) and a plain dict (sector-level summed
+                # totals) -- both callers pass one of these two shapes.
+                g = yoy_growth(years[i].get(metric), years[i - 1].get(metric))
+                if g is not None:
+                    yoy_readings.append(g)
+            if yoy_readings:
+                reading = sum(yoy_readings) / len(yoy_readings)
+        if reading is not None:
+            growth_readings.append(reading)
 
     if not growth_readings:
         return None
@@ -307,14 +366,16 @@ def sector_growth_rate(asset_ids: list, years_by_asset: dict):
     OWN growth rate, this sums each of the 4 metrics ACROSS every stock
     in the sector first (aligned by how-many-years-back, e.g. every
     stock's latest usable year is summed together, every stock's year-
-    before-that is summed together), THEN computes YoY growth on those
-    sector-wide totals -- exactly the same 2-year YoY-averaged-across-4-
-    metrics method as growth_rate_from_years(), just fed sector totals
-    instead of one stock's own numbers. A stock missing a given metric/
-    year is simply left out of that one sum rather than zeroing it."""
+    before-that is summed together, out to 4 years back), THEN hands
+    those sector-wide yearly totals to growth_rate_from_years() -- the
+    exact same 3-year-CAGR-with-YoY-fallback method used at the stock
+    level, just fed sector totals instead of one stock's own numbers.
+    A stock missing a given metric/year is simply left out of that one
+    sum rather than zeroing it."""
     # sums[offset][metric]: offset 1 = every stock's latest usable
-    # fiscal year, 2 = the year before that, 3 = the year before that.
-    sums = {1: {m: None for m in GROWTH_METRICS}, 2: {m: None for m in GROWTH_METRICS}, 3: {m: None for m in GROWTH_METRICS}}
+    # fiscal year, 2 = the year before that, ..., 4 = 3 years before that
+    # (4 offsets, not 3, to match MIN_GROWTH_YEARS' 3-year-CAGR need).
+    sums = {offset: {m: None for m in GROWTH_METRICS} for offset in (1, 2, 3, 4)}
     for asset_id in asset_ids:
         years = years_by_asset.get(asset_id, [])
         n = len(years)
@@ -325,7 +386,7 @@ def sector_growth_rate(asset_ids: list, years_by_asset: dict):
                 if v is not None and pd.notna(v):
                     sums[offset][metric] = (sums[offset][metric] or 0.0) + v
 
-    sector_years = [sums[3], sums[2], sums[1]]  # oldest-first, matches growth_rate_from_years' expectation
+    sector_years = [sums[4], sums[3], sums[2], sums[1]]  # oldest-first, matches growth_rate_from_years' expectation
     return growth_rate_from_years(sector_years)
 
 
@@ -569,7 +630,7 @@ def main():
 
     today_ts = pd.Timestamp(date.today())
     rows = []
-    years_by_asset = {}  # asset_id -> up to 3 fiscal-year rows (oldest first), reused for sector-level Growth Score
+    years_by_asset = {}  # asset_id -> up to 4 fiscal-year rows (oldest first), reused for sector-level Growth Score
     run_id = start_run("scoring")
     skipped = []
 
@@ -1001,6 +1062,17 @@ def main():
                 "sector_growth_score": srow["sector_growth_score"],
                 "sector_valuation_score": srow["sector_valuation_score"],
                 "sector_rank_score": srow["sector_rank_score"],
+                # NEW (Avdhoot's request this session): the REAL underlying
+                # numbers behind sector_growth_score/sector_valuation_score,
+                # not just the 10-100 rank -- so the frontend can show
+                # "this sector's actual P/E" and "this sector's actual
+                # growth %" next to other sectors' and the market's real
+                # numbers, instead of only a rank score (which always
+                # trends toward the same midpoint when averaged, and can't
+                # answer "what IS the sector's P/E"). NaN -> None since
+                # Supabase's client can't serialize a bare NaN.
+                "sector_growth_raw": None if pd.isna(srow["sector_growth_raw"]) else float(srow["sector_growth_raw"]),
+                "sector_pe": None if pd.isna(srow["sector_pe"]) else float(srow["sector_pe"]),
             }, on_conflict="sector_id,run_date,formula_version").execute()
 
         print(f"Saved sector_scores for {len(sector_agg)} sectors under formula_version={formula_version}.")
