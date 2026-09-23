@@ -1,0 +1,28 @@
+-- 135_vacuum_full_after_nifty500_narrowing.sql
+-------------------------------------------------------------------
+-- Avdhoot (P6, 2026-09-24), after 131_narrow_india_universe_to_
+-- nifty500.sql: "my supabase size is still 431 out of 500 mb, given
+-- I have deleted all the remaining stocks shouldnt it come down."
+--
+-- 134_check_table_sizes.sql showed why: `prices_daily` is 357 MB of
+-- your ~431 MB total (290 MB table + 66 MB indexes), with 0 dead rows
+-- -- meaning Postgres already logically reclaimed the deleted rows'
+-- space for reuse, it just hasn't shrunk the actual file on disk.
+-- Only VACUUM FULL does that (it rewrites the table into a new,
+-- smaller file and drops the old one). Every other table here is
+-- small enough (under 15 MB) that it's not worth the lock.
+--
+-- IMPORTANT:
+--   - VACUUM FULL briefly takes an exclusive lock on the table --
+--     your site's price-history reads will fail/wait for the few
+--     seconds to ~1 minute this takes on a table this size. Fine to
+--     run any time, but not literally in the middle of your dev
+--     server hammering it.
+--   - VACUUM cannot run inside a transaction block, so (unlike
+--     131/most migrations in this project) there's deliberately no
+--     BEGIN/COMMIT here -- run each statement as-is.
+--   - Safe to re-run -- if there's nothing left to reclaim, it's a
+--     fast no-op.
+-------------------------------------------------------------------
+
+vacuum (full, verbose, analyze) prices_daily;
