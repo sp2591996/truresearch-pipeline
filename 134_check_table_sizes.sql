@@ -13,6 +13,12 @@
 -- instead of blindly running it on everything (VACUUM FULL briefly
 -- locks whichever table it's running on, so no reason to lock ones
 -- that are already tiny). Changes nothing.
+--
+-- Fixed: first version joined pg_statio_user_tables and
+-- pg_stat_user_tables, both of which have their own `relname` column
+-- -- Postgres couldn't tell which one to use ("column reference
+-- relname is ambiguous"). pg_stat_user_tables alone already has
+-- everything this needs.
 -------------------------------------------------------------------
 
 select
@@ -22,7 +28,6 @@ select
   pg_size_pretty(pg_total_relation_size(relid) - pg_relation_size(relid)) as indexes_and_toast_size,
   n_live_tup as approx_live_rows,
   n_dead_tup as approx_dead_rows
-from pg_catalog.pg_statio_user_tables
-join pg_stat_user_tables using (relid)
+from pg_stat_user_tables
 order by pg_total_relation_size(relid) desc
 limit 20;
