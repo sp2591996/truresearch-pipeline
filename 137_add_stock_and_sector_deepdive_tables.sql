@@ -53,7 +53,7 @@ create table if not exists stock_deepdive (
 );
 
 comment on table stock_deepdive is
-  'Admin-uploaded qualitative content for a stock''s Section 9 Deepdive tab. One row per asset. Populated via the Admin Page''s Stock Detail Upload Excel (Section 2), matching its columns A-Q (Col A ticker is the match key, not stored here; Col R Company Logo is handled as a file, not text).';
+  'Admin-uploaded qualitative content for a stock''s Section 9 Deepdive tab. One row per asset. Populated via the Admin Page''s Stock Detail Upload Excel (Section 2), matching its columns A-Q (Col A ticker is the match key, not stored here; Col R Company Logo is saved to assets.icon instead -- see migration 138).';
 
 alter table stock_deepdive enable row level security;
 drop policy if exists "Stock deepdive is public to read" on stock_deepdive;
