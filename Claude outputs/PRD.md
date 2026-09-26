@@ -370,3 +370,18 @@ All of these are pure-computation, no-new-data-dependency tools — genuinely ch
 3. ~~Confirm PWA (not native app) as final for L1~~ **RECONFIRMED (Phase C):** Avdhoot confirmed PWA remains final — no override. See K3.
 
 All three "Immediate open decisions" items are now resolved.
+
+---
+
+## Session 37 additions (built; supersede earlier notes where they conflict)
+
+**L1. Logged-in home dashboard.** Same section order as the logged-out home. The "Your portfolio" slot becomes a tinted panel: welcome + market status + last-updated stamp; *Your investments* (portfolio value, today, all-time return, % of portfolio moved down; link to portfolio); *Your watchlist* (stocks moved up, average TrueScore; link to watchlist); *Sectors in focus*; *Continue learning* and *Investor Plan* cards. No movers list and no calculators row on the home page. New users see an inline "Start investing with virtual money" card — virtual money is never requested at login.
+**L2. Investor Plan (`/plan`).** 14-question profile (age, city tier, household, income, expenses by category, savings/emergency fund, debt, goal, horizon, expected return, reaction to a fall, experience + short quiz, style, US/gold interest) → risk profile, investable surplus, suggested monthly SIP with yearly step-up, asset-class split, sector distribution, large/mid/small split per sector with links to the Screener, three-scenario corpus projection, 90-day checklist; printable, shareable. Educational guidance, not advice. The login profile pop-up is name + phone only; the old 5-question risk quiz is retired from onboarding.
+**L3. Calculators suite (15).** Bucketed on the hub; real-time data prefills (price, fundamentals, sector medians) with source tags; sanity-check warnings; linked start date / duration / end date; unit toggles for big-money inputs; inputs persist per device and can be shared as a link; DCF Bear/Base/Bull scenarios.
+**L4. Learn.** 9 courses (incl. How to use TrueResearch) and an extended glossary; lesson visuals.
+**L5. Quick search / smart search everywhere.** Ctrl/Cmd+K, `/`, mobile search icon: stocks, sectors, pages, calculators, glossary, plain-English phrases → filtered Screener.
+**L6. Deepdive.** Topic tiles (desktop) / ‹ topic › switcher (mobile), colour-coded by group, icon bullets and cards, peers as cards (no horizontal scrolling anywhere in deepdives).
+**L7. Global UI rules.** INR big amounts in Cr, USD in Mn everywhere; score is always called "TrueScore" (never a version number); zero-stock sectors hidden; initials avatar beside every company in tables; one standard round share button; skeleton loading + illustrated empty states; consistent, reduced-motion-safe motion; day/night switch reachable for logged-out mobile users (More sheet); page loads target ~0.5 s via 5-minute server fetch caching.
+**L8. Sector index method.** Chain-linked, market-cap-weighted, returns-based; carry-forward for missing days; ±40% step cap.
+**L9. Admin uploads.** V4 templates; warnings never block upload; rules in `lib/uploadCells.ts`.
+**Backlog (accepted, not built):** price/TrueScore alerts, weekly "your stocks" email, Learn progress + streaks, stock/term of the day, plain-words TrueScore summary per stock, guided first visit, updated-stamp on all data pages.

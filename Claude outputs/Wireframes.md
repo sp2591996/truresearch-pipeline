@@ -149,3 +149,16 @@
 
 ## Next step
 Once you've picked a naming/color direction from `Design_System.md`, the next deliverable in the Phase A sequence is the **user journey maps** (persona → entry point → path through the product → outcome, for all 5 personas) — say the word and I'll build those next, referencing these wireframes directly.
+
+---
+
+## Session 37 wireframe updates (as built)
+
+**Mobile shell.** Top bar: logo left; search icon; Log in button (or avatar → Edit Profile / Logout / theme). Fixed bottom nav (outside the header): Home · Markets · Discover · Portfolio · More. More sheet: search, Compare Stocks, Compare Sectors, Learn, Calculators, then a Day/Night switch row. Portfolio sheet: My Investment, My Watchlist, My Investor Plan.
+**Desktop shell.** Top bar: logo, Markets, Discover ▾, Compare ▾, Learn, My Portfolio ▾, smart search box, theme toggle, Log in / account chip. No separate quick-search button (Ctrl+K still works).
+**Home (logged in).** Hero + market strip + the rest as logged out; the "Your portfolio" slot = one rounded tinted panel: [Your portfolio label · Good morning, Name · date · NSE open/closed · Updated pill] → [Your investments ›Visit portfolio: 4 stat cards] → [Your watchlist ›Visit watchlist: 2 stat cards] → [Sectors in focus chips] → [Continue learning | Investor Plan cards]. No portfolio → "Start investing with virtual money" card (amount, ₹1L/5L/10L chips, Start investing).
+**Stock / Sector deepdive.** Heading + hint. Desktop: grid of colour-coded topic tiles (icon, name, teaser) then topic content in cards, prev/next strip beneath. Mobile: one row [‹] [icon + topic + n/N in topic colour] [›] then the same cards. Peers: stack of cards (avatar, name, TrueScore badge, 2-column metric grid, own stock pinned/highlighted).
+**Investor Plan.** Quiz: progress bar, one question per screen, big tap targets, back/next. Report: hero with profile badge → income/expense/surplus donut → asset-class donut → SIP + step-up with 3-scenario line chart → sector bars with icons → per-sector cap split stacked bars (cells link to Screener) → 90-day checklist → print / share / retake.
+**Calculator page.** Hero band (icon, bucket, title, subtitle, Share these inputs + Reset) → two columns: sticky inputs card (stock picker, big-money inputs with unit chips, period picker, sliders, source tags) | results (stat cards, main chart, secondary charts, sanity-check warnings, plain-language insight). One column on mobile (inputs first).
+**Quick search palette.** Modal (full-height sheet on phones): input, "Smart search" row for phrases, sections Stocks / Sectors / Pages / Calculators / Learn, recent searches, skeleton rows while loading, empty state.
+**Screener.** "Research screener" card with plain-English box and a green **Screen** button.
