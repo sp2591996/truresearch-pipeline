@@ -1,0 +1,33 @@
+name: Hourly Price Refresh
+
+# Keeps the last 7 days of hourly bars in prices_hourly (see
+# 147_refresh_hourly_prices.py). One firing per hour covers both markets:
+# the script checks each market's own trading hours (with DST handled by
+# its timezone), so firings outside a market's hours skip that market.
+# Minute :47 -- not on the hour -- to avoid GitHub's busiest scheduling
+# minute (same reasoning as daily-prices.yml). 03-10 UTC covers NSE hours
+# plus the after-close grace; 13-21 UTC covers US hours (both DST states).
+
+on:
+  schedule:
+    - cron: '47 3-10,13-21 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      backfill:
+        description: 'Fetch the last 7 days (use once after setup) and run even outside market hours'
+        type: boolean
+        default: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 147_refresh_hourly_prices.py ${{ inputs.backfill && '--backfill --force' || '' }}
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
