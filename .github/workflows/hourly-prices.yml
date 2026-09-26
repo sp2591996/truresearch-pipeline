@@ -14,7 +14,7 @@ on:
   workflow_dispatch:
     inputs:
       backfill:
-        description: 'Fetch the last 7 days (use once after setup) and run even outside market hours'
+        description: 'Fetch the last 7 days instead of 2 (tick this the first time)'
         type: boolean
         default: false
 
@@ -27,7 +27,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: pip install -r requirements.txt
-      - run: python 147_refresh_hourly_prices.py ${{ inputs.backfill && '--backfill --force' || '' }}
+      # A manual run always ignores market hours (--force); ticking backfill also loads 7 days.
+      - run: python 147_refresh_hourly_prices.py ${{ github.event_name == 'workflow_dispatch' && '--force' || '' }} ${{ inputs.backfill && '--backfill' || '' }}
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
