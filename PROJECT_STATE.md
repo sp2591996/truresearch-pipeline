@@ -57,8 +57,7 @@ Return, SIP/Lumpsum/SWP, SIP Back-test, Lump sum vs SIP, Dividend Income, US Sto
 Dropdown replaced by colour-coded topic tiles (desktop) and a compact **‹ topic ›** switcher on mobile; `InfoCard`, `BulletList`, `StatChip`, `Callout`, `ProgressMeter`; **Peers are cards, no horizontal scroll anywhere**; Business shows donut of revenue streams, chips; risk severity meters only when text has high/medium/low; management person cards only for "Name - Role" lines. Tone groups: blue (Business, Management), green (Quality/Growth/Health), amber (Valuation/Scenarios), red (Risks/Monitor), purple (Peers/Thesis).
 
 ### Not verified / open
-- **None of the Session 37 UI has been checked in a browser by Claude**; the user has looked at some screens and reported fixes (all applied).
-- User must: `git push` both repos, run `148_sector_overviews_public_read.sql`, set up custom SMTP if emails still fail.
+- **Confirmed live and working (Session 38, via browser check on `trueresearch.vercel.app`):** homepage hero + live index chips, `/sectors` (populated with real TrueScores — the `148_sector_overviews_public_read.sql` fix worked), and a stock detail page (`/stocks/RELIANCE`, new "Understand"/"At a Glance" deepdive layout). No console errors on any of the three. Avdhoot confirmed both repos are pushed, the SQL script has been run, and email/SMTP is sorted.
 - Ideas the user accepted but not built: alerts, weekly email, Learn streaks/progress, "stock of the day", plain-words TrueScore summary on each stock, guided first visit, LastUpdated stamp on more pages (currently only logged-in home).
 - Decide later: Vercel/Supabase region check; standardising remaining non-share buttons; delete old V3 templates.
 

@@ -1023,6 +1023,17 @@ def main():
             sector_growth_raw = sector_growth_rate(asset_ids_in_sector, years_by_asset)
 
             # 3. sector aggregate P/E (raw, ranked into a score further below).
+            # DECISION (Session 38 -- Avdhoot noticed Reliance's "sector P/E"
+            # disagreed depending on which page/popup showed it, root cause:
+            # this cap-weighted number vs. a plain average-of-individual-P/Es
+            # the frontend computed live in several places). Resolved by
+            # making cap-weighted THE single site-wide definition instead --
+            # it's the more defensible one (one huge-but-cheap stock or a
+            # handful of tiny high-P/E outliers can't swing it the way a
+            # plain average can) -- and updating every frontend spot to read
+            # THIS stored number instead of recomputing its own average. See
+            # PROJECT_STATE.md Session 38 entry for the full list of frontend
+            # files updated to match.
             # Only stocks with both a positive market cap AND usable net
             # income go into the sums -- a sector with net losses overall
             # (sum of net income <= 0) has no meaningful P/E, left as None.

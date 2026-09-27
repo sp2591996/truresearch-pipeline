@@ -666,6 +666,11 @@ def main():
         sector_ml_score = weighted_avg(group, "ml_rank_score")
         sector_growth_raw = sector_growth_rate(asset_ids_in_sector, years_by_asset)
 
+        # DECISION (Session 38 -- see 14_score_current_stocks.py's matching
+        # comment): kept this cap-weighted (not a plain average of
+        # individual P/Es) -- it's the more defensible single definition,
+        # and every frontend spot was updated to read this stored number
+        # instead of computing its own average live.
         valid = group.dropna(subset=["market_cap", "Net_Income"])
         valid = valid[(valid["market_cap"] > 0)]
         total_cap = valid["market_cap"].sum()
