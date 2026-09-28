@@ -252,15 +252,19 @@ def cagr(latest, earliest, years: int):
     return (latest / earliest) ** (1 / years) - 1
 
 
-def growth_rate_from_years(years: list):
+def growth_readings_by_metric(years: list) -> dict:
+    """FIX (Session 38): extracted out of growth_rate_from_years() below,
+    identical to the same refactor in 14_score_current_stocks.py, so the
+    per-metric readings (Revenue/EBIT/EBITDA/PAT growth, each on its own)
+    are available to callers, not just the one blended number."""
+    result = {m: None for m in GROWTH_METRICS}
     if len(years) < 2:
-        return None
+        return result
 
     has_4_years = len(years) >= 4
     latest_year = years[-1]
     year_3_back = years[-4] if has_4_years else None
 
-    growth_readings = []
     for metric in GROWTH_METRICS:
         reading = None
         if has_4_years:
@@ -275,9 +279,12 @@ def growth_rate_from_years(years: list):
                     yoy_readings.append(g)
             if yoy_readings:
                 reading = sum(yoy_readings) / len(yoy_readings)
-        if reading is not None:
-            growth_readings.append(reading)
+        result[metric] = reading
+    return result
 
+
+def growth_rate_from_years(years: list):
+    growth_readings = [v for v in growth_readings_by_metric(years).values() if v is not None]
     if not growth_readings:
         return None
     return sum(growth_readings) / len(growth_readings)
@@ -288,11 +295,15 @@ def compute_growth_rate(fundamentals: pd.DataFrame, as_of_date):
     return growth_rate_from_years(years)
 
 
-def sector_growth_rate(asset_ids: list, years_by_asset: dict):
+def sector_growth_rate(asset_ids: list, years_by_asset: dict, return_detail: bool = False):
     """Sector-level Growth Score input: sums each of the 4 metrics
     ACROSS every stock in the sector first (aligned by how-many-years-
     back), then hands those sector-wide yearly totals to
-    growth_rate_from_years() -- identical to India's method."""
+    growth_rate_from_years() -- identical to India's method.
+
+    FIX (Session 38): added return_detail, same as India's version --
+    when True, returns the per-metric dict instead of the blended
+    number, so all 4 sector growth figures can be stored."""
     sums = {offset: {m: None for m in GROWTH_METRICS} for offset in (1, 2, 3, 4)}
     for asset_id in asset_ids:
         years = years_by_asset.get(asset_id, [])
@@ -305,6 +316,8 @@ def sector_growth_rate(asset_ids: list, years_by_asset: dict):
                     sums[offset][metric] = (sums[offset][metric] or 0.0) + v
 
     sector_years = [sums[4], sums[3], sums[2], sums[1]]
+    if return_detail:
+        return growth_readings_by_metric(sector_years)
     return growth_rate_from_years(sector_years)
 
 
@@ -439,7 +452,7 @@ def main():
     while True:
         resp = (
             supabase.table("assets")
-            .select("asset_id, ticker, sector_id, listed_date, sectors(name)")
+            .select("asset_id, ticker, sector_id, industry_id, listed_date, sectors(name)")
             .eq("asset_type", "equity")
             .eq("is_active", True)
             .eq("market", MARKET)
@@ -532,6 +545,7 @@ def main():
         growth_rate = growth_rate_from_years(years_by_asset[asset_id])
         rows.append({
             "asset_id": asset_id, "ticker": ticker, "sector_id": a.get("sector_id"),
+            "industry_id": a.get("industry_id"),
             "is_distressed": distressed, "growth_rate": growth_rate,
             "listed_date": a.get("listed_date"), **feature_row,
         })
@@ -665,6 +679,8 @@ def main():
 
         sector_ml_score = weighted_avg(group, "ml_rank_score")
         sector_growth_raw = sector_growth_rate(asset_ids_in_sector, years_by_asset)
+        # FIX (Session 38): same per-metric capture as India's script.
+        sector_growth_detail = sector_growth_rate(asset_ids_in_sector, years_by_asset, return_detail=True)
 
         # DECISION (Session 38 -- see 14_score_current_stocks.py's matching
         # comment): kept this cap-weighted (not a plain average of
@@ -684,6 +700,10 @@ def main():
             "sector_ml_score": sector_ml_score,
             "sector_growth_raw": sector_growth_raw,
             "sector_pe": sector_pe,
+            "sector_revenue_growth": sector_growth_detail.get("total_revenue"),
+            "sector_ebitda_growth": sector_growth_detail.get("ebitda"),
+            "sector_ebit_growth": sector_growth_detail.get("ebit"),
+            "sector_pat_growth": sector_growth_detail.get("net_income"),
         })
 
     sector_agg = pd.DataFrame(sector_rows)
@@ -707,6 +727,10 @@ def main():
             "sector_rank_score": srow["sector_rank_score"],
             "sector_growth_raw": None if pd.isna(srow["sector_growth_raw"]) else float(srow["sector_growth_raw"]),
             "sector_pe": None if pd.isna(srow["sector_pe"]) else float(srow["sector_pe"]),
+            "sector_revenue_growth": None if pd.isna(srow["sector_revenue_growth"]) else float(srow["sector_revenue_growth"]),
+            "sector_ebitda_growth": None if pd.isna(srow["sector_ebitda_growth"]) else float(srow["sector_ebitda_growth"]),
+            "sector_ebit_growth": None if pd.isna(srow["sector_ebit_growth"]) else float(srow["sector_ebit_growth"]),
+            "sector_pat_growth": None if pd.isna(srow["sector_pat_growth"]) else float(srow["sector_pat_growth"]),
         }, on_conflict="sector_id,run_date,formula_version").execute()
 
     print(f"Saved sector_scores for {len(sector_agg)} US sectors under formula_version={FORMULA_VERSION}.")
@@ -719,6 +743,82 @@ def main():
             f"(ml={srow['sector_ml_score']:.1f}, growth_score={srow['sector_growth_score']:.1f} [raw growth {growth_str}], "
             f"valuation_score={srow['sector_valuation_score']:.1f} [sector P/E {pe_str}]) ({int(srow['stock_count'])} stocks)"
         )
+
+    # Phase 3 (Session 39): industry-level twin of the sector block
+    # above -- see 14_score_current_stocks.py's matching comment for the
+    # full reasoning (Gillette/HUL/Nestle-style over-broad sector peers).
+    # industry_rank_score ranks an industry against other industries IN
+    # THE SAME SECTOR, not market-wide.
+    industries_res = (
+        supabase.table("industries").select("industry_id, sector_id").eq("market", "usa").execute()
+    )
+    sector_id_by_industry = {r["industry_id"]: r["sector_id"] for r in industries_res.data}
+
+    industry_ids = sorted(features_df["industry_id"].dropna().unique().tolist())
+    industry_rows = []
+    for industry_id in industry_ids:
+        group = features_df[features_df["industry_id"] == industry_id]
+        asset_ids_in_industry = group["asset_id"].tolist()
+
+        industry_ml_score = weighted_avg(group, "ml_rank_score")
+        industry_growth_raw = sector_growth_rate(asset_ids_in_industry, years_by_asset)
+        industry_growth_detail = sector_growth_rate(asset_ids_in_industry, years_by_asset, return_detail=True)
+
+        valid = group.dropna(subset=["market_cap", "Net_Income"])
+        valid = valid[(valid["market_cap"] > 0)]
+        total_cap = valid["market_cap"].sum()
+        total_net_income = valid["Net_Income"].sum()
+        industry_pe = (total_cap / total_net_income) if (len(valid) > 0 and total_net_income and total_net_income > 0) else None
+
+        industry_rows.append({
+            "industry_id": int(industry_id),
+            "sector_id": sector_id_by_industry.get(int(industry_id)),
+            "avg_truescore": weighted_avg(group, "overall_score"),
+            "stock_count": int(group["overall_score"].count()),
+            "industry_ml_score": industry_ml_score,
+            "industry_growth_raw": industry_growth_raw,
+            "industry_pe": industry_pe,
+            "industry_revenue_growth": industry_growth_detail.get("total_revenue"),
+            "industry_ebitda_growth": industry_growth_detail.get("ebitda"),
+            "industry_ebit_growth": industry_growth_detail.get("ebit"),
+            "industry_pat_growth": industry_growth_detail.get("net_income"),
+        })
+
+    industry_agg = pd.DataFrame(industry_rows)
+    if industry_agg.empty:
+        print("No US industries to score -- skipping industry_scores.")
+    else:
+        industry_agg["industry_growth_score"] = linear_rank_score(industry_agg["industry_growth_raw"])
+        industry_agg["inv_industry_pe"] = industry_agg["industry_pe"].apply(lambda x: -x if pd.notna(x) and x else None)
+        industry_agg["industry_valuation_score"] = linear_rank_score(industry_agg["inv_industry_pe"])
+
+        raw_score = (
+            industry_agg["industry_ml_score"] + industry_agg["industry_growth_score"] + industry_agg["industry_valuation_score"]
+        ) / 3
+        industry_agg["industry_rank_score"] = (
+            raw_score.groupby(industry_agg["sector_id"]).transform(linear_rank_score)
+        )
+
+        for _, irow in industry_agg.iterrows():
+            supabase.table("industry_scores").upsert({
+                "industry_id": int(irow["industry_id"]),
+                "run_date": run_date,
+                "formula_version": FORMULA_VERSION,
+                "avg_truescore": irow["avg_truescore"],
+                "stock_count": int(irow["stock_count"]),
+                "industry_ml_score": irow["industry_ml_score"],
+                "industry_growth_score": irow["industry_growth_score"],
+                "industry_valuation_score": irow["industry_valuation_score"],
+                "industry_rank_score": irow["industry_rank_score"],
+                "industry_growth_raw": None if pd.isna(irow["industry_growth_raw"]) else float(irow["industry_growth_raw"]),
+                "industry_pe": None if pd.isna(irow["industry_pe"]) else float(irow["industry_pe"]),
+                "industry_revenue_growth": None if pd.isna(irow["industry_revenue_growth"]) else float(irow["industry_revenue_growth"]),
+                "industry_ebitda_growth": None if pd.isna(irow["industry_ebitda_growth"]) else float(irow["industry_ebitda_growth"]),
+                "industry_ebit_growth": None if pd.isna(irow["industry_ebit_growth"]) else float(irow["industry_ebit_growth"]),
+                "industry_pat_growth": None if pd.isna(irow["industry_pat_growth"]) else float(irow["industry_pat_growth"]),
+            }, on_conflict="industry_id,run_date,formula_version").execute()
+
+        print(f"Saved industry_scores for {len(industry_agg)} US industries under formula_version={FORMULA_VERSION}.")
 
 
 if __name__ == "__main__":

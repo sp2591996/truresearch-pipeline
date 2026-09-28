@@ -295,32 +295,27 @@ def cagr(latest, earliest, years: int):
     return (latest / earliest) ** (1 / years) - 1
 
 
-def growth_rate_from_years(years: list):
-    """Shared by stock-level and sector-level Growth Score: given a list
-    of up to 4 fiscal-year rows (oldest first, each a dict-like with the
-    4 GROWTH_METRICS), compute ONE growth reading PER METRIC, then
-    average whichever readings were actually obtainable into one
-    growth_rate. Per metric, in order:
-      1. If 4 usable years exist, try a real 3-year CAGR (latest vs. the
-         year 3 back). Used only if it's not an extreme outlier (see
-         CAGR_OUTLIER_BOUNDS) -- an outlier falls through to (2) instead
-         of being trusted as-is.
-      2. Otherwise (fewer than 4 years, no usable CAGR, or an outlier
-         CAGR), fall back to the ORIGINAL method: average of up to 2 YoY
-         growth rates from the most recent fiscal years available.
-    A stock/sector can end up with a mix -- e.g. Revenue on 3-year CAGR
-    while PAT falls back to YoY-average because PAT was loss-making 3
-    years ago -- exactly like the original method already tolerated a
-    mix of available/missing metrics. Returns None only if NOTHING is
-    computable for any metric."""
+def growth_readings_by_metric(years: list) -> dict:
+    """FIX (Session 38): extracted out of growth_rate_from_years() below
+    so the per-metric readings (Revenue/EBIT/EBITDA/PAT growth, each on
+    its own) are available to callers, not just the one blended number.
+    Needed so sector-level Revenue/EBITDA/EBIT/PAT growth -- currently
+    only computed live in the frontend, by averaging each stock's OWN
+    growth % (a different, more outlier-prone method than this
+    aggregate-sums-first approach, and the source of the near-zero-
+    denominator bug flagged in Session 36 -- see GrowthDeepdive.tsx) --
+    can instead be stored here and read as one consistent number, same
+    fix already applied to sector P/E. Returns one reading (or None) per
+    GROWTH_METRICS key; see growth_rate_from_years' docstring for the
+    per-metric method itself, unchanged."""
+    result = {m: None for m in GROWTH_METRICS}
     if len(years) < 2:
-        return None  # need at least 2 fiscal years for even 1 YoY reading
+        return result  # need at least 2 fiscal years for even 1 YoY reading
 
     has_4_years = len(years) >= 4
     latest_year = years[-1]
     year_3_back = years[-4] if has_4_years else None
 
-    growth_readings = []
     for metric in GROWTH_METRICS:
         reading = None
         if has_4_years:
@@ -344,9 +339,22 @@ def growth_rate_from_years(years: list):
                     yoy_readings.append(g)
             if yoy_readings:
                 reading = sum(yoy_readings) / len(yoy_readings)
-        if reading is not None:
-            growth_readings.append(reading)
+        result[metric] = reading
+    return result
 
+
+def growth_rate_from_years(years: list):
+    """Shared by stock-level and sector-level Growth Score: given a list
+    of up to 4 fiscal-year rows (oldest first, each a dict-like with the
+    4 GROWTH_METRICS), compute ONE growth reading PER METRIC (via
+    growth_readings_by_metric() above), then average whichever readings
+    were actually obtainable into one growth_rate. A stock/sector can
+    end up with a mix -- e.g. Revenue on 3-year CAGR while PAT falls back
+    to YoY-average because PAT was loss-making 3 years ago -- exactly
+    like the original method already tolerated a mix of available/
+    missing metrics. Returns None only if NOTHING is computable for any
+    metric."""
+    growth_readings = [v for v in growth_readings_by_metric(years).values() if v is not None]
     if not growth_readings:
         return None
     return sum(growth_readings) / len(growth_readings)
@@ -360,7 +368,7 @@ def compute_growth_rate(fundamentals: pd.DataFrame, as_of_date):
     return growth_rate_from_years(years)
 
 
-def sector_growth_rate(asset_ids: list, years_by_asset: dict):
+def sector_growth_rate(asset_ids: list, years_by_asset: dict, return_detail: bool = False):
     """Sector-level Growth Score input (Avdhoot's spec: 'sectoral values
     will be sum of the stock values'). Instead of averaging each stock's
     OWN growth rate, this sums each of the 4 metrics ACROSS every stock
@@ -371,7 +379,14 @@ def sector_growth_rate(asset_ids: list, years_by_asset: dict):
     exact same 3-year-CAGR-with-YoY-fallback method used at the stock
     level, just fed sector totals instead of one stock's own numbers.
     A stock missing a given metric/year is simply left out of that one
-    sum rather than zeroing it."""
+    sum rather than zeroing it.
+
+    FIX (Session 38): added return_detail -- when True, also returns the
+    per-metric dict (Revenue/EBIT/EBITDA/PAT growth, each computed the
+    same aggregate-sums-first way) so callers can store all 4 sector
+    growth figures, not just the one blended number. This is the same
+    "store the stable aggregate number instead of live-averaging on the
+    frontend" fix already applied to sector_pe."""
     # sums[offset][metric]: offset 1 = every stock's latest usable
     # fiscal year, 2 = the year before that, ..., 4 = 3 years before that
     # (4 offsets, not 3, to match MIN_GROWTH_YEARS' 3-year-CAGR need).
@@ -387,6 +402,8 @@ def sector_growth_rate(asset_ids: list, years_by_asset: dict):
                     sums[offset][metric] = (sums[offset][metric] or 0.0) + v
 
     sector_years = [sums[4], sums[3], sums[2], sums[1]]  # oldest-first, matches growth_rate_from_years' expectation
+    if return_detail:
+        return growth_readings_by_metric(sector_years)
     return growth_rate_from_years(sector_years)
 
 
@@ -585,7 +602,7 @@ def main():
     while True:
         resp = (
             supabase.table("assets")
-            .select("asset_id, ticker, sector_id, listed_date, sectors(name)")
+            .select("asset_id, ticker, sector_id, industry_id, listed_date, sectors(name)")
             .eq("asset_type", "equity")
             .eq("is_active", True)
             .eq("market", "india")
@@ -690,6 +707,7 @@ def main():
         growth_rate = growth_rate_from_years(years_by_asset[asset_id])
         rows.append({
             "asset_id": asset_id, "ticker": ticker, "sector_id": a.get("sector_id"),
+            "industry_id": a.get("industry_id"),
             "is_distressed": distressed, "growth_rate": growth_rate,
             "listed_date": a.get("listed_date"), **feature_row,
         })
@@ -1021,6 +1039,15 @@ def main():
 
             # 2. sector growth rate (raw, ranked into a score further below).
             sector_growth_raw = sector_growth_rate(asset_ids_in_sector, years_by_asset)
+            # FIX (Session 38): also capture the same per-metric breakdown
+            # (Revenue/EBIT/EBITDA/PAT growth %) that the frontend
+            # currently computes live by averaging each stock's OWN
+            # growth % -- a different, more outlier-prone method than
+            # this aggregate-sums-first approach, and the source of the
+            # near-zero-denominator bug flagged in Session 36 (see
+            # GrowthDeepdive.tsx). Stored below so every page can read
+            # ONE consistent set of 4 numbers instead of recomputing.
+            sector_growth_detail = sector_growth_rate(asset_ids_in_sector, years_by_asset, return_detail=True)
 
             # 3. sector aggregate P/E (raw, ranked into a score further below).
             # DECISION (Session 38 -- Avdhoot noticed Reliance's "sector P/E"
@@ -1050,6 +1077,10 @@ def main():
                 "sector_ml_score": sector_ml_score,
                 "sector_growth_raw": sector_growth_raw,
                 "sector_pe": sector_pe,
+                "sector_revenue_growth": sector_growth_detail.get("total_revenue"),
+                "sector_ebitda_growth": sector_growth_detail.get("ebitda"),
+                "sector_ebit_growth": sector_growth_detail.get("ebit"),
+                "sector_pat_growth": sector_growth_detail.get("net_income"),
             })
 
         sector_agg = pd.DataFrame(sector_rows)
@@ -1084,6 +1115,13 @@ def main():
                 # Supabase's client can't serialize a bare NaN.
                 "sector_growth_raw": None if pd.isna(srow["sector_growth_raw"]) else float(srow["sector_growth_raw"]),
                 "sector_pe": None if pd.isna(srow["sector_pe"]) else float(srow["sector_pe"]),
+                # NEW (Session 38): per-metric sector growth %, same
+                # aggregate-then-compute method as sector_growth_raw
+                # above, just one number per metric instead of blended.
+                "sector_revenue_growth": None if pd.isna(srow["sector_revenue_growth"]) else float(srow["sector_revenue_growth"]),
+                "sector_ebitda_growth": None if pd.isna(srow["sector_ebitda_growth"]) else float(srow["sector_ebitda_growth"]),
+                "sector_ebit_growth": None if pd.isna(srow["sector_ebit_growth"]) else float(srow["sector_ebit_growth"]),
+                "sector_pat_growth": None if pd.isna(srow["sector_pat_growth"]) else float(srow["sector_pat_growth"]),
             }, on_conflict="sector_id,run_date,formula_version").execute()
 
         print(f"Saved sector_scores for {len(sector_agg)} sectors under formula_version={formula_version}.")
@@ -1098,17 +1136,110 @@ def main():
             )
         return sector_agg
 
+    # Phase 3 (Session 39): industry-level twin of
+    # compute_and_save_sector_scores() above -- IDENTICAL methodology
+    # (cap-weighted P/E, aggregate-then-compute growth per metric, same
+    # market-cap-weighted ml_score), just grouped by industry_id instead
+    # of sector_id. This is the fix for "Gillette/HUL/Nestle shouldn't
+    # be treated as peers just because they're all Consumer Defensive" --
+    # industries are the finer-grained, more meaningful peer group.
+    #
+    # One methodology difference from sectors: industry_rank_score ranks
+    # an industry against OTHER INDUSTRIES IN THE SAME SECTOR, not
+    # market-wide -- comparing "Software" to "Household Products" the
+    # way sector_rank_score compares two whole sectors isn't meaningful
+    # the same way (see 150_add_industries.sql's own comment on this).
+    def compute_and_save_industry_scores(formula_version: str, overall_score_col: str):
+        industries_res = (
+            supabase.table("industries").select("industry_id, sector_id").eq("market", "india").execute()
+        )
+        sector_id_by_industry = {r["industry_id"]: r["sector_id"] for r in industries_res.data}
+
+        industry_ids = sorted(features_df["industry_id"].dropna().unique().tolist())
+        industry_rows = []
+        for industry_id in industry_ids:
+            group = features_df[features_df["industry_id"] == industry_id]
+            asset_ids_in_industry = group["asset_id"].tolist()
+
+            industry_ml_score = weighted_avg(group, "ml_rank_score")
+            industry_growth_raw = sector_growth_rate(asset_ids_in_industry, years_by_asset)
+            industry_growth_detail = sector_growth_rate(asset_ids_in_industry, years_by_asset, return_detail=True)
+
+            valid = group.dropna(subset=["market_cap", "Net_Income"])
+            valid = valid[(valid["market_cap"] > 0)]
+            total_cap = valid["market_cap"].sum()
+            total_net_income = valid["Net_Income"].sum()
+            industry_pe = (total_cap / total_net_income) if (len(valid) > 0 and total_net_income and total_net_income > 0) else None
+
+            industry_rows.append({
+                "industry_id": int(industry_id),
+                "sector_id": sector_id_by_industry.get(int(industry_id)),
+                "avg_truescore": weighted_avg(group, overall_score_col),
+                "stock_count": int(group[overall_score_col].count()),
+                "industry_ml_score": industry_ml_score,
+                "industry_growth_raw": industry_growth_raw,
+                "industry_pe": industry_pe,
+                "industry_revenue_growth": industry_growth_detail.get("total_revenue"),
+                "industry_ebitda_growth": industry_growth_detail.get("ebitda"),
+                "industry_ebit_growth": industry_growth_detail.get("ebit"),
+                "industry_pat_growth": industry_growth_detail.get("net_income"),
+            })
+
+        industry_agg = pd.DataFrame(industry_rows)
+        if industry_agg.empty:
+            print(f"No industries to score for formula_version={formula_version} -- skipping.")
+            return industry_agg
+
+        industry_agg["industry_growth_score"] = linear_rank_score(industry_agg["industry_growth_raw"])
+        industry_agg["inv_industry_pe"] = industry_agg["industry_pe"].apply(lambda x: -x if pd.notna(x) and x else None)
+        industry_agg["industry_valuation_score"] = linear_rank_score(industry_agg["inv_industry_pe"])
+
+        # industry_rank_score: ranked WITHIN each sector, not market-wide
+        # -- group by sector_id first, then rank each sector's own
+        # industries against each other.
+        raw_score = (
+            industry_agg["industry_ml_score"] + industry_agg["industry_growth_score"] + industry_agg["industry_valuation_score"]
+        ) / 3
+        industry_agg["industry_rank_score"] = (
+            raw_score.groupby(industry_agg["sector_id"]).transform(linear_rank_score)
+        )
+
+        for _, irow in industry_agg.iterrows():
+            supabase.table("industry_scores").upsert({
+                "industry_id": int(irow["industry_id"]),
+                "run_date": run_date,
+                "formula_version": formula_version,
+                "avg_truescore": irow["avg_truescore"],
+                "stock_count": int(irow["stock_count"]),
+                "industry_ml_score": irow["industry_ml_score"],
+                "industry_growth_score": irow["industry_growth_score"],
+                "industry_valuation_score": irow["industry_valuation_score"],
+                "industry_rank_score": irow["industry_rank_score"],
+                "industry_growth_raw": None if pd.isna(irow["industry_growth_raw"]) else float(irow["industry_growth_raw"]),
+                "industry_pe": None if pd.isna(irow["industry_pe"]) else float(irow["industry_pe"]),
+                "industry_revenue_growth": None if pd.isna(irow["industry_revenue_growth"]) else float(irow["industry_revenue_growth"]),
+                "industry_ebitda_growth": None if pd.isna(irow["industry_ebitda_growth"]) else float(irow["industry_ebitda_growth"]),
+                "industry_ebit_growth": None if pd.isna(irow["industry_ebit_growth"]) else float(irow["industry_ebit_growth"]),
+                "industry_pat_growth": None if pd.isna(irow["industry_pat_growth"]) else float(irow["industry_pat_growth"]),
+            }, on_conflict="industry_id,run_date,formula_version").execute()
+
+        print(f"Saved industry_scores for {len(industry_agg)} industries under formula_version={formula_version}.")
+        return industry_agg
+
     # v3: unchanged behavior/output, just now going through the shared
     # function -- same formula_version, same overall_score column as
     # always.
     compute_and_save_sector_scores(FORMULA_VERSION, "overall_score")
+    compute_and_save_industry_scores(FORMULA_VERSION, "overall_score")
     # v4: NEW -- was never written before this fix.
     compute_and_save_sector_scores(V4_FORMULA_VERSION, "overall_score_v4")
+    compute_and_save_industry_scores(V4_FORMULA_VERSION, "overall_score_v4")
     # v5: NEW -- this is the one the live frontend actually queries for
     # India (components/MarketSelector.tsx's formulaVersionForCountry),
     # so this call is what actually makes Sector Rank Score show up
     # again on /sectors and /sectors/[sectorId].
     compute_and_save_sector_scores(V5_FORMULA_VERSION, "overall_score_v5")
+    compute_and_save_industry_scores(V5_FORMULA_VERSION, "overall_score_v5")
 
 
 if __name__ == "__main__":
