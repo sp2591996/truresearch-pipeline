@@ -103,8 +103,20 @@ def main():
     print(f"Refreshing prices for {len(assets)} US equities/indices...")
 
     run_id = start_run("us_daily_prices")
-    ok_count = 0
     failed_symbols = []
+
+    # Session 39 (log-ingestion reduction, same fix as 05_daily_price_refresh.py):
+    # this used to call Supabase twice PER STOCK -- with 500+ US stocks, that's
+    # 1,000+ individual database requests per run, each logged separately.
+    # Fetching from Yahoo Finance still happens one symbol at a time (with the
+    # existing rate-limit delays/retries, unchanged below) -- but saves are now
+    # collected and sent to Supabase in CHUNKS of 50 at the end, cutting
+    # database requests by roughly 50x while keeping "one bad chunk doesn't
+    # wipe out the whole run" protection (just at chunk granularity instead of
+    # per-stock -- a failed chunk's ~50 stocks just get refreshed again next run).
+    live_price_rows = []
+    daily_bar_rows = []
+    asset_id_to_ticker = {}
 
     for i, a in enumerate(assets, 1):
         yf_symbol = a.get("yfinance_symbol")
@@ -127,44 +139,73 @@ def main():
             time.sleep(REQUEST_DELAY_SECONDS)
             continue
 
-        try:
-            supabase.table("live_prices").upsert({
-                "asset_id": asset_id,
-                "price": live["price"],
-                "prev_close": live["prev_close"],
-                "day_change_pct": live["day_change_pct"],
-            }, on_conflict="asset_id").execute()
+        asset_id_to_ticker[asset_id] = ticker
+        live_price_rows.append({
+            "asset_id": asset_id,
+            "price": live["price"],
+            "prev_close": live["prev_close"],
+            "day_change_pct": live["day_change_pct"],
+        })
 
+        hist = get_price_history(yf_symbol, period="5d", interval="1d")
+        if hist.empty:
+            time.sleep(RETRY_DELAY_SECONDS)
             hist = get_price_history(yf_symbol, period="5d", interval="1d")
-            if hist.empty:
-                time.sleep(RETRY_DELAY_SECONDS)
-                hist = get_price_history(yf_symbol, period="5d", interval="1d")
-            if not hist.empty:
-                last_row = hist.iloc[-1]
-                bar_date = hist.index[-1].strftime("%Y-%m-%d")
-                supabase.table("prices_daily").upsert({
-                    "asset_id": asset_id,
-                    "date": bar_date,
-                    "open": float(last_row["Open"]) if not pd_isna(last_row["Open"]) else None,
-                    "high": float(last_row["High"]) if not pd_isna(last_row["High"]) else None,
-                    "low": float(last_row["Low"]) if not pd_isna(last_row["Low"]) else None,
-                    "close": float(last_row["Close"]) if not pd_isna(last_row["Close"]) else None,
-                    "volume": int(last_row["Volume"]) if not pd_isna(last_row["Volume"]) else None,
-                }, on_conflict="asset_id,date").execute()
-        except Exception as e:
-            # Same "one bad save shouldn't kill the whole run" protection
-            # 05_daily_price_refresh.py's Session 30 fix added.
-            failed_symbols.append(f"{ticker} (save failed: {e})")
-            time.sleep(REQUEST_DELAY_SECONDS)
-            continue
+        if not hist.empty:
+            last_row = hist.iloc[-1]
+            bar_date = hist.index[-1].strftime("%Y-%m-%d")
+            daily_bar_rows.append({
+                "asset_id": asset_id,
+                "date": bar_date,
+                "open": float(last_row["Open"]) if not pd_isna(last_row["Open"]) else None,
+                "high": float(last_row["High"]) if not pd_isna(last_row["High"]) else None,
+                "low": float(last_row["Low"]) if not pd_isna(last_row["Low"]) else None,
+                "close": float(last_row["Close"]) if not pd_isna(last_row["Close"]) else None,
+                "volume": int(last_row["Volume"]) if not pd_isna(last_row["Volume"]) else None,
+            })
 
-        ok_count += 1
         if i % 20 == 0:
-            print(f"  [{i}/{len(assets)}] done...")
+            print(f"  [{i}/{len(assets)}] fetched...")
         time.sleep(REQUEST_DELAY_SECONDS)
 
-    finish_run(run_id, ok_count, failed_symbols)
-    print(f"\nDone. {ok_count}/{len(assets)} ok. Failed: {failed_symbols if failed_symbols else 'none'}")
+    CHUNK_SIZE = 50
+
+    def _chunked(lst):
+        for start in range(0, len(lst), CHUNK_SIZE):
+            yield lst[start:start + CHUNK_SIZE]
+
+    save_failed_tickers = set()
+
+    live_chunks = list(_chunked(live_price_rows))
+    for n, chunk in enumerate(live_chunks, 1):
+        try:
+            supabase.table("live_prices").upsert(chunk, on_conflict="asset_id").execute()
+        except Exception as e:
+            # Same "one bad save shouldn't kill the whole run" protection
+            # 05_daily_price_refresh.py's Session 30 fix added, now at
+            # chunk granularity instead of per-stock.
+            for row in chunk:
+                t = asset_id_to_ticker.get(row["asset_id"], f"asset_id={row['asset_id']}")
+                save_failed_tickers.add(f"{t} (live_prices save failed: {e})")
+            continue
+        print(f"  live_prices chunk {n}/{len(live_chunks)} saved ({len(chunk)} rows)")
+
+    bar_chunks = list(_chunked(daily_bar_rows))
+    for n, chunk in enumerate(bar_chunks, 1):
+        try:
+            supabase.table("prices_daily").upsert(chunk, on_conflict="asset_id,date").execute()
+        except Exception as e:
+            for row in chunk:
+                t = asset_id_to_ticker.get(row["asset_id"], f"asset_id={row['asset_id']}")
+                save_failed_tickers.add(f"{t} (prices_daily save failed: {e})")
+            continue
+        print(f"  prices_daily chunk {n}/{len(bar_chunks)} saved ({len(chunk)} rows)")
+
+    ok_count = len(asset_id_to_ticker) - len({t.split(" (")[0] for t in save_failed_tickers})
+    all_failed = failed_symbols + sorted(save_failed_tickers)
+
+    finish_run(run_id, ok_count, all_failed)
+    print(f"\nDone. {ok_count}/{len(assets)} ok. Failed: {all_failed if all_failed else 'none'}")
 
 
 def pd_isna(v) -> bool:

@@ -129,8 +129,32 @@ def main():
         print(f"Refreshing prices for {len(assets)} equities...")
 
     run_id = start_run("daily_prices")
-    ok_count = 0
     failed_symbols = []
+
+    # Session 39 (log-ingestion reduction): this used to call Supabase
+    # twice PER STOCK (one live_prices upsert + one prices_daily upsert),
+    # so ~1,000 stocks meant ~2,000 individual database requests every
+    # run -- each one logged separately by Supabase, and this script
+    # fires every 15 minutes during market hours. That was confirmed
+    # (via PROJECT_STATE.md) to be the single biggest driver of a
+    # 1,251%-over-limit Log Ingestion overage on Avdhoot's Supabase
+    # project, dwarfing the tiny 1-4-row commodity/index refresh jobs.
+    #
+    # Fix: the yfinance FETCH still happens one stock at a time (that's
+    # an external API call, can't be bundled) -- but instead of saving
+    # each stock immediately, results are collected into two lists and
+    # sent to Supabase in CHUNKS of 50 at the end, via a single
+    # .upsert() call per chunk instead of per stock. This cuts the
+    # number of database requests by roughly 50x (~2,000 -> ~40 per
+    # run), while keeping most of the original "one bad stock/chunk
+    # doesn't wipe out the whole run" protection: a chunk of 50 failing
+    # only affects those 50 stocks for this cycle, and they get
+    # refreshed again on the next run 15 minutes later.
+    live_price_rows = []
+    daily_bar_rows = []
+    asset_id_to_ticker = {}  # direct lookup for error messages -- NOT position-based,
+                             # since some assets get skipped above (no yf_symbol / fetch
+                             # failure), which would otherwise misalign a list-position match
 
     for i, a in enumerate(assets, 1):
         yf_symbol = a.get("yfinance_symbol")
@@ -145,41 +169,73 @@ def main():
             failed_symbols.append(ticker)
             continue
 
-        try:
-            supabase.table("live_prices").upsert({
-                "asset_id": asset_id,
-                "price": live["price"],
-                "prev_close": live["prev_close"],
-                "day_change_pct": live["day_change_pct"],
-            }, on_conflict="asset_id").execute()
+        asset_id_to_ticker[asset_id] = ticker
 
-            hist = get_price_history(yf_symbol, period="5d", interval="1d")
-            if not hist.empty:
-                last_row = hist.iloc[-1]
-                bar_date = hist.index[-1].strftime("%Y-%m-%d")
-                supabase.table("prices_daily").upsert({
-                    "asset_id": asset_id,
-                    "date": bar_date,
-                    "open": float(last_row["Open"]) if not pd_isna(last_row["Open"]) else None,
-                    "high": float(last_row["High"]) if not pd_isna(last_row["High"]) else None,
-                    "low": float(last_row["Low"]) if not pd_isna(last_row["Low"]) else None,
-                    "close": float(last_row["Close"]) if not pd_isna(last_row["Close"]) else None,
-                    "volume": int(last_row["Volume"]) if not pd_isna(last_row["Volume"]) else None,
-                }, on_conflict="asset_id,date").execute()
+        live_price_rows.append({
+            "asset_id": asset_id,
+            "price": live["price"],
+            "prev_close": live["prev_close"],
+            "day_change_pct": live["day_change_pct"],
+        })
+
+        hist = get_price_history(yf_symbol, period="5d", interval="1d")
+        if not hist.empty:
+            last_row = hist.iloc[-1]
+            bar_date = hist.index[-1].strftime("%Y-%m-%d")
+            daily_bar_rows.append({
+                "asset_id": asset_id,
+                "date": bar_date,
+                "open": float(last_row["Open"]) if not pd_isna(last_row["Open"]) else None,
+                "high": float(last_row["High"]) if not pd_isna(last_row["High"]) else None,
+                "low": float(last_row["Low"]) if not pd_isna(last_row["Low"]) else None,
+                "close": float(last_row["Close"]) if not pd_isna(last_row["Close"]) else None,
+                "volume": int(last_row["Volume"]) if not pd_isna(last_row["Volume"]) else None,
+            })
+
+        if i % 20 == 0:
+            print(f"  [{i}/{len(assets)}] fetched...")
+
+    CHUNK_SIZE = 50
+
+    def _chunked(lst):
+        for start in range(0, len(lst), CHUNK_SIZE):
+            yield lst[start:start + CHUNK_SIZE]
+
+    ok_count = 0
+    save_failed_tickers = set()
+
+    live_chunks = list(_chunked(live_price_rows))
+    for n, chunk in enumerate(live_chunks, 1):
+        try:
+            supabase.table("live_prices").upsert(chunk, on_conflict="asset_id").execute()
         except Exception as e:
             # A database-side hiccup (e.g. a transient 504 Gateway
-            # Timeout from Supabase) on THIS one stock shouldn't take
-            # down the other 499 -- skip it and keep going, same as a
-            # yfinance-side failure above.
-            failed_symbols.append(f"{ticker} (save failed: {e})")
+            # Timeout from Supabase) on THIS chunk shouldn't take down
+            # the other chunks -- skip it and keep going, same
+            # protection as before, just at chunk granularity instead
+            # of per-stock.
+            for row in chunk:
+                t = asset_id_to_ticker.get(row["asset_id"], f"asset_id={row['asset_id']}")
+                save_failed_tickers.add(f"{t} (live_prices save failed: {e})")
             continue
+        print(f"  live_prices chunk {n}/{len(live_chunks)} saved ({len(chunk)} rows)")
 
-        ok_count += 1
-        if i % 20 == 0:
-            print(f"  [{i}/{len(assets)}] done...")
+    bar_chunks = list(_chunked(daily_bar_rows))
+    for n, chunk in enumerate(bar_chunks, 1):
+        try:
+            supabase.table("prices_daily").upsert(chunk, on_conflict="asset_id,date").execute()
+        except Exception as e:
+            for row in chunk:
+                t = asset_id_to_ticker.get(row["asset_id"], f"asset_id={row['asset_id']}")
+                save_failed_tickers.add(f"{t} (prices_daily save failed: {e})")
+            continue
+        print(f"  prices_daily chunk {n}/{len(bar_chunks)} saved ({len(chunk)} rows)")
 
-    finish_run(run_id, ok_count, failed_symbols)
-    print(f"\nDone. {ok_count}/{len(assets)} ok. Failed: {failed_symbols if failed_symbols else 'none'}")
+    ok_count = len(asset_id_to_ticker) - len({t.split(" (")[0] for t in save_failed_tickers})
+    all_failed = failed_symbols + sorted(save_failed_tickers)
+
+    finish_run(run_id, ok_count, all_failed)
+    print(f"\nDone. {ok_count}/{len(assets)} ok. Failed: {all_failed if all_failed else 'none'}")
 
 
 def pd_isna(v) -> bool:
