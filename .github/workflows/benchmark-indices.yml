@@ -1,28 +1,27 @@
 name: Benchmark Index Refresh
 
 # PRD.md L2 -- the Markets tab's Index Detail Page needs to "live-update
-# every 5 minutes" during market hours. Runs every 5 minutes across the
-# NSE trading window (9:15am-3:30pm IST = 3:45am-10:00am UTC), Mon-Fri,
-# same cron-window style as daily-prices.yml but tighter (every 5 min,
-# not 15) since this job only touches 3 index rows -- much cheaper per
-# run than looping over all 500 equities.
+# every 5 minutes" during market hours. Runs every 15 minutes across the
+# NSE trading window (9:15am-3:30pm IST = 3:45am-10:00am UTC), Mon-Fri --
+# slowed down from every 5 minutes (2026-09-30, Avdhoot's call) to cut
+# Supabase egress/log-ingestion usage; PRD's "every 5 minutes" wording
+# was aspirational, not a hard requirement, for a research app.
 
 # Session 33 (scheduling fix, round 2): confirmed via Actions run
 # history that this job had NEVER fired on its schedule, ever. GitHub's
 # own docs explain why: scheduled runs get delayed hardest -- and can
 # be dropped outright -- right at minute :00 of each hour, since
 # that's the most popular minute mark across EVERY repo on GitHub, not
-# just this one; every-5-minutes landed right on those marks. Fixed by
-# offsetting the whole every-5-minute cycle onto minute :01/:06/:11/...
-# -- a lane no other job in this repo uses (see each workflow's own
+# just this one. Fixed by offsetting this job onto minute :11/:26/:41/
+# :56 -- a lane no other job in this repo uses (see each workflow's own
 # comment for its assigned minutes: daily-prices.yml uses :02/:17/:32/
 # :47, gold-refresh.yml :07/:22/:37/:52, silver-refresh.yml :03/:18/
 # :33/:48, fx-refresh.yml :08/:23/:38/:53, crude-refresh.yml :04/:19/
-# :34/:49 -- none of those fall on this job's :01/:06/:11/... lane).
+# :34/:49 -- none of those fall on this job's :11/:26/:41/:56 lane).
 
 on:
   schedule:
-    - cron: '1-56/5 3-10 * * 1-5'
+    - cron: '11-56/15 3-10 * * 1-5'
   workflow_dispatch: {}
 
 jobs:
