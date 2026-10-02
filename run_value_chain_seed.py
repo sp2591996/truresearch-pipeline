@@ -54,13 +54,15 @@ def upsert_node(supabase, cache, *, parent_id, root_sector_id, node_type, name, 
     return node_id
 
 
-def set_financials(supabase, node_id, *, period, as_of, revenue, pct, past_cagr, next_growth, source, notes):
+def set_financials(supabase, node_id, *, period, as_of, revenue, pct, past_cagr, next_growth, source, notes,
+                    market_size_min=None, market_size_max=None):
     supabase.table("value_chain_node_financials").upsert(
         {
             "node_id": node_id, "period_label": period, "as_of_date": as_of,
             "revenue": revenue, "revenue_pct_of_company_total": pct,
             "past_3yr_cagr": past_cagr, "next_3yr_projected_growth": next_growth,
             "data_source": source, "notes": notes,
+            "market_size_min": market_size_min, "market_size_max": market_size_max,
         },
         on_conflict="node_id,period_label",
     ).execute()
@@ -113,12 +115,36 @@ def main():
                         company_totals[c["ticker"]] += c["revenue"]
 
             for s_i, stage in enumerate(industry["stages"], 1):
+                # A stage can optionally give a manual total-market-size range
+                # (market_size_min/max) -- meant to cover the WHOLE market,
+                # including unlisted/unorganized players the "companies" list
+                # below doesn't individually model. When present, the stage
+                # node is marked market_size_is_manual=True so 160_calculate_
+                # value_chain_index.py's rollup never overwrites it with a
+                # sum-of-children figure; `revenue` on its financials row is
+                # set to the range's midpoint (what rollups to the Industry
+                # above use), with the full range in market_size_min/max for
+                # the frontend to display as "Rs a - b Cr".
+                has_market_size = stage.get("market_size_min") is not None and stage.get("market_size_max") is not None
                 stage_id = upsert_node(
                     supabase, cache, parent_id=industry_id, root_sector_id=root_sector_id,
                     node_type="value_chain_stage", name=stage["name"], slug=stage["slug"],
                     display_order=stage.get("display_order", s_i),
+                    market_size_is_manual=has_market_size,
                 )
                 print(f"  [{stage['name']}] (node_id={stage_id})")
+
+                if has_market_size:
+                    lo, hi = stage["market_size_min"], stage["market_size_max"]
+                    set_financials(
+                        supabase, stage_id,
+                        period=module.PERIOD, as_of=module.AS_OF,
+                        revenue=round((lo + hi) / 2, 2), pct=None,
+                        past_cagr=stage.get("market_size_past_cagr"), next_growth=stage.get("market_size_next_growth"),
+                        source=stage.get("market_size_source", "claude_estimate"), notes=stage.get("market_size_notes", ""),
+                        market_size_min=lo, market_size_max=hi,
+                    )
+                    print(f"    [market size] Rs {lo:,} - {hi:,} Cr (midpoint {round((lo + hi) / 2, 2):,})")
 
                 for i, c in enumerate(stage["companies"], 1):
                     asset_id = asset_by_ticker.get(c["ticker"]) if c.get("ticker") else None

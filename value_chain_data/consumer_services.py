@@ -639,6 +639,24 @@ INDUSTRIES.append({
         {
             "slug": "food-delivery",
             "name": "Food Delivery",
+            # Market size range covers the WHOLE food delivery market
+            # (every listed company below PLUS smaller apps/regional
+            # players/ONDC-network food delivery not individually
+            # modeled) -- NOT a sourced figure, Claude's own bottom-up
+            # estimate: known listed total (Eternal 9,418 + Swiggy
+            # 6,361.72 + Rapido 339.7 = 16,119.42 Cr) plus a ~5-12%
+            # uplift for the long tail. Unlike quick commerce/retail,
+            # India's food delivery market is very heavily platform-
+            # mediated (little truly "unorganized" digital ordering),
+            # so the uplift here is modest. No reliable third-party
+            # revenue-basis (not GMV) market-size source was found in a
+            # web search -- GMV-based reports (e.g. Redseer's ~$13bn/
+            # ~Rs 1.1 lakh Cr by 2025 forecast) use a different unit
+            # (order value, not platform revenue) and aren't comparable
+            # to the Cr figures used throughout this file.
+            "market_size_min": 17000, "market_size_max": 18500,
+            "market_size_past_cagr": 19.0, "market_size_next_growth": 16.0,
+            "market_size_notes": "Claude estimate, revenue-basis (not GMV) -- Rs 17,000-18,500 Cr range. Built bottom-up from the known listed total (Eternal + Swiggy + Rapido delivery = ~Rs 16,119 Cr) plus a 5-12% uplift for smaller/regional apps and ONDC-network food delivery not individually modeled below. No reliable third-party revenue-basis market-size source found -- GMV-based industry reports (e.g. Redseer) use order value, a different and larger unit, not directly comparable. Replace with a sourced figure if a trustworthy one surfaces.",
             "companies": [
                 {
                     "slug": "eternal-food-delivery", "name": "Eternal (Zomato) — Food Delivery", "ticker": "ETERNAL",
@@ -651,20 +669,35 @@ INDUSTRIES.append({
                     "notes": "FY25 segment revenue (not GOV) Rs 6,361.72 Cr -- Swiggy's Q4 FY25 Shareholder Letter, cross-checked against stockanalysis.com's segment summary and entrackr.com's coverage of the same filing. Segment-level 3yr history not disclosed. Next-3yr is a Claude estimate (slightly below Eternal's given Swiggy's smaller scale/market share in this segment).",
                 },
                 {
-                    "slug": "rapido-food-delivery", "name": "Rapido — Food Delivery", "ticker": None,
-                    "revenue": None, "past_cagr": None, "next_growth": None, "source": "claude_estimate",
-                    "notes": "Unlisted. FY25 total income crossed ~Rs 1,000 Cr (ride-hailing + delivery combined) per press reports; delivery-only revenue not separately disclosed as of this writing -- left blank rather than guessed.",
+                    "slug": "rapido-food-delivery", "name": "Rapido — Delivery (Food + Parcel)", "ticker": None,
+                    "revenue": 339.7, "past_cagr": None, "next_growth": 30.0, "source": "sourced",
+                    "notes": "FY25 'Delivery services' revenue Rs 339.7 Cr, +28% YoY -- medianama.com's coverage of Rapido's FY25 MCA filings, cross-checked against franchiseindia.com (Rs 340 Cr, same filing). Unlisted. IMPORTANT CAVEAT: this is Rapido's combined food + parcel delivery revenue -- the company doesn't disclose a food-only split, so this slightly overstates food delivery specifically. Delivery overtook ride-hailing as Rapido's largest revenue line in FY25. Next-3yr is a Claude estimate.",
                 },
                 {
                     "slug": "food-delivery-others", "name": "Others / Unorganized", "ticker": None, "node_type": "unlisted_other",
-                    "revenue": None, "past_cagr": None, "next_growth": None, "source": "claude_estimate",
-                    "notes": "Placeholder for smaller/local food delivery players not individually tracked -- needs a market-size estimate from Avdhoot or a further research pass.",
+                    "revenue": 500, "past_cagr": None, "next_growth": 12.0, "source": "claude_estimate",
+                    "notes": "Claude estimate, not sourced -- Rs 500 Cr placeholder for smaller/regional food delivery apps and ONDC-network (Open Network for Digital Commerce) food delivery not individually tracked. Replace with a real figure if Avdhoot has a better source or wants a dedicated research pass.",
                 },
             ],
         },
         {
             "slug": "quick-commerce",
             "name": "Quick Commerce",
+            # Same logic as Food Delivery above -- the 3 listed players
+            # already sum to Rs 18,445.58 Cr; this range adds room for
+            # other real but unmodeled entrants (Flipkart Minutes,
+            # Amazon Now, BigBasket/Tata's BBnow, JioMart, Swish, etc.)
+            # -- all real, revenue-generating, but not individually
+            # researched yet. CareEdge/industry coverage puts total
+            # quick-commerce ORDER VALUE (GMV) at ~Rs 64,000 Cr in FY25
+            # -- cited here only as directional context, NOT used
+            # directly, since GMV and platform revenue are different
+            # units (quick commerce is inventory-led, so revenue is
+            # closer to GMV than food delivery's commission-based
+            # revenue is, but the two still aren't the same figure).
+            "market_size_min": 20000, "market_size_max": 23000,
+            "market_size_past_cagr": 85.0, "market_size_next_growth": 42.0,
+            "market_size_notes": "Claude estimate, revenue-basis -- Rs 20,000-23,000 Cr range. Known listed total (Blinkit + Instamart + Zepto) is already Rs 18,445.58 Cr; this range adds headroom for other real quick-commerce entrants not individually modeled (Flipkart Minutes, Amazon Now, BigBasket/BBnow, JioMart, Swish, etc.). CareEdge industry coverage cites ~Rs 64,000 Cr in FY25 ORDER VALUE (GMV) industry-wide -- noted here for context only, not used directly, since GMV and platform revenue are different units. Replace with a sourced figure if a trustworthy revenue-basis number surfaces.",
             "companies": [
                 {
                     "slug": "eternal-blinkit", "name": "Eternal — Blinkit", "ticker": "ETERNAL",
@@ -678,8 +711,8 @@ INDUSTRIES.append({
                 },
                 {
                     "slug": "zepto-quick-commerce", "name": "Zepto", "ticker": None,
-                    "revenue": 11110, "past_cagr": None, "next_growth": 30.0, "source": "claude_estimate", "pct": 1.0,
-                    "notes": "Unlisted, pure-play quick commerce -- FY25 revenue ~Rs 11,110 Cr per press reports (Entrackr/Business Standard), not an audited figure TrueResearch has independently verified. pct set to 1.0 explicitly (quick commerce is effectively Zepto's whole business) since there's no ticker for the auto-compute to key off. Next-3yr is a Claude estimate.",
+                    "revenue": 11110, "past_cagr": None, "next_growth": 30.0, "source": "sourced", "pct": 1.0,
+                    "notes": "FY25 revenue Rs 11,110 Cr, 2.5x YoY -- entrackr.com's coverage of Zepto's FY25 filings (confirmed as actual revenue from operations, not GMV -- quick commerce is an inventory-led model where the platform books the full sale value as revenue, unlike food delivery's commission-based revenue, which is why this is a large number relative to Blinkit/Instamart despite a similar operating scale). Unlisted. pct set to 1.0 explicitly (quick commerce is effectively Zepto's whole business) since there's no ticker for the auto-compute to key off. Next-3yr is a Claude estimate.",
                 },
             ],
         },
