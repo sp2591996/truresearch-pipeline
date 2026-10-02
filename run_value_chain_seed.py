@@ -13,8 +13,11 @@ migration scripts hard to find. Going forward:
     not), never duplicates.
 
 Currently wired up: value_chain_data/consumer_services.py (Consumer
-Services sector, India). More sector data files can be added to the
-SECTOR_DATA_MODULES list below as other sectors get built out.
+Services sector, India) -- which now ALSO covers Food Delivery &
+Quick Commerce (folded in here round 5, replacing the old standalone
+159_seed_value_chain_pilot_food_delivery.py script -- see
+consumer_services.py's header). More sector data files can be added
+to the SECTOR_DATA_MODULES list below as other sectors get built out.
 
 Run manually any time the data files change:
     python run_value_chain_seed.py
@@ -79,7 +82,10 @@ def main():
         # now sit under a "stages" layer (value_chain_stage nodes) inside
         # each industry, not directly under the industry -- see
         # value_chain_data/consumer_services.py's header for why.
-        tickers = sorted({c["ticker"] for ind in module.INDUSTRIES for stage in ind["stages"] for c in stage["companies"]})
+        # Some company entries are unlisted (ticker=None, e.g. Rapido,
+        # Zepto, the "Others/Unorganized" bucket) -- filter those out of
+        # the ticker lookup rather than querying assets for "None".
+        tickers = sorted({c["ticker"] for ind in module.INDUSTRIES for stage in ind["stages"] for c in stage["companies"] if c.get("ticker")})
         assets = supabase.table("assets").select("asset_id, ticker").in_("ticker", tickers).eq("market", MARKET).execute().data
         asset_by_ticker = {a["ticker"]: a["asset_id"] for a in assets}
         missing = [t for t in tickers if t not in asset_by_ticker]
@@ -103,7 +109,8 @@ def main():
             company_totals = defaultdict(float)
             for stage in industry["stages"]:
                 for c in stage["companies"]:
-                    company_totals[c["ticker"]] += c["revenue"]
+                    if c.get("ticker") and c.get("revenue") is not None:
+                        company_totals[c["ticker"]] += c["revenue"]
 
             for s_i, stage in enumerate(industry["stages"], 1):
                 stage_id = upsert_node(
@@ -114,24 +121,24 @@ def main():
                 print(f"  [{stage['name']}] (node_id={stage_id})")
 
                 for i, c in enumerate(stage["companies"], 1):
-                    asset_id = asset_by_ticker.get(c["ticker"])
+                    asset_id = asset_by_ticker.get(c["ticker"]) if c.get("ticker") else None
                     node_id = upsert_node(
                         supabase, cache, parent_id=stage_id, root_sector_id=root_sector_id,
-                        node_type="company", name=c["name"], slug=c["slug"], asset_id=asset_id,
+                        node_type=c.get("node_type", "company"), name=c["name"], slug=c["slug"], asset_id=asset_id,
                         display_order=i,
                     )
                     pct = c.get("pct")
-                    if pct is None:
+                    if pct is None and c.get("ticker") and c.get("revenue") is not None:
                         total = company_totals[c["ticker"]]
                         pct = round(c["revenue"] / total, 4) if total else None
                     set_financials(
                         supabase, node_id,
                         period=module.PERIOD, as_of=module.AS_OF,
-                        revenue=c["revenue"], pct=pct,
+                        revenue=c.get("revenue"), pct=pct,
                         past_cagr=c.get("past_cagr"), next_growth=c.get("next_growth"),
                         source=c.get("source", "claude_estimate"), notes=c.get("notes", ""),
                     )
-                    print(f"    {c['name']} (node_id={node_id}, revenue={c['revenue']}, pct={pct})")
+                    print(f"    {c['name']} (node_id={node_id}, revenue={c.get('revenue')}, pct={pct})")
 
     print("\nDone. Run 160_calculate_value_chain_index.py next to roll these up and recompute the Index.")
 

@@ -1,6 +1,16 @@
 """
 159_seed_value_chain_pilot_food_delivery.py
 -------------------------------------------------------------------
+** DEPRECATED (round 5) -- DO NOT RUN THIS SCRIPT. **
+Food Delivery & Quick Commerce has been folded into
+value_chain_data/consumer_services.py and is now seeded by the one
+shared run_value_chain_seed.py, same as every other industry -- with
+a proper stages layer PLUS 3 Swiggy segments this pilot never had
+(Scootsy, Dineout, Genie) and Eternal's Hyperpure moved in alongside
+Scootsy. Kept only for history/reference. Run run_value_chain_seed.py
+instead.
+-------------------------------------------------------------------
+
 Pilot Value Chain tree for Food Delivery & Quick Commerce, built from
 real FY2025 public filings (sources noted inline) -- for Avdhoot to
 review/correct before this pattern is repeated across other sectors.

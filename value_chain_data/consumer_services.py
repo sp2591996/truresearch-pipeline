@@ -55,25 +55,54 @@ PERIOD / AS_OF below apply to every entry currently in this file (all
 FY2025 data so far) -- bump these if a later entry uses a different
 period.
 
-Known, deliberate exclusion (Restaurants industry, see Avdhoot's own
-example when asking for stages -- "Procurement (major player here is
-Eternal)"): Eternal Ltd (formerly Zomato) is NOT added as a Procurement-
-stage company here, even though its Hyperpure B2B supply business does
-sell to restaurants. Eternal's full consolidated revenue is already
-modeled as a company node under the separate Food Delivery / Quick
-Commerce industry (159_seed_value_chain_pilot_food_delivery.py). Adding
-it again here, under Restaurants, would double-count its revenue when
-160_calculate_value_chain_index.py rolls up to the Consumer Services
-sector total -- the same company's revenue summed into two different
-branches of one tree. If Hyperpure ever discloses its OWN standalone
-revenue (separate from Eternal's food-delivery/quick-commerce segments),
-that figure could be added here as its own node without double-counting
--- it hasn't been found disclosed at that granularity, so it's left out
-rather than guessed. Likewise, restaurant-discovery/review platforms
-(Zomato/Swiggy's review-and-discovery function) aren't a separately
-disclosed, separately revenue-bearing business -- it's a feature of the
-same Food Delivery companies already modeled elsewhere, not a distinct
-node.
+Round 5 -- Food Delivery & Quick Commerce industry folded in here.
+Previously this industry was seeded by a standalone one-off script
+(159_seed_value_chain_pilot_food_delivery.py, now superseded/kept only
+for history) with just 2 stages (Food Delivery, Quick Commerce) and no
+"stages" structure at all. Two things prompted rebuilding it here,
+properly, as part of this one reusable data file:
+  1. Avdhoot's standing complaint about one-off numbered scripts
+     piling up -- folding this industry into value_chain_data/ means
+     NO industry needs its own script anymore, including this one.
+  2. Researching Swiggy's full FY25 segment disclosure (for the "do
+     this for all 500 companies" pass) surfaced 3 real, disclosed
+     segments that were missing entirely: "Supply Chain and
+     Distribution" (Scootsy, Rs 6,418 Cr -- B2B logistics, actually
+     BIGGER than Swiggy's own Food Delivery segrment), "Out of Home
+     Consumption" (Dineout, Rs 238 Cr), and "Platform Innovations"
+     (Genie + others, Rs 88 Cr). Source: Swiggy's Q4 FY25 Shareholder
+     Letter / stockanalysis.com segment summary, cross-checked against
+     entrackr.com's coverage of the same filing -- both show Food
+     Delivery 6,361.72 + Out of Home 238 + Quick Commerce 2,129.58 +
+     Supply Chain 6,418 + Platform Innovations 88 = ~15,235 Cr against
+     a disclosed total of ~15,226.76 Cr (clean, ~0.06% reconciliation
+     gap -- not a concern).
+  Eternal's Hyperpure (Procurement & B2B Supply, Rs 6,196 Cr) has
+  ALSO been MOVED here (out of the Restaurants industry, where it
+  briefly sat) into a new shared "B2B Supply Chain & Logistics" stage
+  alongside Scootsy -- the two are the same kind of business (a food
+  platform's own B2B logistics/distribution arm), so grouping them
+  together is the more coherent value-chain read, per Avdhoot's
+  explicit choice. Hyperpure's slug (hyperpure-eternal) is kept
+  unchanged so its existing node_id/financials history carries over --
+  only its parent stage changes.
+  Because every Eternal segment (Food Delivery, Blinkit, Hyperpure)
+  and every Swiggy segment (Food Delivery, Instamart, Scootsy,
+  Dineout, Genie) now sits within this SAME industry, revenue_pct_of_
+  company_total is left to the runner's auto-compute (sum of same-
+  ticker entries within this industry) rather than given explicit
+  overrides -- the auto-compute denominator (sum of all disclosed
+  segments) is now the right one, since nothing for either company
+  lives in a different industry anymore.
+  Restaurant-discovery/review platforms (Zomato/Swiggy's review-and-
+  discovery function) remain excluded -- not a separately disclosed,
+  separately revenue-bearing business, just a feature of the same Food
+  Delivery companies already modeled elsewhere.
+
+Company entries can optionally set "node_type" (default "company") --
+used for "unlisted_other" placeholder nodes (e.g. "Others /
+Unorganized" buckets) -- and can omit "ticker" entirely for an
+unlisted/unorganized player with no asset_id to resolve.
 """
 
 PERIOD = "FY2025"
@@ -280,8 +309,6 @@ INDUSTRIES.append({
     "slug": "restaurants",
     "name": "Restaurants",
     "display_order": 6,
-    # See this file's top docstring for why a Procurement stage
-    # (Hyperpure/Eternal) is deliberately NOT included here.
     "stages": [
         {
             "slug": "quick-service-restaurants",
@@ -598,6 +625,93 @@ INDUSTRIES.append({
                     "slug": "tbotek", "name": "TBO Tek (B2B travel distribution)", "ticker": "TBOTEK",
                     "revenue": 1737.0, "past_cagr": 25.0, "next_growth": 22.0, "source": "sourced", "pct": 1.0,
                     "notes": "FY25 revenue from operations Rs 1,737 Cr, +25% YoY -- official Q4/FY25 earnings. Segment split (Hotels & Ancillaries vs Air) not disclosed, described only qualitatively. Next-3yr is a Claude estimate.",
+                },
+            ],
+        },
+    ],
+})
+
+INDUSTRIES.append({
+    "slug": "food-quick-commerce",
+    "name": "Food Delivery & Quick Commerce",
+    "display_order": 1,
+    "stages": [
+        {
+            "slug": "food-delivery",
+            "name": "Food Delivery",
+            "companies": [
+                {
+                    "slug": "eternal-food-delivery", "name": "Eternal (Zomato) — Food Delivery", "ticker": "ETERNAL",
+                    "revenue": 9418, "past_cagr": None, "next_growth": 20.0, "source": "sourced",
+                    "notes": "FY25 'Adjusted Revenue' Rs 9,418 Cr -- Eternal's FY25 annual report segment disclosure (via medianama.com summary). Segment-level 3yr history not disclosed, left blank rather than guessed. Next-3yr is a Claude estimate.",
+                },
+                {
+                    "slug": "swiggy-food-delivery", "name": "Swiggy — Food Delivery", "ticker": "SWIGGY",
+                    "revenue": 6361.72, "past_cagr": None, "next_growth": 16.0, "source": "sourced",
+                    "notes": "FY25 segment revenue (not GOV) Rs 6,361.72 Cr -- Swiggy's Q4 FY25 Shareholder Letter, cross-checked against stockanalysis.com's segment summary and entrackr.com's coverage of the same filing. Segment-level 3yr history not disclosed. Next-3yr is a Claude estimate (slightly below Eternal's given Swiggy's smaller scale/market share in this segment).",
+                },
+                {
+                    "slug": "rapido-food-delivery", "name": "Rapido — Food Delivery", "ticker": None,
+                    "revenue": None, "past_cagr": None, "next_growth": None, "source": "claude_estimate",
+                    "notes": "Unlisted. FY25 total income crossed ~Rs 1,000 Cr (ride-hailing + delivery combined) per press reports; delivery-only revenue not separately disclosed as of this writing -- left blank rather than guessed.",
+                },
+                {
+                    "slug": "food-delivery-others", "name": "Others / Unorganized", "ticker": None, "node_type": "unlisted_other",
+                    "revenue": None, "past_cagr": None, "next_growth": None, "source": "claude_estimate",
+                    "notes": "Placeholder for smaller/local food delivery players not individually tracked -- needs a market-size estimate from Avdhoot or a further research pass.",
+                },
+            ],
+        },
+        {
+            "slug": "quick-commerce",
+            "name": "Quick Commerce",
+            "companies": [
+                {
+                    "slug": "eternal-blinkit", "name": "Eternal — Blinkit", "ticker": "ETERNAL",
+                    "revenue": 5206, "past_cagr": None, "next_growth": 35.0, "source": "sourced",
+                    "notes": "FY25 'Adjusted Revenue' Rs 5,206 Cr -- Eternal's FY25 annual report segment disclosure. Segment-level 3yr history not disclosed. Next-3yr is a Claude estimate (quick commerce category still in high-growth phase).",
+                },
+                {
+                    "slug": "swiggy-instamart", "name": "Swiggy — Instamart", "ticker": "SWIGGY",
+                    "revenue": 2129.58, "past_cagr": None, "next_growth": 32.0, "source": "sourced",
+                    "notes": "FY25 segment revenue (not GOV) Rs 2,129.58 Cr -- Swiggy's Q4 FY25 Shareholder Letter, cross-checked against stockanalysis.com and entrackr.com. Segment-level 3yr history not disclosed. Next-3yr is a Claude estimate.",
+                },
+                {
+                    "slug": "zepto-quick-commerce", "name": "Zepto", "ticker": None,
+                    "revenue": 11110, "past_cagr": None, "next_growth": 30.0, "source": "claude_estimate", "pct": 1.0,
+                    "notes": "Unlisted, pure-play quick commerce -- FY25 revenue ~Rs 11,110 Cr per press reports (Entrackr/Business Standard), not an audited figure TrueResearch has independently verified. pct set to 1.0 explicitly (quick commerce is effectively Zepto's whole business) since there's no ticker for the auto-compute to key off. Next-3yr is a Claude estimate.",
+                },
+            ],
+        },
+        {
+            "slug": "b2b-supply-chain-logistics",
+            "name": "B2B Supply Chain & Logistics",
+            "companies": [
+                {
+                    "slug": "hyperpure-eternal", "name": "Eternal — Hyperpure (B2B Food Supply)", "ticker": "ETERNAL",
+                    "revenue": 6196, "past_cagr": 95.3, "next_growth": 45.0, "source": "sourced",
+                    "notes": "FY25 'Adjusted Revenue' Rs 6,196 Cr, +95.3% YoY -- Eternal's FY25 annual report segment disclosure (via medianama.com summary), cross-checked against Q4 FY25 standalone figure (Rs 1,840 Cr). 'Past 3yr growth' here is actually the 1yr YoY rate (95.3%) -- segment-level history isn't disclosed far enough back for a true 3yr CAGR, flagged rather than guessed. Next-3yr is a Claude estimate assuming material deceleration from this high base-effect-driven rate. Moved here (round 5) from the Restaurants industry to sit alongside Scootsy, the equivalent business at Swiggy -- see this file's top docstring. revenue_pct_of_company_total is now auto-computed (no explicit pct override), since this is one of 3 Eternal entries all within this same industry (Food Delivery 9,418 + Blinkit 5,206 + Hyperpure 6,196 = 20,820 vs Eternal's FY25 consolidated/adjusted total of ~20,243 Cr -- a ~2.8% reconciliation gap across the 3 disclosed segments, not hidden, just the nature of segment-level disclosure).",
+                },
+                {
+                    "slug": "swiggy-scootsy", "name": "Swiggy — Scootsy (Supply Chain & Distribution)", "ticker": "SWIGGY",
+                    "revenue": 6418, "past_cagr": None, "next_growth": 30.0, "source": "sourced",
+                    "notes": "FY25 segment revenue Rs 6,418 Cr -- Swiggy's own 'Supply Chain and Distribution' segment per Q4 FY25 Shareholder Letter, cross-checked against stockanalysis.com and entrackr.com. Notably LARGER than Swiggy's own Food Delivery segment (Rs 6,362 Cr) -- a B2B logistics/distribution business (Scootsy), not a consumer-facing one. Segment-level 3yr history not disclosed. Next-3yr is a Claude estimate.",
+                },
+            ],
+        },
+        {
+            "slug": "dining-out-hyperlocal",
+            "name": "Dining Out & Hyperlocal Services",
+            "companies": [
+                {
+                    "slug": "swiggy-dineout", "name": "Swiggy — Dineout (Out of Home Consumption)", "ticker": "SWIGGY",
+                    "revenue": 238, "past_cagr": None, "next_growth": 20.0, "source": "sourced",
+                    "notes": "FY25 'Out of Home Consumption' segment revenue Rs 238 Cr -- Swiggy's Q4 FY25 Shareholder Letter, cross-checked against stockanalysis.com and entrackr.com. Dine-out discovery/reservations/dining rewards business. Segment-level 3yr history not disclosed. Next-3yr is a Claude estimate.",
+                },
+                {
+                    "slug": "swiggy-genie-platform-innovations", "name": "Swiggy — Genie & Platform Innovations", "ticker": "SWIGGY",
+                    "revenue": 88, "past_cagr": None, "next_growth": 25.0, "source": "sourced",
+                    "notes": "FY25 'Platform Innovations' segment revenue Rs 88 Cr -- Swiggy's Q4 FY25 Shareholder Letter, cross-checked against stockanalysis.com and entrackr.com. Covers Genie (pickup/drop/errands) and other early-stage bets. Small base, early-stage -- segment-level 3yr history not disclosed. Next-3yr is a Claude estimate.",
                 },
             ],
         },
