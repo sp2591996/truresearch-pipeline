@@ -75,8 +75,11 @@ def main():
         sector_id, root_sector_id = sector[0]["node_id"], sector[0]["root_sector_id"]
         cache[sector_slug] = sector_id
 
-        # Resolve every ticker used in this module in one query.
-        tickers = sorted({c["ticker"] for ind in module.INDUSTRIES for c in ind["companies"]})
+        # Resolve every ticker used in this module in one query. Companies
+        # now sit under a "stages" layer (value_chain_stage nodes) inside
+        # each industry, not directly under the industry -- see
+        # value_chain_data/consumer_services.py's header for why.
+        tickers = sorted({c["ticker"] for ind in module.INDUSTRIES for stage in ind["stages"] for c in stage["companies"]})
         assets = supabase.table("assets").select("asset_id, ticker").in_("ticker", tickers).eq("market", MARKET).execute().data
         asset_by_ticker = {a["ticker"]: a["asset_id"] for a in assets}
         missing = [t for t in tickers if t not in asset_by_ticker]
@@ -93,31 +96,42 @@ def main():
             print(f"{industry['name']} (node_id={industry_id})")
 
             # Auto-compute revenue_pct_of_company_total per ticker (sum of
-            # every entry sharing that ticker within this industry), unless
-            # a company entry gives an explicit "pct" override.
+            # every entry sharing that ticker ACROSS THE WHOLE INDUSTRY, not
+            # just within one stage -- a company's offerings can span more
+            # than one stage), unless a company entry gives an explicit
+            # "pct" override.
             company_totals = defaultdict(float)
-            for c in industry["companies"]:
-                company_totals[c["ticker"]] += c["revenue"]
+            for stage in industry["stages"]:
+                for c in stage["companies"]:
+                    company_totals[c["ticker"]] += c["revenue"]
 
-            for i, c in enumerate(industry["companies"], 1):
-                asset_id = asset_by_ticker.get(c["ticker"])
-                node_id = upsert_node(
+            for s_i, stage in enumerate(industry["stages"], 1):
+                stage_id = upsert_node(
                     supabase, cache, parent_id=industry_id, root_sector_id=root_sector_id,
-                    node_type="company", name=c["name"], slug=c["slug"], asset_id=asset_id,
-                    display_order=i,
+                    node_type="value_chain_stage", name=stage["name"], slug=stage["slug"],
+                    display_order=stage.get("display_order", s_i),
                 )
-                pct = c.get("pct")
-                if pct is None:
-                    total = company_totals[c["ticker"]]
-                    pct = round(c["revenue"] / total, 4) if total else None
-                set_financials(
-                    supabase, node_id,
-                    period=module.PERIOD, as_of=module.AS_OF,
-                    revenue=c["revenue"], pct=pct,
-                    past_cagr=c.get("past_cagr"), next_growth=c.get("next_growth"),
-                    source=c.get("source", "claude_estimate"), notes=c.get("notes", ""),
-                )
-                print(f"  {c['name']} (node_id={node_id}, revenue={c['revenue']}, pct={pct})")
+                print(f"  [{stage['name']}] (node_id={stage_id})")
+
+                for i, c in enumerate(stage["companies"], 1):
+                    asset_id = asset_by_ticker.get(c["ticker"])
+                    node_id = upsert_node(
+                        supabase, cache, parent_id=stage_id, root_sector_id=root_sector_id,
+                        node_type="company", name=c["name"], slug=c["slug"], asset_id=asset_id,
+                        display_order=i,
+                    )
+                    pct = c.get("pct")
+                    if pct is None:
+                        total = company_totals[c["ticker"]]
+                        pct = round(c["revenue"] / total, 4) if total else None
+                    set_financials(
+                        supabase, node_id,
+                        period=module.PERIOD, as_of=module.AS_OF,
+                        revenue=c["revenue"], pct=pct,
+                        past_cagr=c.get("past_cagr"), next_growth=c.get("next_growth"),
+                        source=c.get("source", "claude_estimate"), notes=c.get("notes", ""),
+                    )
+                    print(f"    {c['name']} (node_id={node_id}, revenue={c['revenue']}, pct={pct})")
 
     print("\nDone. Run 160_calculate_value_chain_index.py next to roll these up and recompute the Index.")
 
