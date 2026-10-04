@@ -1,5 +1,17 @@
 -- 164_create_bank_quarterly_pnl.sql
 -- -------------------------------------------------------------------
+-- CORRECTED 2026-10-05: first run of this file failed with
+--   ERROR: 23514: check constraint "ingestion_runs_run_type_check"
+--   of relation "ingestion_runs" is violated by some row
+-- Diagnostic query confirmed one existing run_type value in the table
+-- wasn't on this file's allow-list: 'virtual_portfolio_snapshot' (the
+-- My Portfolio snapshot job, added back in 109_snapshot_virtual_portfolios.py
+-- / 108_add_virtual_portfolio_snapshot_run_type.sql -- just never carried
+-- forward into this file's own copy of the allow-list). Added below.
+-- This is a same-file correction (the original attempt never
+-- succeeded), not a new numbered file -- see Updated Project
+-- Tracker.md Section 11 for the naming rule this follows.
+-- -------------------------------------------------------------------
 -- New table for the "Financial Statements" Deepdive tab (Avdhoot's
 -- ask: quarterly + annual P&L/Balance Sheet/Cash Flow for the 38 bank
 -- stocks). After checking what's realistically available (see
@@ -72,5 +84,6 @@ alter table ingestion_runs
     'market_mood', 'us_market_mood',
     'model_retrain', 'us_model_retrain',
     'universe_sync_india', 'universe_sync_usa',
-    'bank_quarterly_pnl'
+    'bank_quarterly_pnl',
+    'virtual_portfolio_snapshot'
   ));

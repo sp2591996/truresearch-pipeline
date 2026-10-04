@@ -1,0 +1,34 @@
+-- 168_grant_select_on_quarterly_pnl_tables.sql
+-- -------------------------------------------------------------------
+-- Real bug found live (2026-10-05): the new "Financial Statements"
+-- tab's Quarterly view showed "No quarterly data on file yet" for
+-- every stock, even ones confirmed to have real rows in
+-- `quarterly_pnl` (e.g. TATACHEM). Meanwhile the Annual view (reading
+-- from `fundamentals`, an old, already-granted table) worked fine.
+--
+-- Same recurring pattern as 144_grant_select_on_stock_deepdive.sql:
+-- an RLS "public can read" policy only takes effect once the `anon`
+-- role already has the base table-level privilege -- Postgres checks
+-- BOTH, and 166_create_quarterly_pnl_table.sql only added the RLS
+-- policy, not the plain GRANT. The frontend connects as `anon`
+-- (lib/supabaseClient.ts uses the publishable/anon key, not the
+-- secret key), so every query against quarterly_pnl was silently
+-- being blocked at the database level.
+--
+-- 164_create_bank_quarterly_pnl.sql has the exact same gap for
+-- `bank_quarterly_pnl` -- not yet caught because that table isn't
+-- wired into the frontend yet, but it would hit the identical bug the
+-- moment it is. Granting both now so this doesn't recur later.
+--
+-- HOW TO RUN THIS:
+--   1. Open your Supabase project in the browser.
+--   2. Click "SQL Editor" in the left sidebar.
+--   3. Click "New query".
+--   4. Paste this entire file's contents into the editor.
+--   5. Click "Run" (or press Ctrl+Enter). No destructive-operation
+--      popup is expected this time -- a GRANT is additive, not
+--      destructive.
+-- -------------------------------------------------------------------
+
+grant select on public.quarterly_pnl to anon, authenticated;
+grant select on public.bank_quarterly_pnl to anon, authenticated;
