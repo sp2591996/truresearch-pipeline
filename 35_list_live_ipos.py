@@ -25,14 +25,14 @@ from nse import NSE
 
 with tempfile.TemporaryDirectory() as tmp_dir, NSE(download_folder=tmp_dir) as nse:
     print("=== Currently open ===")
-    for row in nse.listCurrentIPO() or []:
+    for row in nse.list_current_ipo() or []:
         if row.get("category") in (None, "Total"):
             print(f"  {row.get('symbol')!s:<12} series={row.get('series')!s:<6} {row.get('companyName')}")
 
     print("\n=== Upcoming ===")
-    for row in nse.listUpcomingIPO() or []:
+    for row in nse.list_upcoming_ipo() or []:
         print(f"  {row.get('symbol')!s:<12} series={row.get('series')!s:<6} {row.get('companyName')}")
 
     print("\n=== Recently listed (past) ===")
-    for row in nse.listPastIPO() or []:
+    for row in nse.list_past_ipo() or []:
         print(f"  {row.get('symbol')!s:<12} type={row.get('securityType')!s:<6} {row.get('company')}")

@@ -11,12 +11,12 @@ shareholding_pattern -- see 25_shareholding_refresh.py), which exposes
 3 real IPO-listing endpoints, confirmed by 31_check_nse_ipo_api.py
 before this script was written (never guessed at an API that might
 not exist):
-    nse.listUpcomingIPO()  -- IPOs that haven't opened yet
-    nse.listCurrentIPO()   -- IPOs currently open for subscription
+    nse.list_upcoming_ipo()  -- IPOs that haven't opened yet
+    nse.list_current_ipo()   -- IPOs currently open for subscription
                               (includes a subscription multiplier,
                               per bidder category -- this script keeps
                               only the "Total" row per IPO)
-    nse.listPastIPO()      -- recently closed/listed IPOs
+    nse.list_past_ipo()      -- recently closed/listed IPOs
 
 SME exclusion (added after Avdhoot's explicit instruction: "make sure
 you dont include SME IPOs into this"): NSE lists SME-platform IPOs
@@ -117,7 +117,7 @@ def build_records(nse):
             if value is not None:
                 existing[key] = value
 
-    for row in nse.listUpcomingIPO() or []:
+    for row in nse.list_upcoming_ipo() or []:
         merge(
             row.get("symbol"),
             is_sme=_is_sme(row.get("series")),
@@ -127,7 +127,7 @@ def build_records(nse):
             price_band=_clean_text(row.get("issuePrice")),
         )
 
-    for row in nse.listCurrentIPO() or []:
+    for row in nse.list_current_ipo() or []:
         fields = dict(
             company_name=_clean_text(row.get("companyName")),
             open_date=_parse_nse_date(row.get("issueStartDate")),
@@ -146,7 +146,7 @@ def build_records(nse):
                 pass
         merge(row.get("symbol"), is_sme=_is_sme(row.get("series")), **fields)
 
-    for row in nse.listPastIPO() or []:
+    for row in nse.list_past_ipo() or []:
         merge(
             row.get("symbol"),
             is_sme=_is_sme(row.get("securityType")),
