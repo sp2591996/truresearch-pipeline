@@ -94,6 +94,24 @@ def main():
         y_train = train_df[TARGET]
         y_test = test_df[TARGET]
 
+        # Safety net (added 2026-10-05): a bad/zero price on some day can
+        # still slip an infinite or NaN label through upstream, and XGBoost
+        # crashes the whole run if it ever sees one ("Label contains NaN,
+        # infinity or a value too large"). 09_build_training_data.py now
+        # filters these at the source, but this is cheap insurance so one
+        # bad row never takes down the monthly retrain again.
+        train_ok = y_train.replace([float("inf"), float("-inf")], pd.NA).notna()
+        test_ok = y_test.replace([float("inf"), float("-inf")], pd.NA).notna()
+        n_bad_train, n_bad_test = (~train_ok).sum(), (~test_ok).sum()
+        if n_bad_train or n_bad_test:
+            print(f"  (dropping {n_bad_train} train / {n_bad_test} test rows with a bad NaN/infinite label)")
+        X_train, y_train = X_train[train_ok.values], y_train[train_ok]
+        X_test, y_test = X_test[test_ok.values], y_test[test_ok]
+
+        if len(X_train) < MIN_TRAIN_ROWS or len(X_test) < MIN_TEST_ROWS:
+            print(f"{q}: skipped after removing bad rows (train={len(X_train)} rows, test={len(X_test)} rows)")
+            continue
+
         model = XGBRegressor(n_estimators=200, max_depth=4, learning_rate=0.05, random_state=42)
         model.fit(X_train, y_train)
         preds = model.predict(X_test)

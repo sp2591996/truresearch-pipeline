@@ -194,6 +194,7 @@ def main():
     all_rows = []
     error_count = 0
     rows_without_fundamentals = 0
+    rows_skipped_bad_price = 0
 
     for i, a in enumerate(assets, 1):
         asset_id = a["asset_id"]
@@ -232,7 +233,19 @@ def main():
                     continue
                 future_date = indicators.index[future_idx]
 
-                stock_return = (indicators.loc[future_date, "close"] / indicators.loc[snapshot_date, "close"]) - 1
+                snapshot_close = indicators.loc[snapshot_date, "close"]
+                future_close = indicators.loc[future_date, "close"]
+                if not snapshot_close or pd.isna(snapshot_close) or pd.isna(future_close):
+                    # Bad/zero close price on this date (data glitch, e.g. a
+                    # suspended-trading day recorded as 0) -- skip this one
+                    # snapshot rather than divide by zero/NaN and leak an
+                    # infinite "return" into the training data. FIX added
+                    # 2026-10-05 after this exact bug crashed the monthly
+                    # model retrain (XGBoost: "Label contains NaN, infinity
+                    # or a value too large").
+                    rows_skipped_bad_price += 1
+                    continue
+                stock_return = (future_close / snapshot_close) - 1
 
                 bench_now_series = benchmark.loc[benchmark.index <= snapshot_date, "close"]
                 bench_future_series = benchmark.loc[benchmark.index <= future_date, "close"]
@@ -274,6 +287,15 @@ def main():
                     "Excess_Return_3M": excess_return,
                     "Label_Outperformed": 1 if stock_return > benchmark_return else 0,
                 }
+                if not (pd.notna(excess_return) and abs(excess_return) < float("inf")) or \
+                   not (pd.notna(stock_return) and abs(stock_return) < float("inf")) or \
+                   not (pd.notna(benchmark_return) and abs(benchmark_return) < float("inf")):
+                    # Same safety net as above, for the rarer case where the
+                    # benchmark side (rather than the stock side) produced a
+                    # bad value.
+                    rows_skipped_bad_price += 1
+                    continue
+
                 all_rows.append(row)
                 rows_this_stock += 1
 
@@ -289,6 +311,7 @@ def main():
     print(f"\nDone! Built {len(training_df)} training rows across {len(assets)} stocks.")
     print(f"Rows built with blank/no fundamentals yet (technical-only, expected for early dates): {rows_without_fundamentals}")
     print(f"Stocks with errors: {error_count}")
+    print(f"Snapshots skipped for bad/zero price data (divide-by-zero or NaN return): {rows_skipped_bad_price}")
     if len(training_df) > 0:
         print(f"Outperformed: {training_df['Label_Outperformed'].sum()} | Underperformed: {len(training_df) - training_df['Label_Outperformed'].sum()}")
         print(f"Saved to {OUTPUT_FILE}")
