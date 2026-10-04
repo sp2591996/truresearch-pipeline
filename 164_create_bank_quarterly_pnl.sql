@@ -12,8 +12,8 @@
 -- Balance Sheet / Cash Flow views in the new tab instead reuse the
 -- existing `fundamentals` table (annual only, already populated).
 --
--- Source: nse.results_comparison(symbol) -- "resCmpData" list,
--- typically the last ~5 quarters. Amounts arrive in Rupees Lakhs from
+-- Source: nse.results_comparison(symbol) -- the "resCmpData" list,
+-- typically the last 5 quarters. Amounts arrive in Rupees Lakhs from
 -- NSE; this script converts to Crores (divide by 100) to match the
 -- units already used everywhere else on the site.
 --
@@ -23,6 +23,11 @@
 --   3. Click "New query".
 --   4. Paste this entire file's contents into the editor.
 --   5. Click "Run" (or press Ctrl+Enter).
+--   6. If a "Potential issue detected" popup appears about Row Level
+--      Security, click "Run and enable RLS" -- this file already sets
+--      up the correct public-read-only policy itself, matching every
+--      other data table on the site, so that popup's warning is
+--      already handled below.
 -- -------------------------------------------------------------------
 
 create table if not exists bank_quarterly_pnl (
@@ -41,7 +46,18 @@ create table if not exists bank_quarterly_pnl (
 );
 
 comment on table bank_quarterly_pnl is
-  'Quarterly P&L summary (Total Income, Net Profit, EPS) for bank stocks, from NSE's official results_comparison feed. Last ~5 quarters per stock -- NSE does not expose older quarterly history via this endpoint.';
+  'Quarterly P&L summary (Total Income, Net Profit, EPS) for bank stocks, from NSE official results_comparison feed. Last ~5 quarters per stock -- NSE does not expose older quarterly history via this endpoint.';
+
+-- Same public-read-only pattern as every other data table in this
+-- project (e.g. stock_deepdive, sector_overviews): anyone can READ
+-- this table (it's what powers the site's public stock pages), but
+-- only the backend script -- using the service key, which bypasses
+-- RLS entirely -- can write to it. No anon/authenticated insert,
+-- update or delete policy is created on purpose.
+alter table bank_quarterly_pnl enable row level security;
+drop policy if exists "Bank quarterly P&L is public to read" on bank_quarterly_pnl;
+create policy "Bank quarterly P&L is public to read" on bank_quarterly_pnl
+  for select using (true);
 
 alter table ingestion_runs
   drop constraint ingestion_runs_run_type_check;
