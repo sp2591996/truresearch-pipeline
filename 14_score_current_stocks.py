@@ -822,7 +822,7 @@ def main():
 
     CHUNK = 500
     for i in range(0, len(component_rows), CHUNK):
-        execute_with_retry(supabase.table("score_components").insert(component_rows[i:i + CHUNK]))
+        execute_with_retry(supabase.table("score_components").upsert(component_rows[i:i + CHUNK], on_conflict="asset_id,run_date,formula_version,component_name"))
 
     print("Saving truescore_v4 (in review) scores to the database...")
     supabase.table("score_components").delete().eq("formula_version", V4_FORMULA_VERSION).eq("run_date", run_date).execute()
@@ -858,7 +858,7 @@ def main():
             })
 
     for i in range(0, len(v4_component_rows), CHUNK):
-        execute_with_retry(supabase.table("score_components").insert(v4_component_rows[i:i + CHUNK]))
+        execute_with_retry(supabase.table("score_components").upsert(v4_component_rows[i:i + CHUNK], on_conflict="asset_id,run_date,formula_version,component_name"))
 
     print(f"Saved truescore_v4 for {len(features_df)} stocks (run_date={run_date}) -- NOT live on the frontend, for review/back-test only.")
 
@@ -942,7 +942,7 @@ def main():
             })
 
     for i in range(0, len(v5_component_rows), CHUNK):
-        execute_with_retry(supabase.table("score_components").insert(v5_component_rows[i:i + CHUNK]))
+        execute_with_retry(supabase.table("score_components").upsert(v5_component_rows[i:i + CHUNK], on_conflict="asset_id,run_date,formula_version,component_name"))
 
     print(f"Saved truescore_v5 for {len(features_df)} stocks (run_date={run_date}) -- NOT live on the frontend, for review/back-test only.")
 

@@ -636,7 +636,7 @@ def main():
 
     CHUNK = 500
     for i in range(0, len(component_rows), CHUNK):
-        execute_with_retry(supabase.table("score_components").insert(component_rows[i:i + CHUNK]))
+        execute_with_retry(supabase.table("score_components").upsert(component_rows[i:i + CHUNK], on_conflict="asset_id,run_date,formula_version,component_name"))
 
     finish_run(run_id, ok_count=len(features_df), failed_symbols=skipped)
     print(f"\nDone. Scored {len(features_df)} US stocks and saved to the database (run_date={run_date}, formula_version={FORMULA_VERSION}).")
