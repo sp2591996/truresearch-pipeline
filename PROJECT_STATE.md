@@ -1055,3 +1055,14 @@ Two sessions of work, fully built, tested by Avdhoot, and pushed to both repos:
 - Both repos pushed: `trueresearch-frontend` commit `edcf359`, `TrueResearch Code` commit `374ca56`.
 
 For the full step-by-step detail, diagnosis trails, and every exact file/line changed, see `Updated Project Tracker.md` Sections 12 and 13.
+
+## Session 2026-10-07 to 2026-10-10 summary (full detail in Updated Project Tracker.md, Section 14)
+
+Answered the long-open "what's the new Stock Page requirement" question (Section 7b/9, item 0a) — it's a new Sector/Industry "Deep Dive" feature, built industry by industry with a customized data schema per industry, real researched/cross-checked figures, and a rollup page per industry:
+- **Financial Services sector — fully complete**: all 9 industries, every stock (Banks, Credit Services, Mortgage Finance, Insurance-Life, Insurance-Diversified, Asset Management, Capital Markets, Financial Data & Stock Exchanges, Diversified Financials).
+- **Capital Goods sector — started**: 1 of 7 industries done (Solar, 4 stocks); 6 remain (Aerospace & Defense is next; two industries flagged for a possible misclassified/poor-fit stock; two more industries still need their remaining tickers pulled before they can be built; 61 stocks total in the sector).
+- **Bug fixed**: industry-rollup qualitative sections (Strengths/Weaknesses/Risks/etc.) were rendering 2 repetitive-looking bullets per company for small industries — fixed by combining each company's data down to one well-written bullet per field, with a new standing rule for all future industries to do the same from the start (not a change to the rollup's own slicing logic).
+- **Bug fixed, this repo (`TrueResearch Code`)**: `167_fetch_quarterly_pnl_all_stocks.py` (feeds the Financial Statements/QoQ tab from NSE's own feed) had no error handling around its Supabase save (one bad row crashed the whole ~500-stock run) and unhelpful "skipped" messages. Both fixed; a full re-run then saved fresh quarterly data for 437/500 stocks (2,123 quarter-rows) — committed as `65947fb`.
+- **Not yet confirmed pushed**: both this repo's `65947fb` and several `trueresearch-frontend` commits from this work still need `git push origin main` from Avdhoot.
+
+For the full session-by-session detail — the 8 standing rules for all Deep Dive work, every industry's exact stock list, and both bugs' full root-cause writeups — see `Updated Project Tracker.md` Section 14.
