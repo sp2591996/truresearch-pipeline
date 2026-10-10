@@ -1033,3 +1033,25 @@ Next.js + React + TypeScript, Tailwind CSS, Supabase/Postgres (**now live**, pro
 - **User is a non-coder and needs extreme hand-holding for every execution step** — including multi-step code execution. Never assume familiarity with terminals, git, file paths, or dev tools. Every instruction spells out exactly which button/menu/field, in order, with no skipped steps.
 - **Any time a script is updated (not just created new), the ENTIRE revised script is given in full** (never a diff/snippet/"add this line"), plus explicit plain-language instructions on exactly what to do with it (which file to replace, where it lives, how to run it, what output to expect).
 - **New (Session 4):** all new Phase B code/scripts/docs are written into the `TrueResearch Code` folder on Avdhoot's computer (a sibling folder to `Old Files`, both inside `Stock App 2.0`) — never into `Old Files`, which stays untouched as the live old site until migration is complete.
+
+---
+
+## NOTE (2026-10-06): this file is no longer the primary running log
+
+As of Session "Updated Project Tracker.md" was introduced, the single file `Stock App 2.0/Updated Project Tracker.md` (one level up from this `TrueResearch Code` folder) is the live, primary, continuously-updated project record for BOTH repos (`TrueResearch Code` backend and `trueresearch-frontend`) — it replaced the older two-file system this document was part of. `PROJECT_STATE.md` is kept here as historical reference for Phase A/B/C build history only and is not being actively appended to session-by-session anymore.
+
+**When opening a new chat, say:** "Read Updated Project Tracker.md, continuing TrueResearch" — not this file — and attach/reference that file instead.
+
+## Session 2026-10-05 to 2026-10-06 summary (full detail in Updated Project Tracker.md, Sections 12-13)
+
+Two sessions of work, fully built, tested by Avdhoot, and pushed to both repos:
+- Fixed a Next.js React Server Components bug causing empty Thesis/Risks/Monitor tabs on the 3 banking Industry pages.
+- Fixed unreadable homepage text in light theme.
+- Fixed the Industry/Sector page -> Peers -> "View in Screener" deep link to correctly pre-select the industry/sector filter.
+- Full sector/industry data cleanup: removed stale orphaned rows (e.g. "Banks - Regional"), reclassified ~29 unclassified stocks, deleted a dummy test stock, added a sector-grouping layer (19 India sectors -> 7 groups, 11 USA sectors -> 9 groups) now live in the Screener filter and sector browse page, and merged every thin (1-2 stock) industry into a sensible sibling across all 30 sectors so every industry has a real index/KPI base.
+- Fixed a recurring duplicate-key crash bug in `14_score_current_stocks.py`/`73_score_us_stocks.py`'s score-saving logic (insert -> upsert).
+- Fixed a text-overlap/truncation bug in the global SearchBox's industry-type search results, ultimately by widening the dropdown panel itself independent of the search input's width.
+- New SQL migrations: `169_reclassify_unclassified_stocks.sql`, `170_delete_orphan_sectors_industries.sql`, `171_add_sector_groups.sql`, `172_merge_thin_industries.sql`.
+- Both repos pushed: `trueresearch-frontend` commit `edcf359`, `TrueResearch Code` commit `374ca56`.
+
+For the full step-by-step detail, diagnosis trails, and every exact file/line changed, see `Updated Project Tracker.md` Sections 12 and 13.

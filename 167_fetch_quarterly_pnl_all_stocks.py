@@ -122,7 +122,14 @@ def main():
 
             rows = (data or {}).get("resCmpData") or []
             if not rows:
-                print("skipped (no quarterly data returned)")
+                # NOTE (diagnostic fix 2026-10-10): print what NSE actually sent
+                # back on the first few empty ones, so if NSE changed its
+                # response shape or is blocking requests again, it shows up
+                # immediately instead of silently skipping all 500 stocks.
+                if len(failed_symbols) < 3:
+                    print(f"skipped (no quarterly data returned) -- raw response: {data!r}")
+                else:
+                    print("skipped (no quarterly data returned)")
                 failed_symbols.append(ticker)
                 continue
 
@@ -143,10 +150,18 @@ def main():
                     "is_consolidated": is_consolidated,
                     "source": "nse",
                 }
-                supabase.table("quarterly_pnl").upsert(
-                    record, on_conflict="asset_id,period_end_date,is_consolidated"
-                ).execute()
-                saved_this_stock += 1
+                # NOTE (diagnostic fix 2026-10-10): this upsert previously had NO
+                # error handling -- a single bad row (e.g. a Supabase schema/type
+                # mismatch) crashed the ENTIRE 500-stock run with an unhandled
+                # traceback (this is what happened on stock #132, DALBHARAT).
+                # Now we log it and keep going instead of killing the whole run.
+                try:
+                    supabase.table("quarterly_pnl").upsert(
+                        record, on_conflict="asset_id,period_end_date,is_consolidated"
+                    ).execute()
+                    saved_this_stock += 1
+                except Exception as e:
+                    print(f"\n  WARNING: {ticker} {period_end}: upsert failed ({e}) -- row skipped, continuing")
 
             quarters_saved += saved_this_stock
             ok_count += 1
