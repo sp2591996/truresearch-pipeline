@@ -43,6 +43,8 @@ pipeline script):
     venv\\Scripts\\python.exe 55_add_fx_assets.py
 -------------------------------------------------------------------
 """
+import pandas as pd
+
 from db_client import get_client
 from market_data_provider import get_live_price, get_price_history
 
@@ -60,6 +62,14 @@ FX_PAIRS = [
     ("KWDINR", "Kuwaiti Dinar / Indian Rupee", "KWD=X", "KWD=X"),
     ("OMRINR", "Omani Rial / Indian Rupee", "OMR=X", "OMR=X"),
 ]
+
+
+# Yahoo's SAR=X is unreliable: 116 of 259 daily closes over the past year
+# were more than 1% off the 3.75 peg, which made a pegged currency show
+# -3% days (OMR=X has occasional bad bars too). Both are fixed to the US
+# Dollar by law, so the official peg is used in place of the Yahoo quote.
+# KWD isn't here: it's pegged to a basket, so it stays on Yahoo's KWD=X.
+PEGGED_TO_USD = {"SAR=X": 3.75, "OMR=X": 0.3845}
 
 
 def ensure_fx_asset(supabase, ticker: str, name: str, yf_symbol: str) -> int:
@@ -112,8 +122,14 @@ def backfill_history(supabase, asset_id: int, yf_symbol: str) -> int:
 def backfill_history_cross(supabase, asset_id: int, cross_symbol: str) -> int:
     """<currency>/INR = (USD/INR) / (USD/<currency>), aligned by date."""
     usdinr = get_price_history("INR=X", period="10y", interval="1d")
-    usdxxx = get_price_history(cross_symbol, period="10y", interval="1d")
-    if usdinr.empty or usdxxx.empty:
+    if usdinr.empty:
+        return 0
+    peg = PEGGED_TO_USD.get(cross_symbol)
+    if peg:
+        usdxxx = pd.DataFrame(peg, index=usdinr.index, columns=["Open", "High", "Low", "Close"])
+    else:
+        usdxxx = get_price_history(cross_symbol, period="10y", interval="1d")
+    if usdxxx.empty:
         return 0
     # Keep only dates present in both series.
     common_dates = usdinr.index.intersection(usdxxx.index)
@@ -158,7 +174,8 @@ def refresh_live(supabase, asset_id: int, yf_symbol: str) -> bool:
 
 def refresh_live_cross(supabase, asset_id: int, cross_symbol: str) -> bool:
     usdinr = get_live_price("INR=X")
-    usdxxx = get_live_price(cross_symbol)
+    peg = PEGGED_TO_USD.get(cross_symbol)
+    usdxxx = {"price": peg, "prev_close": peg} if peg else get_live_price(cross_symbol)
     if usdinr is None or usdxxx is None or not usdxxx.get("price"):
         return False
     price = usdinr["price"] / usdxxx["price"]
