@@ -1,0 +1,29 @@
+name: Bank Annual Financials Refresh - India
+
+# Reads each listed bank's official March-quarter results filing (XBRL)
+# from NSE and saves the full-year figures to bank_annual_financials,
+# for the bank deep dives. Only downloads filings it hasn't saved yet,
+# so most weeks it does almost nothing; after results season (April-May)
+# it picks up the new year. Years that fail its checks are held back and
+# listed at the end of the run log for a person to look at.
+# GitHub's own cron trigger below is kept as a backup only --
+# cron-job.org is this project's primary scheduler.
+
+on:
+  schedule:
+    - cron: '30 5 * * 0'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements.txt
+      - run: python 203_refresh_bank_annual_financials.py --write
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}

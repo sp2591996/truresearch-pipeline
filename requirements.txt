@@ -4,7 +4,7 @@ supabase
 python-dotenv
 xgboost
 scikit-learn
-nse
+nse>=5.2  # 4.x no longer works with NSE's site
 requests
 pdfplumber
 lxml
